@@ -123,6 +123,8 @@ int main(int argc, char** argv)
     cds::gc::HP hpGC;
     cds::threading::Manager::attachThread();
 
+    std::shared_ptr<void> cdsHandle(nullptr, [](void*) { cds::threading::Manager::detachThread(); cds::Terminate(); });
+
     // Seed the OpenSSL's PRNG here.
     // That way it won't auto-seed when calling BigNumber::SetRand and slow down the first world login
     BigNumber seed;
@@ -233,9 +235,6 @@ int main(int argc, char** argv)
 
     banExpiryCheckTimer->cancel();
     dbPingTimer->cancel();
-
-    cds::threading::Manager::detachThread();
-    cds::Terminate();
 
     TC_LOG_INFO(LOG_FILTER_BATTLENET, "Halting process...");
 
