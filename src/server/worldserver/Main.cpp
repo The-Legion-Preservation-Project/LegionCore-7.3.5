@@ -85,7 +85,6 @@ char serviceDescription[] = "LegionCore World of Warcraft emulator world service
 int m_ServiceStatus = -1;
 #endif
 
-boost::asio::io_service _ioService;
 boost::asio::deadline_timer _freezeCheckTimer(_ioService);
 
 std::vector<uint32> _lastMapChangeMsTime;
@@ -142,6 +141,10 @@ extern int main(int argc, char **argv)
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
     }
+
+    std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
+
+    sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? ioContext.get() : nullptr);
 
     Trinity::Banner::Show("worldserver-daemon", [](char const* text)
     {
