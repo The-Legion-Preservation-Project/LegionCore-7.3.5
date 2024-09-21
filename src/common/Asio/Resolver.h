@@ -19,6 +19,7 @@
 #define Resolver_h__
 
 #include "Common.h"
+#include "Optional.h"
 #include <boost/asio/ip/tcp.hpp>
 
 namespace Trinity

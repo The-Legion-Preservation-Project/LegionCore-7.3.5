@@ -122,7 +122,7 @@ protected:
 
     void Run()
     {
-        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Network Thread Starting");
+        TC_LOG_DEBUG("network", "Network Thread Starting");
 
         cds::threading::Manager::attachThread();
 
@@ -162,10 +162,6 @@ protected:
 
             return false;
         }), _sockets.end());
-
-        uint32 _ms = GetMSTimeDiffToNow(_s);
-        if (_ms > 250)
-            sLog->outDiff("NetworkThread::Update: Diff - %ums _sockets %u", _ms, _sockets.size());
     }
 
 private:
