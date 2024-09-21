@@ -21,6 +21,7 @@
 #include "JSON/ProtobufJSON.h"
 #include "IpNetwork.h"
 #include "Realm.h"
+#include "Resolver.h"
 #include "SessionManager.h"
 #include "SHA1.h"
 #include "SHA256.h"
@@ -42,45 +43,40 @@ int32 handle_post_plugin(soap* soapClient)
     return sLoginService.HandlePost(soapClient);
 }
 
-bool LoginRESTService::Start(boost::asio::io_service& ioService)
+bool LoginRESTService::Start(Trinity::Asio::IoContext* ioContext)
 {
+    _ioContext = ioContext;
     _waitTime = sConfigMgr->GetIntDefault("RestWaitTime", 60);
 
     _bindIP = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
     _port = sConfigMgr->GetIntDefault("LoginREST.Port", 8081);
     if (_port < 0 || _port > 0xFFFF)
     {
-        TC_LOG_ERROR(LOG_FILTER_BATTLENET, "REST Specified login service port (%d) out of allowed range (1-65535), defaulting to 8081", _port);
+        TC_LOG_ERROR("server.bnetserver", "REST Specified login service port (%d) out of allowed range (1-65535), defaulting to 8081", _port);
         _port = 8081;
     }
 
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::resolver resolver(ioService);
-    boost::asio::ip::tcp::resolver::iterator end;
+    Trinity::Asio::Resolver resolver(*ioContext);
 
     std::string configuredAddress = sConfigMgr->GetStringDefault("LoginREST.ExternalAddress", "127.0.0.1");
-    boost::asio::ip::tcp::resolver::query externalAddressQuery(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port),
-        boost::asio::ip::resolver_query_base::all_matching);
-    boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
-    if (endPoint == end || ec)
+    Optional<boost::asio::ip::tcp::endpoint> externalAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
+    if (!externalAddress)
     {
-        TC_LOG_ERROR(LOG_FILTER_BATTLENET, "REST Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
+        TC_LOG_ERROR("server.bnetserver", "REST Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
         return false;
     }
 
-    _externalAddress = endPoint->endpoint();
+    _externalAddress = *externalAddress;
 
     configuredAddress = sConfigMgr->GetStringDefault("LoginREST.LocalAddress", "127.0.0.1");
-    boost::asio::ip::tcp::resolver::query localAddressQuery(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port),
-        boost::asio::ip::resolver_query_base::all_matching);
-    endPoint = resolver.resolve(localAddressQuery, ec);
-    if (endPoint == end || ec)
+    Optional<boost::asio::ip::tcp::endpoint> localAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
+    if (!localAddress)
     {
-        TC_LOG_ERROR(LOG_FILTER_BATTLENET, "REST Could not resolve LoginREST.LocalAddress %s", configuredAddress.c_str());
+        TC_LOG_ERROR("server.bnetserver", "REST Could not resolve LoginREST.LocalAddress %s", configuredAddress.c_str());
         return false;
     }
 
-    _localAddress = endPoint->endpoint();
+    _localAddress = *localAddress;
     _localNetmask = Trinity::Net::GetDefaultNetmaskV4(_localAddress.address().to_v4());
 
     // set up form inputs
@@ -103,9 +99,9 @@ bool LoginRESTService::Start(boost::asio::io_service& ioService)
     input->set_type("submit");
     input->set_label("Log In");
 
-    _loginTicketCleanupTimer = new boost::asio::deadline_timer(ioService);
+    _loginTicketCleanupTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
     _loginTicketCleanupTimer->expires_from_now(boost::posix_time::seconds(10));
-    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this, std::placeholders::_1));
+    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this));
 
     _thread = std::thread(std::bind(&LoginRESTService::Run, this));
     return true;
@@ -141,11 +137,11 @@ void LoginRESTService::Run()
     soapServer.send_timeout = 5;
     if (!soap_valid_socket(soap_bind(&soapServer, _bindIP.c_str(), _port, 100)))
     {
-        TC_LOG_ERROR(LOG_FILTER_BATTLENET, "REST Couldn't bind to %s:%d", _bindIP.c_str(), _port);
+        TC_LOG_ERROR("server.bnetserver", "REST Couldn't bind to %s:%d", _bindIP.c_str(), _port);
         return;
     }
 
-    TC_LOG_INFO(LOG_FILTER_BATTLENET, "REST Login service bound to http://%s:%d", _bindIP.c_str(), _port);
+    TC_LOG_INFO("server.bnetserver", "REST Login service bound to http://%s:%d", _bindIP.c_str(), _port);
 
     http_post_handlers handlers[] =
     {
@@ -171,11 +167,11 @@ void LoginRESTService::Run()
         boost::asio::ip::address_v4 address(soapClient->ip);
         if (soap_ssl_accept(soapClient.get()) != SOAP_OK)
         {
-            TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST Failed SSL handshake from IP=%s", address.to_string().c_str());
+            TC_LOG_DEBUG("server.bnetserver", "REST Failed SSL handshake from IP=%s", address.to_string().c_str());
             continue;
         }
 
-        TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST Accepted connection from IP=%s", address.to_string().c_str());
+        TC_LOG_DEBUG("server.bnetserver", "REST Accepted connection from IP=%s", address.to_string().c_str());
 
         std::thread([soapClient]
         {
@@ -186,7 +182,7 @@ void LoginRESTService::Run()
     // and release the context handle here - soap does not own it so it should not free it on exit
     soapServer.ctx = nullptr;
 
-    TC_LOG_INFO(LOG_FILTER_BATTLENET, "REST Login service exiting...");
+    TC_LOG_INFO("server.bnetserver", "REST Login service exiting...");
 }
 
 int32 LoginRESTService::HandleGet(soap* soapClient)
@@ -194,12 +190,12 @@ int32 LoginRESTService::HandleGet(soap* soapClient)
     boost::asio::ip::address_v4 address(soapClient->ip);
     std::string ip_address = address.to_string();
 
-    TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST [%s:%d] Handling GET request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
+    TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling GET request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
 
     static std::string const expectedPath = "/bnetserver/login/";
     if (strstr(soapClient->path, expectedPath.c_str()) != &soapClient->path[0])
     {
-        TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST [%s:%d] Handling GET 404", ip_address.c_str(), soapClient->port);
+        TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling GET 404", ip_address.c_str(), soapClient->port);
         return 404;
     }
 
@@ -211,12 +207,12 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     boost::asio::ip::address_v4 address(soapClient->ip);
     std::string ip_address = address.to_string();
 
-    TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST [%s:%d] Handling POST request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
+    TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
 
     static std::string const expectedPath = "/bnetserver/login/";
     if (strstr(soapClient->path, expectedPath.c_str()) != &soapClient->path[0])
     {
-        TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST [%s:%d] Handling POST 404", ip_address.c_str(), soapClient->port);
+        TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST 404", ip_address.c_str(), soapClient->port);
         return 404;
     }
 
@@ -230,7 +226,7 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     {
         if (soap_register_plugin_arg(soapClient, &ResponseCodePlugin::Init, nullptr) != SOAP_OK)
         {
-            TC_LOG_DEBUG(LOG_FILTER_BATTLENET, "REST [%s:%d] Handling POST 500", ip_address.c_str(), soapClient->port);
+            TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST 500", ip_address.c_str(), soapClient->port);
             return 500;
         }
 
@@ -398,14 +394,8 @@ void LoginRESTService::AddLoginTicket(std::string const& id, std::unique_ptr<Bat
     ticket.ExpiryTime = time(nullptr) + _waitTime;
 }
 
-void LoginRESTService::CleanupLoginTickets(boost::system::error_code const& error)
+void LoginRESTService::CleanupLoginTickets()
 {
-    if (error)
-    {
-        TC_LOG_TRACE(LOG_FILTER_BATTLENET, "REST LoginRESTService::CleanupLoginTickets error %s", error.message().c_str());
-        return;
-    }
-
     time_t now = time(nullptr);
 
     {
@@ -420,7 +410,7 @@ void LoginRESTService::CleanupLoginTickets(boost::system::error_code const& erro
     }
 
     _loginTicketCleanupTimer->expires_from_now(boost::posix_time::seconds(10));
-    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this, std::placeholders::_1));
+    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this));
 }
 
 Namespace namespaces[] =

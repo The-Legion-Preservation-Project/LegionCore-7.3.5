@@ -20,8 +20,6 @@
 /// @{
 /// \file
 
-#include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/program_options.hpp>
 #include <cds/gc/hp.h>
@@ -37,9 +35,13 @@
 #include "Common.h"
 #include "Configuration/Config.h"
 #include "DatabaseEnv.h"
+#include "DatabaseLoader.h"
+#include "DeadlineTimer.h"
 #include "GitRevision.h"
+#include "IoContext.h"
 #include "MapInstanced.h"
 #include "MapManager.h"
+#include "MySQLThreading.h"
 #include "ObjectAccessor.h"
 #include "OpenSSLCrypto.h"
 #include "OutdoorPvPMgr.h"
@@ -48,9 +50,7 @@
 #include "RealmList.h"
 #include "ScriptLoader.h"
 #include "ScriptMgr.h"
-#include "segvcatch.h"
 #include "TCSoap.h"
-#include "ThreadPoolMgr.hpp"
 #include "World.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
@@ -85,35 +85,41 @@ char serviceDescription[] = "LegionCore World of Warcraft emulator world service
 int m_ServiceStatus = -1;
 #endif
 
-boost::asio::io_service _ioService;
-boost::asio::deadline_timer _freezeCheckTimer(_ioService);
+class FreezeDetector
+{
+public:
+    FreezeDetector(Trinity::Asio::IoContext& ioContext, uint32 maxCoreStuckTime)
+        : _timer(ioContext), _worldLoopCounter(0), _lastChangeMsTime(0), _maxCoreStuckTimeInMs(maxCoreStuckTime) { }
 
-std::vector<uint32> _lastMapChangeMsTime;
-std::vector<uint32> _mapLoopCounter;
+    static void Start(std::shared_ptr<FreezeDetector> const& freezeDetector)
+    {
+        freezeDetector->_timer.expires_from_now(boost::posix_time::seconds(5));
+        freezeDetector->_timer.async_wait(std::bind(&FreezeDetector::Handler, std::weak_ptr<FreezeDetector>(freezeDetector), std::placeholders::_1));
+    }
 
-std::vector<uint32> _lastZoneChangeMsTime;
-std::vector<uint32> _zoneLoopCounter;
+    static void Handler(std::weak_ptr<FreezeDetector> freezeDetectorRef, boost::system::error_code const& error);
 
-uint32 _worldLoopCounter(0);
-uint32 _lastChangeMsTime(0);
-uint32 _maxCoreStuckTimeInMs(0);
-uint32 _maxMapStuckTimeInMs(0);
+private:
+    Trinity::Asio::DeadlineTimer _timer;
+    uint32 _worldLoopCounter;
+    uint32 _lastChangeMsTime;
+    uint32 _maxCoreStuckTimeInMs;
+};
 
 void SignalHandler(const boost::system::error_code& error, int signalNumber);
-void FreezeDetectorHandler(const boost::system::error_code& error);
-AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService);
+AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext);
 bool StartDB();
 void StopDB();
 void WorldUpdateLoop();
 void ClearOnlineAccounts();
-void ShutdownThreadPool(std::vector<std::thread>& threadPool);
+void ShutdownCLIThread(std::thread* cliThread);
 bool LoadRealmInfo();
 variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
 
 /// Launch the Trinity server
 extern int main(int argc, char **argv)
 {
-    // signal(SIGABRT, &Trinity::DumpHandler);
+    signal(SIGABRT, &Trinity::AbortHandler);
 
     m_stopEvent = false;
     m_worldCrashChecker = false;
@@ -122,10 +128,12 @@ extern int main(int argc, char **argv)
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
     // exit if help is enabled
-    if (vm.count("help"))
+    if (vm.count("help") || vm.count("version"))
         return 0;
 
     GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+    std::shared_ptr<void> protobufHandle(nullptr, [](void*) { google::protobuf::ShutdownProtobufLibrary(); });
 
 #ifdef _WIN32
     if (configService.compare("install") == 0)
@@ -143,21 +151,30 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
+    std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
+
+    sLog->Initialize(sConfigMgr->GetBoolDefault("Log.Async.Enable", false) ? ioContext.get() : nullptr);
+
     Trinity::Banner::Show("worldserver-daemon", [](char const* text)
     {
-        TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "%s", text);
+        TC_LOG_INFO("server.worldserver", "%s", text);
     }, []()
     {
-        TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
-        TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
-        TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
+        TC_LOG_INFO("server.worldserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
+        TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
+        TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
     }
     );
 
     OpenSSLCrypto::threadsSetup();
+
+    std::shared_ptr<void> opensslHandle(nullptr, [](void*) { OpenSSLCrypto::threadsCleanup(); });
+
     cds::Initialize();
     cds::gc::HP hpGC;
     cds::threading::Manager::attachThread();
+
+    std::shared_ptr<void> cdsHandle(nullptr, [](void*) { cds::threading::Manager::detachThread(); cds::Terminate(); });
 
     // Seed the OpenSSL's PRNG here.
     // That way it won't auto-seed when calling BigNumber::SetRand and slow down the first world login
@@ -170,77 +187,89 @@ extern int main(int argc, char **argv)
     if (!pidFile.empty())
     {
         if (pid = CreatePIDFile(pidFile))
-            TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Daemon PID: %u\n", pid);
+            TC_LOG_INFO("server.worldserver", "Daemon PID: %u\n", pid);
         else
         {
-            TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Cannot create PID file %s.\n", pidFile.c_str());
+            TC_LOG_ERROR("server.worldserver", "Cannot create PID file %s.\n", pidFile.c_str());
             return 1;
         }
     }
 
     // Set signal handlers (this must be done before starting io_service threads, because otherwise they would unblock and exit)
-    boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
-#if PLATFORM == TC_PLATFORM_WINDOWS
+    boost::asio::signal_set signals(*ioContext, SIGINT, SIGTERM);
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     signals.add(SIGBREAK);
 #endif
     signals.async_wait(SignalHandler);
 
     // Start the Boost based thread pool
     int numThreads = sConfigMgr->GetIntDefault("ThreadPool", 1);
-    std::vector<std::thread> threadPool;
+    std::shared_ptr<std::vector<std::thread>> threadPool(new std::vector<std::thread>(), [ioContext](std::vector<std::thread>* del)
+    {
+        ioContext->stop();
+        for (std::thread& thr : *del)
+            thr.join();
+
+        delete del;
+    });
 
     if (numThreads < 1)
         numThreads = 1;
 
     for (int i = 0; i < numThreads; ++i)
-        threadPool.emplace_back(boost::bind(&boost::asio::io_service::run, &_ioService));
+        threadPool->push_back(std::thread([ioContext]() { ioContext->run(); }));
 
     // Set process priority according to configuration settings
     SetProcessPriority("server.worldserver");
 
     // Start the databases
     if (!StartDB())
-    {
-        ShutdownThreadPool(threadPool);
         return 1;
-    }
+
+    std::shared_ptr<void> dbHandle(nullptr, [](void*) { StopDB(); });
 
     // Set server offline (not connectable)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realm.Id.Realm);
    
-    sRealmList->Initialize(_ioService, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 10));
+    sRealmList->Initialize(*ioContext, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 10));
+
+    std::shared_ptr<void> sRealmListHandle(nullptr, [](void*) { sRealmList->Close(); });
+
     LoadRealmInfo();
 
     // Initialize the World
     sScriptMgr->SetScriptLoader(AddScripts);
+    std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*) { sScriptMgr->Unload(); });
+
+    // Initialize the World
     sWorld->SetInitialWorldSettings();
 
-    _lastMapChangeMsTime.resize(sMapMgr->_mapCount - 1, 0); // If mapID > 2000 change this
-    _mapLoopCounter.resize(sMapMgr->_mapCount - 1, 0); // If mapID > 2000 change this
-    _lastZoneChangeMsTime.resize(10000, 0); // If zoneID > 10000 change this
-    _zoneLoopCounter.resize(10000 - 1, 0); // If zoneID > 10000 change this
-
-    // Launch CliRunnable thread
-    std::thread* cliThread = nullptr;
-#ifdef _WIN32
-    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
-#else
-    if (sConfigMgr->GetBoolDefault("Console.Enable", true))
-#endif
+    std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)
     {
-        cliThread = new std::thread(CliThread);
-    }
+        // unload battleground templates before different singletons destroyed
+        sBattlegroundMgr->DeleteAllBattlegrounds();
+
+        //sInstanceSaveMgr->Unload();
+        sOutdoorPvPMgr->Die();                    // unload it before MapManager
+        sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
+    });
 
     // Start the Remote Access port (acceptor) if enabled
     AsyncAcceptor* raAcceptor = nullptr;
     if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
-        raAcceptor = StartRaSocketAcceptor(_ioService);
+        raAcceptor = StartRaSocketAcceptor(*ioContext);
 
     // Start soap serving thread if enabled
-    std::thread* soapThread = nullptr;
+    // Start soap serving thread if enabled
+    std::shared_ptr<std::thread> soapThread;
     if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
     {
-        soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
+        soapThread.reset(new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878))),
+            [](std::thread* thr)
+        {
+            thr->join();
+            delete thr;
+        });
     }
 
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
@@ -249,99 +278,81 @@ extern int main(int argc, char **argv)
     int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
     if (networkThreads <= 0)
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Network.Threads must be greater than 0");
-        return false;
+        TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
+        return 1;
     }
 
-    sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort, networkThreads);
+    if (!sWorldSocketMgr.StartNetwork(*ioContext, worldListener, worldPort, networkThreads))
+    {
+        TC_LOG_ERROR("server.worldserver", "Failed to initialize network");
+        return 1;
+    }
+
+    std::shared_ptr<void> sWorldSocketMgrHandle(nullptr, [](void*)
+    {
+        sWorld->KickAll();                                       // save and kick all players
+        sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
+
+        sWorldSocketMgr.StopNetwork();
+
+        ///- Clean database before leaving
+        ClearOnlineAccounts();
+    });
+
+    // Launch CliRunnable thread
+    std::shared_ptr<std::thread> cliThread;
+#ifdef _WIN32
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
+#else
+    if (sConfigMgr->GetBoolDefault("Console.Enable", true))
+#endif
+    {
+        cliThread.reset(new std::thread(CliThread), &ShutdownCLIThread);
+    }
+
     // Set server online (allow connecting now)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_OFFLINE, realm.Id.Realm);
     realm.PopulationLevel = 0.0f;
     realm.Flags = RealmFlags(realm.Flags & ~uint32(REALM_FLAG_OFFLINE));
 
     // Start the freeze check callback cycle in 5 seconds (cycle itself is 1 sec)
+    std::shared_ptr<FreezeDetector> freezeDetector;
     if (int coreStuckTime = sConfigMgr->GetIntDefault("MaxCoreStuckTime", 0))
     {
-        _maxCoreStuckTimeInMs = coreStuckTime * 1000;
-        _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(5));
-        _freezeCheckTimer.async_wait(FreezeDetectorHandler);
-        TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
-        _maxMapStuckTimeInMs = sConfigMgr->GetIntDefault("MaxMapStuckTime", 60) * 1000;
+        freezeDetector = std::make_shared<FreezeDetector>(*ioContext, coreStuckTime * 1000);
+        FreezeDetector::Start(freezeDetector);
+        TC_LOG_INFO("server.worldserver", "Starting up anti-freeze thread (%u seconds max stuck time)...", coreStuckTime);
     }
 
-    //if (sConfigMgr->GetBoolDefault("Log.Async.Enable", false))
-    {
-        // If logs are supposed to be handled async then we need to pass the io_service into the Log singleton
-        Log::instance(nullptr/*&_ioService*/);
-    }
-
-	// original core loaded message
-    TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
-
-	// custom core loaded script
+    // custom core loaded script
     sScriptMgr->OnStartup();
 
-    if (sConfigMgr->GetBoolDefault("Segvcatch.Enable", false))
-    {
-        segvcatch::init_segv();
-        segvcatch::init_abrt();
-        segvcatch::init_fpe();
-    }
-    else if (sConfigMgr->GetBoolDefault("DumpHandler.Enable", false))
-    {
-        #ifndef WIN32
-        signal(SIGSEGV, &Trinity::DumpHandler);
-        signal(SIGABRT, &Trinity::DumpHandler);
-        signal(SIGFPE, &Trinity::DumpHandler);
-        #endif
-    }
+    // original core loaded message
+    TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", GitRevision::GetFullVersion());
 
     WorldUpdateLoop();
 
     // Shutdown starts here
-    ShutdownThreadPool(threadPool);
+    threadPool.reset();
 
     sScriptMgr->OnShutdown();
 
-    sWorld->KickAll();                                       // save and kick all players
-    sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
-
-    // unload battleground templates before different singletons destroyed
-    sBattlegroundMgr->DeleteAllBattlegrounds();
-
-    sWorldSocketMgr.StopNetwork();
-
-    sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
-
-    sThreadPoolMgr->stop();
-
     sObjectAccessor->UnloadAll();             // unload 'i_player2corpse' storage and remove from world
-    sScriptMgr->Unload();
-    sOutdoorPvPMgr->Die();
-
-    cds::threading::Manager::detachThread();
-    cds::Terminate();
 
     // set server offline
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realm.Id.Realm);
-    sRealmList->Close();
 
-    // Clean up threads if any
-    if (soapThread != nullptr)
-    {
-        soapThread->join();
-        delete soapThread;
-    }
+    TC_LOG_INFO("server.worldserver", "Halting process...");
 
-    delete raAcceptor;
+    // 0 - normal shutdown
+    // 1 - shutdown at error
+    // 2 - restart command used, this code can be used by restarter for restart Trinityd
 
-    ///- Clean database before leaving
-    ClearOnlineAccounts();
+    return World::GetExitCode();
+}
 
-    StopDB();
-
-    TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Halting process...");
-
+void ShutdownCLIThread(std::thread* cliThread)
+{
     if (cliThread != nullptr)
     {
 #ifdef _WIN32
@@ -360,7 +371,7 @@ extern int main(int argc, char **argv)
                 if (!numCharsWritten)
                     errorBuffer = "Unknown error";
 
-                TC_LOG_DEBUG(LOG_FILTER_WORLDSERVER, "Error cancelling I/O of CliThread, error code %u, detail: %s", uint32(errorCode), errorBuffer);
+                TC_LOG_DEBUG("server.worldserver", "Error cancelling I/O of CliThread, error code %u, detail: %s", uint32(errorCode), errorBuffer);
 
                 if (numCharsWritten)
                     LocalFree(errorBuffer);
@@ -403,86 +414,34 @@ extern int main(int argc, char **argv)
         cliThread->join();
         delete cliThread;
     }
-
-    OpenSSLCrypto::threadsCleanup();
-    google::protobuf::ShutdownProtobufLibrary();
-
-    // 0 - normal shutdown
-    // 1 - shutdown at error
-    // 2 - restart command used, this code can be used by restarter for restart Trinityd
-
-    return World::GetExitCode();
 }
 
 bool LoadRealmInfo()
 {
-    boost::asio::ip::tcp::resolver resolver(_ioService);
-    boost::asio::ip::tcp::resolver::iterator end;
-
-    QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild, Region, Battlegroup FROM realmlist WHERE id = %u", realm.Id.Realm);
-    if (!result)
-        return false;
-
-    Field* fields = result->Fetch();
-    realm.Name = fields[1].GetString();
-    boost::asio::ip::tcp::resolver::query externalAddressQuery(tcp::v4(), fields[2].GetString(), "", boost::asio::ip::resolver_query_base::all_matching);
-
-    boost::system::error_code ec;
-    boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
-    if (endPoint == end || ec)
+    if (Realm const* realmListRealm = sRealmList->GetRealm(realm.Id))
     {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Could not resolve address %s", fields[2].GetString().c_str());
-        return false;
+        realm.Id = realmListRealm->Id;
+        realm.Build = sConfigMgr->GetIntDefault("Game.Build.Version", 26972);
+        realm.ExternalAddress = std::make_unique<boost::asio::ip::address>(*realmListRealm->ExternalAddress);
+        realm.LocalAddress = std::make_unique<boost::asio::ip::address>(*realmListRealm->LocalAddress);
+        realm.LocalSubnetMask = std::make_unique<boost::asio::ip::address>(*realmListRealm->LocalSubnetMask);
+        realm.Port = realmListRealm->Port;
+        realm.Name = realmListRealm->Name;
+        realm.Type = realmListRealm->Type;
+        realm.Flags = realmListRealm->Flags;
+        realm.Timezone = realmListRealm->Timezone;
+        realm.AllowedSecurityLevel = realmListRealm->AllowedSecurityLevel;
+        realm.PopulationLevel = realmListRealm->PopulationLevel;
+        return true;
     }
 
-    realm.ExternalAddress = Trinity::make_unique<boost::asio::ip::address>((*endPoint).endpoint().address());
-
-    boost::asio::ip::tcp::resolver::query localAddressQuery(tcp::v4(), fields[3].GetString(), "", boost::asio::ip::resolver_query_base::all_matching);
-    endPoint = resolver.resolve(localAddressQuery, ec);
-    if (endPoint == end || ec)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Could not resolve address %s", fields[3].GetString().c_str());
-        return false;
-    }
-
-    realm.LocalAddress = Trinity::make_unique<boost::asio::ip::address>((*endPoint).endpoint().address());
-
-    boost::asio::ip::tcp::resolver::query localSubmaskQuery(tcp::v4(), fields[4].GetString(), "", boost::asio::ip::resolver_query_base::all_matching);
-    endPoint = resolver.resolve(localSubmaskQuery, ec);
-    if (endPoint == end || ec)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Could not resolve address %s", fields[4].GetString().c_str());
-        return false;
-    }
-
-    realm.LocalSubnetMask = Trinity::make_unique<boost::asio::ip::address>((*endPoint).endpoint().address());
-
-    realm.Port = fields[5].GetUInt16();
-    realm.Type = fields[6].GetUInt8();
-    realm.Flags = RealmFlags(fields[7].GetUInt8());
-    realm.Timezone = fields[8].GetUInt8();
-    realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
-    realm.PopulationLevel = fields[10].GetFloat();
-    realm.Id.Region = fields[12].GetUInt8();
-    realm.Id.Site = fields[13].GetUInt8();
-    realm.Build = sConfigMgr->GetIntDefault("Game.Build.Version", 26972);
-    return true;
-}
-
-void ShutdownThreadPool(std::vector<std::thread>& threadPool)
-{
-    _ioService.stop();
-
-    for (auto& thread : threadPool)
-        thread.join();
+    return false;
 }
 
 void WorldUpdateLoop()
 {
     uint32 realCurrTime = 0;
     uint32 realPrevTime = getMSTime();
-
-    uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
 
     ///- While we have not World::m_stopEvent, update the world
     while (!World::IsStopped())
@@ -495,18 +454,11 @@ void WorldUpdateLoop()
         sWorld->Update(diff);
         realPrevTime = realCurrTime;
 
-        // diff (D0) include time of previous sleep (d0) + tick time (t0)
-        // we want that next d1 + t1 == WORLD_SLEEP_CONST
-        // we can't know next t1 and then can use (t0 + d1) == WORLD_SLEEP_CONST requirement
-        // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
-        if (diff <= WORLD_SLEEP_CONST + prevSleepTime)
-        {
-            prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
+        uint32 executionTimeDiff = getMSTimeDiff(realCurrTime, getMSTime());
 
-            std::this_thread::sleep_for(Milliseconds(prevSleepTime));
-        }
-        else
-            prevSleepTime = 0;
+        // we know exactly how long it took to update the world, if the update took less than WORLD_SLEEP_CONST, sleep for WORLD_SLEEP_CONST - world update time
+        if (executionTimeDiff < WORLD_SLEEP_CONST)
+            std::this_thread::sleep_for(std::chrono::milliseconds(WORLD_SLEEP_CONST - executionTimeDiff));
 
 #ifdef _WIN32
         if (m_ServiceStatus == 0)
@@ -524,149 +476,39 @@ void SignalHandler(const boost::system::error_code& error, int /*signalNumber*/)
         World::StopNow(SHUTDOWN_EXIT_CODE);
 }
 
-void FreezeDetectorHandler(const boost::system::error_code& error)
+void FreezeDetector::Handler(std::weak_ptr<FreezeDetector> freezeDetectorRef, boost::system::error_code const& error)
 {
-    if (!error && !m_worldCrashChecker)
+    if (!error)
     {
-        uint32 curtime = getMSTime();
+        if (std::shared_ptr<FreezeDetector> freezeDetector = freezeDetectorRef.lock())
+        {
+            uint32 curtime = getMSTime();
 
-        uint32 worldLoopCounter = World::m_worldLoopCounter;
-        if (_worldLoopCounter != worldLoopCounter)
-        {
-            _lastChangeMsTime = curtime;
-            _worldLoopCounter = worldLoopCounter;
-        }
-        // possible freeze
-        else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
-        {
-            TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "World Thread hangs, kicking out server!");
-            ASSERT(false);
-        }
-
-        for (uint32 i = 0; i < _lastMapChangeMsTime.size(); ++i)
-        {
-            if (Map* map = sMapMgr->FindBaseMap(i))
+            uint32 worldLoopCounter = World::m_worldLoopCounter;
+            if (freezeDetector->_worldLoopCounter != worldLoopCounter)
             {
-                if (map->CanCreatedZone())
-                {
-
-                    MapInstanced* instances = reinterpret_cast<MapInstanced*>(map);
-                    if (!instances)
-                        continue;
-                    for (InstancedMaps::iterator iter = instances->m_InstancedMaps.begin(); iter != instances->m_InstancedMaps.end(); ++iter)
-                    {
-                        if (Map* instanced = iter->second)
-                        {
-                            uint32 lastMsTime = _lastZoneChangeMsTime[instanced->GetInstanceId()];
-                            uint32 mapLoopCounter = instanced->m_mapLoopCounter;
-                            if (_zoneLoopCounter[instanced->GetInstanceId()] != mapLoopCounter || !mapLoopCounter)
-                            {
-                                _lastZoneChangeMsTime[instanced->GetInstanceId()] = curtime;
-                                _zoneLoopCounter[instanced->GetInstanceId()] = mapLoopCounter;
-                            }
-                            // possible freeze
-                            else if (getMSTimeDiff(lastMsTime, curtime) > _maxMapStuckTimeInMs)
-                            {
-                                TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Map Thread hangs, kicking map %u zone %u diff %u thread!", i, instanced->GetInstanceId(), getMSTimeDiff(lastMsTime, curtime));
-                                #ifndef WIN32
-                                time_t tt = SystemClock::to_time_t(SystemClock::now());
-                                std::tm aTm;
-                                localtime_r(&tt, &aTm);
-                                sLog->outFreeze("FreezeDetector pid %u mapid %u zone %u", GetPID(), i, instanced->GetInstanceId());
-
-                                // Uncomment this when use exe without gdb
-                                /*char buf[20];
-                                snprintf(buf, 20, "%04d-%02d-%02d_%02d-%02d-%02d", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec);
-                                std::string buffer("gdb --pid " + std::to_string(GetPID()) + " -x freeze.gdb --batch>./errorlog/" + std::string(buf) + "_freeze_mapid_" + std::to_string(i) + ".log 2>./errorlog/" + std::string(buf) + "_freeze_mapid_" + std::to_string(i) + ".err");
-                                system(buffer.c_str());*/
-                                #endif
-
-                                instanced->TerminateThread();
-
-                                if (std::thread* _thread = instances->_zoneThreads[instanced->GetInstanceId()])
-                                {
-                                    sLog->outFreeze("Map %u zone %u detach thread", i, instanced->GetInstanceId());
-                                    _thread->detach();
-                                    sLog->outFreeze("Map %u zone %u cancel thread", i, instanced->GetInstanceId());
-                                    #ifndef WIN32
-                                    pthread_cancel(_thread->native_handle());
-                                    #else
-                                    TerminateThread(_thread->native_handle(), 0);
-                                    #endif
-                                    sLog->outFreeze("Map %u zone %u delete thread", i, instanced->GetInstanceId());
-                                    delete _thread;
-                                }
-                                sLog->outFreeze("Map %u zone %u start new thread", i, instanced->GetInstanceId());
-                                instances->_zoneThreads[instanced->GetInstanceId()] = new std::thread(&Map::UpdateLoop, instanced, instanced->GetInstanceId());
-                                _lastZoneChangeMsTime[instanced->GetInstanceId()] = curtime;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    uint32 mapLoopCounter = map->m_mapLoopCounter;
-                    if (_mapLoopCounter[i] != mapLoopCounter)
-                    {
-                        _lastMapChangeMsTime[i] = curtime;
-                        _mapLoopCounter[i] = mapLoopCounter;
-                    }
-                    // possible freeze
-                    else if (getMSTimeDiff(_lastMapChangeMsTime[i], curtime) > _maxMapStuckTimeInMs)
-                    {
-                        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Map Thread hangs, kicking map %u thread!", i);
-                        #ifndef WIN32
-                        time_t tt = SystemClock::to_time_t(SystemClock::now());
-                        std::tm aTm;
-                        localtime_r(&tt, &aTm);
-                        sLog->outFreeze("FreezeDetector pid %u mapid %u", GetPID(), i);
-
-                        // Uncomment this when use exe without gdb
-                        /*char buf[20];
-                        snprintf(buf, 20, "%04d-%02d-%02d_%02d-%02d-%02d", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec);
-                        std::string buffer("gdb --pid " + std::to_string(GetPID()) + " -x freeze.gdb --batch>./errorlog/" + std::string(buf) + "_freeze_mapid_" + std::to_string(i) + ".log 2>./errorlog/" + std::string(buf) + "_freeze_mapid_" + std::to_string(i) + ".err");
-                        system(buffer.c_str());*/
-                        #endif
-
-                        map->TerminateThread();
-
-                        if (std::thread* _thread = sMapMgr->_mapThreads[i])
-                        {
-                            sLog->outFreeze("Map %u detach thread", i);
-                            _thread->detach();
-                            sLog->outFreeze("Map %u cancel thread", i);
-                            #ifndef WIN32
-                            pthread_cancel(_thread->native_handle());
-                            #else
-                            TerminateThread(_thread->native_handle(), 0);
-                            #endif
-                            sLog->outFreeze("Map %u delete thread", i);
-                            delete _thread;
-                        }
-                        sLog->outFreeze("Map %u start new thread", i);
-                        sMapMgr->_mapThreads[i] = new std::thread(&Map::UpdateLoop, map, i);
-                        _lastMapChangeMsTime[i] = curtime;
-                    }
-                }
+                freezeDetector->_lastChangeMsTime = curtime;
+                freezeDetector->_worldLoopCounter = worldLoopCounter;
             }
-            else
+            // possible freeze
+            else if (getMSTimeDiff(freezeDetector->_lastChangeMsTime, curtime) > freezeDetector->_maxCoreStuckTimeInMs)
             {
-                _lastMapChangeMsTime[i] = curtime;
-                _mapLoopCounter[i] = 0;
+                TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
+                ABORT();
             }
-        }
 
-        _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(1));
-        _freezeCheckTimer.async_wait(FreezeDetectorHandler);
+            freezeDetector->_timer.expires_from_now(boost::posix_time::seconds(1));
+            freezeDetector->_timer.async_wait(std::bind(&FreezeDetector::Handler, freezeDetectorRef, std::placeholders::_1));
+        }
     }
 }
 
-AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
+AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
 
-    AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
+    AsyncAcceptor* acceptor = new AsyncAcceptor(ioContext, raListener, raPort);
     acceptor->AsyncAccept<RASession>();
     return acceptor;
 }
@@ -676,116 +518,25 @@ bool StartDB()
 {
     MySQL::Library_Init();
 
-    std::string dbString = sConfigMgr->GetStringDefault("WorldDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "World database not specified in configuration file");
-        return false;
-    }
+    DatabaseLoader loader("server.worldserver", DatabaseLoader::DATABASE_NONE);
+    loader
+        .AddDatabase(LoginDatabase, "Login")
+        .AddDatabase(CharacterDatabase, "Character")
+        .AddDatabase(WorldDatabase, "World")
+        .AddDatabase(HotfixDatabase, "Hotfix");
 
-    uint8 asyncThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "World database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
+    if (!loader.Load())
         return false;
-    }
-
-    uint8 synchThreads = uint8(sConfigMgr->GetIntDefault("WorldDatabase.SynchThreads", 1));
-    ///- Initialize the world database
-    if (!WorldDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Cannot connect to world database %s", dbString.c_str());
-        return false;
-    }
-
-    ///- Get character database info from configuration file
-    dbString = sConfigMgr->GetStringDefault("CharacterDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Character database not specified in configuration file");
-        return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("CharacterDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Character database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("CharacterDatabase.SynchThreads", 2));
-
-    ///- Initialize the Character database
-    if (!CharacterDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Cannot connect to Character database %s", dbString.c_str());
-        return false;
-    }
-
-    ///- Get login database info from configuration file
-    dbString = sConfigMgr->GetStringDefault("LoginDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Login database not specified in configuration file");
-        return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("LoginDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Login database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("LoginDatabase.SynchThreads", 1));
-    ///- Initialise the login database
-    if (!LoginDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Cannot connect to login database %s", dbString.c_str());
-        return false;
-    }
-
-    dbString = sConfigMgr->GetStringDefault("HotfixDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Hotfix database not specified in configuration file");
-        return false;
-    }
-
-    asyncThreads = uint8(sConfigMgr->GetIntDefault("HotfixDatabase.WorkerThreads", 1));
-    if (asyncThreads < 1 || asyncThreads > 32)
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Hotfix database: invalid number of worker threads specified. "
-            "Please pick a value between 1 and 32.");
-        return false;
-    }
-
-    synchThreads = uint8(sConfigMgr->GetIntDefault("HotfixDatabase.SynchThreads", 1));
-    if (!HotfixDatabase.Open(dbString, asyncThreads, synchThreads))
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Cannot connect to world database %s", dbString.c_str());
-        return false;
-    }
-
-    dbString = sConfigMgr->GetStringDefault("HotfixDatabaseInfo", "");
-    if (dbString.empty())
-    {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Hotfix database not specified in configuration file");
-        return false;
-    }
 
     ///- Get the realm Id from the configuration file
     realm.Id.Realm = sConfigMgr->GetIntDefault("RealmID", 0);
     if (!realm.Id.Realm)
     {
-        TC_LOG_ERROR(LOG_FILTER_WORLDSERVER, "Realm ID not defined in configuration file");
+        TC_LOG_ERROR("server.worldserver", "Realm ID not defined in configuration file");
         return false;
     }
 
-    TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Realm running as realm ID %u", realm.Id.Realm);
+    TC_LOG_INFO("server.worldserver", "Realm running as realm ID %u", realm.Id.Realm);
 
     ///- Clean the database before starting
     ClearOnlineAccounts();
@@ -799,7 +550,7 @@ bool StartDB()
     
     sWorld->LoadDBVersion();
 
-    TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "Using World DB: %s", sWorld->GetDBVersion());
+    TC_LOG_INFO("server.worldserver", "Using World DB: %s", sWorld->GetDBVersion());
     return true;
 }
 
