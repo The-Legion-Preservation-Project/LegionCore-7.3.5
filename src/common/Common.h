@@ -101,15 +101,15 @@ enum LocaleConstant : uint8
     LOCALE_ptBR = 10,
     LOCALE_itIT = 11,
 
-    TOTAL_LOCALES
+    MAX_LOCALES
 };
 
 const uint8 OLD_TOTAL_LOCALES = 9; /// @todo convert in simple system
 #define DEFAULT_LOCALE LOCALE_enUS
 
-#define MAX_LOCALES 11
+#define TOTAL_LOCALES 11
 
-TC_COMMON_API extern char const* localeNames[TOTAL_LOCALES];
+TC_COMMON_API extern char const* localeNames[MAX_LOCALES];
 
 TC_COMMON_API LocaleConstant GetLocaleByName(std::string const& name);
 
@@ -117,7 +117,7 @@ TC_COMMON_API LocaleConstant GetLocaleByName(std::string const& name);
 
 struct TC_COMMON_API LocalizedString
 {
-    char const* Str[TOTAL_LOCALES];
+    char const* Str[MAX_LOCALES];
 
     LocalizedString();
     explicit LocalizedString(char const* val);

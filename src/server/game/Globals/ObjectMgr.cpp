@@ -6029,7 +6029,6 @@ bool ObjectMgr::LoadTrinityStrings(const char* table, int32 min_value, int32 max
     }
 
     QueryResult result = WorldDatabase.PQuery("SELECT entry, content_default, content_loc1, content_loc2, content_loc3, content_loc4, content_loc5, content_loc6, content_loc7, content_loc8, content_loc9, content_loc10 FROM %s", table);
-
     if (!result)
     {
         if (min_value == MIN_TRINITY_STRING_ID)              // error only in case internal strings
