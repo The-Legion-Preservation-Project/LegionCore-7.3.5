@@ -24,6 +24,7 @@
 #include "Implementation/CharacterDatabase.h"
 #include "Implementation/HotfixDatabase.h"
 #include "Log.h"
+#include "MySQLPreparedStatement.h"
 #include "PreparedStatement.h"
 #include "ProducerConsumerQueue.h"
 #include "QueryCallback.h"
@@ -31,9 +32,7 @@
 #include "QueryResult.h"
 #include "SQLOperation.h"
 #include "Transaction.h"
-#ifdef _WIN32 // hack for broken mysql.h not including the correct winsock header for SOCKET definition, fixed in 5.7
-#include <winsock2.h>
-#endif
+#include "MySQLWorkaround.h"
 #include <mysql.h>
 #include <mysqld_error.h>
 
@@ -331,7 +330,7 @@ uint32 DatabaseWorkerPool<T>::OpenConnections(InternalIndex type, uint8 numConne
             _connections[type].clear();
             return error;
         }
-        else if (mysql_get_server_version(connection->GetHandle()) < MIN_MYSQL_SERVER_VERSION)
+        else if (connection->GetServerVersion() < MIN_MYSQL_SERVER_VERSION)
         {
             TC_LOG_ERROR("sql.driver", "TrinityCore does not support MySQL versions below 5.1");
             return 1;
@@ -352,8 +351,7 @@ unsigned long DatabaseWorkerPool<T>::EscapeString(char *to, const char *from, un
     if (!to || !from || !length)
         return 0;
 
-    return mysql_real_escape_string(
-        _connections[IDX_SYNCH].front()->GetHandle(), to, from, length);
+    return _connections[IDX_SYNCH].front()->EscapeString(to, from, length);
 }
 
 template <class T>

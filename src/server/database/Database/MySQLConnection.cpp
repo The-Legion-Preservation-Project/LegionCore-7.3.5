@@ -17,16 +17,17 @@
 
 #include "MySQLConnection.h"
 #include "Common.h"
+#include "DatabaseEnvFwd.h"
 #include "DatabaseWorker.h"
 #include "Log.h"
+#include "MySQLHacks.h"
+#include "MySQLPreparedStatement.h"
 #include "PreparedStatement.h"
 #include "QueryResult.h"
 #include "Timer.h"
 #include "Transaction.h"
 #include "Util.h"
-#ifdef _WIN32 // hack for broken mysql.h not including the correct winsock header for SOCKET definition, fixed in 5.7
-#include <winsock2.h>
-#endif
+#include "MySQLWorkaround.h"
 #include <errmsg.h>
 #include <mysql.h>
 #include <mysqld_error.h>
@@ -130,8 +131,8 @@ uint32 MySQLConnection::Open()
     }
     #endif
 
-    m_Mysql = mysql_real_connect(mysqlInit, m_connectionInfo.host.c_str(), m_connectionInfo.user.c_str(),
-        m_connectionInfo.password.c_str(), m_connectionInfo.database.c_str(), port, unix_socket, 0);
+    m_Mysql = reinterpret_cast<MySQLHandle*>(mysql_real_connect(mysqlInit, m_connectionInfo.host.c_str(), m_connectionInfo.user.c_str(),
+        m_connectionInfo.password.c_str(), m_connectionInfo.database.c_str(), port, unix_socket, 0));
 
     if (m_Mysql)
     {
@@ -243,7 +244,7 @@ bool MySQLConnection::Execute(PreparedStatement* stmt)
     }
 }
 
-bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint64* pRowCount, uint32* pFieldCount)
+bool MySQLConnection::_Query(PreparedStatement* stmt, MySQLResult **pResult, uint64* pRowCount, uint32* pFieldCount)
 {
     if (!m_Mysql)
         return false;
@@ -291,7 +292,7 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
 
         m_mStmt->ClearParameters();
 
-        *pResult = mysql_stmt_result_metadata(msql_STMT);
+        *pResult = reinterpret_cast<MySQLResult*>(mysql_stmt_result_metadata(msql_STMT));
         *pRowCount = mysql_stmt_num_rows(msql_STMT);
         *pFieldCount = mysql_stmt_field_count(msql_STMT);
 
@@ -305,8 +306,8 @@ ResultSet* MySQLConnection::Query(const char* sql)
     if (!sql)
         return NULL;
 
-    MYSQL_RES *result = NULL;
-    MYSQL_FIELD *fields = NULL;
+    MySQLResult *result = NULL;
+    MySQLField *fields = NULL;
     uint64 rowCount = 0;
     uint32 fieldCount = 0;
 
@@ -316,7 +317,7 @@ ResultSet* MySQLConnection::Query(const char* sql)
     return new ResultSet(result, fields, rowCount, fieldCount);
 }
 
-bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD **pFields, uint64* pRowCount, uint32* pFieldCount)
+bool MySQLConnection::_Query(const char* sql, MySQLResult **pResult, MySQLField **pFields, uint64* pRowCount, uint32* pFieldCount)
 {
     if (!m_Mysql)
         return false;
@@ -338,7 +339,7 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
         else
             TC_LOG_DEBUG("sql.sql", "[%u ms] SQL: %s", getMSTimeDiff(_s, getMSTime()), sql);
 
-        *pResult = mysql_store_result(m_Mysql);
+        *pResult = reinterpret_cast<MySQLResult*>(mysql_store_result(m_Mysql));
         *pRowCount = mysql_affected_rows(m_Mysql);
         *pFieldCount = mysql_field_count(m_Mysql);
     }
@@ -352,7 +353,7 @@ bool MySQLConnection::_Query(const char *sql, MYSQL_RES **pResult, MYSQL_FIELD *
         return false;
     }
 
-    *pFields = mysql_fetch_fields(*pResult);
+    *pFields = reinterpret_cast<MySQLField*>(mysql_fetch_fields(*pResult));
 
     return true;
 }
@@ -423,9 +424,19 @@ int MySQLConnection::ExecuteTransaction(SQLTransaction& transaction)
     return 0;
 }
 
+size_t MySQLConnection::EscapeString(char* to, const char* from, size_t length)
+{
+    return mysql_real_escape_string(m_Mysql, to, from, length);
+}
+
 void MySQLConnection::Ping()
 {
     mysql_ping(m_Mysql);
+}
+
+uint32 MySQLConnection::GetServerVersion() const
+{
+    return mysql_get_server_version(m_Mysql);
 }
 
 uint32 MySQLConnection::GetLastError()
@@ -485,14 +496,14 @@ void MySQLConnection::PrepareStatement(uint32 index, const char* sql, Connection
         }
         else
         {
-            m_stmts[index] = Trinity::make_unique<MySQLPreparedStatement>(stmt);
+            m_stmts[index] = Trinity::make_unique<MySQLPreparedStatement>(reinterpret_cast<MySQLStmt*>(stmt), sql);
         }
     }
 }
 
 PreparedResultSet* MySQLConnection::Query(PreparedStatement* stmt)
 {
-    MYSQL_RES *result = NULL;
+    MySQLResult *result = NULL;
     uint64 rowCount = 0;
     uint32 fieldCount = 0;
 
@@ -519,7 +530,7 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo, uint8 attempts /*= 5*/)
             {
                 TC_LOG_ERROR("sql.sql", "Lost the connection to the MySQL server!");
 
-                mysql_close(GetHandle());
+                mysql_close(m_Mysql);
                 m_Mysql = nullptr;
             }
 

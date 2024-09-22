@@ -17,6 +17,7 @@
 
 #include "Field.h"
 #include "Log.h"
+#include "MySQLHacks.h"
 
 Field::Field()
 {
@@ -338,7 +339,7 @@ static char const* FieldTypeToString(enum_field_types type)
     }
 }
 
-void Field::SetMetadata(MYSQL_FIELD* field, uint32 fieldIndex)
+void Field::SetMetadata(MySQLField* field, uint32 fieldIndex)
 {
     meta.TableName = field->org_table;
     meta.TableAlias = field->table;
