@@ -485,7 +485,7 @@ uint32 Warden::CalcBanTime()
     uint32 accountId = _session->GetAccountId();
     uint32 banTime = 72 * HOUR;
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -524,7 +524,7 @@ uint32 Warden::GetBanTime()
     uint32 accountId = _session->GetAccountId();
     uint32 banTime = 72 * HOUR;
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
