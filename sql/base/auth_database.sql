@@ -29,7 +29,7 @@ CREATE TABLE `account` (
   `failed_logins` int(10) unsigned NOT NULL DEFAULT '0',
   `locked` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `lock_country` varchar(2) NOT NULL DEFAULT '00',
-  `last_login` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `last_login` timestamp NULL DEFAULT NULL,
   `online` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `expansion` tinyint(3) unsigned NOT NULL DEFAULT '6',
   `mutetime` bigint(20) NOT NULL DEFAULT '0',
@@ -57,7 +57,7 @@ CREATE TABLE `account` (
 /*Data for the table `account` */
 
 insert  into `account`(`id`,`username`,`sha_pass_hash`,`sessionkey`,`v`,`s`,`email`,`joindate`,`last_ip`,`failed_logins`,`locked`,`lock_country`,`last_login`,`online`,`expansion`,`mutetime`,`locale`,`os`,`recruiter`,`battlenet_account`,`battlenet_index`,`mutereason`,`muteby`,`AtAuthFlag`,`coins`,`hwid`) values 
-(1,'GM@GM','586EF64D6BCF71292B55C8805E465172D876E0C7','','','','','2020-03-30 12:36:05','127.0.0.1',0,0,'00','0000-00-00 00:00:00',0,6,0,0,'',0,1,NULL,'','',0,0,0);
+(1,'GM@GM','586EF64D6BCF71292B55C8805E465172D876E0C7','','','','','2020-03-30 12:36:05','127.0.0.1',0,0,'00',NULL,0,6,0,0,'',0,1,NULL,'','',0,0,0);
 
 /*Table structure for table `account_access` */
 
@@ -553,7 +553,7 @@ CREATE TABLE `store_category_locales` (
   `description_it` varchar(255) NOT NULL DEFAULT '',
   `description_ua` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`category`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC ;
 
 /*Data for the table `store_category_locales` */
 
@@ -617,7 +617,7 @@ CREATE TABLE `store_history` (
   `trans_project` varchar(255) NOT NULL DEFAULT '',
   `trans_realm` int(11) unsigned NOT NULL DEFAULT '0',
   `dt_buy` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `dt_return` timestamp NULL DEFAULT '0000-00-00 00:00:00',
+  `dt_return` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `item_guid` (`item_guid`) USING BTREE,
   KEY `realm` (`realm`) USING BTREE,
