@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -73,15 +73,15 @@ struct PreparedStatementData
 class MySQLPreparedStatement;
 
 //- Upper-level class that is used in code
-class TC_DATABASE_API PreparedStatement
+class TC_DATABASE_API PreparedStatementBase
 {
     friend class PreparedStatementTask;
     friend class MySQLPreparedStatement;
     friend class MySQLConnection;
 
     public:
-        explicit PreparedStatement(uint32 index);
-        ~PreparedStatement();
+        explicit PreparedStatementBase(uint32 index, uint8 capacity);
+        virtual ~PreparedStatementBase();
 
         void setBool(const uint8 index, const bool value);
         void setUInt8(const uint8 index, const uint8 value);
@@ -101,29 +101,44 @@ class TC_DATABASE_API PreparedStatement
         uint32 GetIndex() const { return m_index; }
 
     protected:
-        void BindParameters();
+        void BindParameters(MySQLPreparedStatement* stmt);
 
     protected:
         MySQLPreparedStatement* m_stmt;
         uint32 m_index;
-        std::vector<PreparedStatementData> statement_data;    //- Buffer of parameters, not tied to MySQL in any way yet
 
-        PreparedStatement(PreparedStatement const& right) = delete;
-        PreparedStatement& operator=(PreparedStatement const& right) = delete;
+        //- Buffer of parameters, not tied to MySQL in any way yet
+        std::vector<PreparedStatementData> statement_data;
+
+        PreparedStatementBase(PreparedStatementBase const& right) = delete;
+        PreparedStatementBase& operator=(PreparedStatementBase const& right) = delete;
+};
+
+template<typename T>
+class PreparedStatement : public PreparedStatementBase
+{
+public:
+    explicit PreparedStatement(uint32 index, uint8 capacity) : PreparedStatementBase(index, capacity)
+    {
+    }
+
+private:
+    PreparedStatement(PreparedStatement const& right) = delete;
+    PreparedStatement& operator=(PreparedStatement const& right) = delete;
 };
 
 //- Lower-level class, enqueuable operation
 class TC_DATABASE_API PreparedStatementTask : public SQLOperation
 {
     public:
-        PreparedStatementTask(PreparedStatement* stmt, bool async = false);
+        PreparedStatementTask(PreparedStatementBase* stmt, bool async = false);
         ~PreparedStatementTask();
 
         bool Execute() override;
         PreparedQueryResultFuture GetFuture() { return m_result->get_future(); }
 
     protected:
-        PreparedStatement* m_stmt;
+        PreparedStatementBase* m_stmt;
         bool m_has_result;
         PreparedQueryResultPromise* m_result;
 };
