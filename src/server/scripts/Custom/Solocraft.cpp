@@ -64,7 +64,7 @@ class SolocraftConfig
             SoloCraftAnnounceModule = sConfigMgr->GetBoolDefault("Solocraft.Announce", 1);
             SoloCraftDebuffEnable = sConfigMgr->GetBoolDefault("SoloCraft.Debuff.Enable", 1);
             SoloCraftSpellMult = sConfigMgr->GetFloatDefault("SoloCraft.Spellpower.Mult", 2.5);
-            SoloCraftStatsMult = sConfigMgr->GetFloatDefault("SoloCraft.Stats.Mult", 20.0);
+            SoloCraftStatsMult = sConfigMgr->GetFloatDefault("SoloCraft.Stats.Mult", 50.0);
 
             classes =
             {
@@ -449,12 +449,32 @@ class solocraft_system_announce : public PlayerScript
 //            }
         }
 
-        void OnGiveXP(Player* /*player*/, uint32& amount, Unit* /*victim*/) override
+        void OnGiveXP(Player* player, uint32& amount, Unit* victim) override
         {
             if (solocraftConfig.SolocraftXPBalancingEnabled)
             {
-                amount = uint32(amount * solocraftConfig.SoloCraftXPMod);
+                Map* map = player->GetMap();
+                if (map && map->IsDungeon())
+                {
+                    // Ensure that the players always get the same XP, even when entering the dungeon alone
+                    auto maxPlayerCount= map->ToInstanceMap()->GetMaxPlayers();
+                    auto currentPlayerCount = GetNumInGroup(player);
+                    amount = uint32(amount * solocraftConfig.SoloCraftXPMod * ((float) currentPlayerCount / maxPlayerCount));
+                }
             }
+        }
+
+        static int GetNumInGroup(Player* player)
+        {
+            int numInGroup = 1;
+            Group* group = player->GetGroup();
+
+            if (group)
+            {
+                Group::MemberSlotList const& groupMembers = group->GetMemberSlots();
+                numInGroup = groupMembers.size();
+            }
+            return numInGroup;
         }
 
     protected:
