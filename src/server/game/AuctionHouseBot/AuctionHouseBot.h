@@ -38,13 +38,6 @@ enum AuctionQuality
     AUCTION_QUALITY_YELLOW  = ITEM_QUALITY_ARTIFACT,
 };
 
-enum AuctionHouses
-{
-    AUCTIONHOUSE_ALLIANCE = 2,
-    AUCTIONHOUSE_HORDE = 6,
-    AUCTIONHOUSE_NEUTRAL = 7
-};
-
 #define MAX_AUCTION_QUALITY 7
 
 enum AuctionHouseType

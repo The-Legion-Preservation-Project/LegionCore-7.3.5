@@ -44,7 +44,7 @@ void WorldSession::SendAuctionHello(ObjectGuid guid, Creature* unit)
         return;
     }
 
-    AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->getFaction(), nullptr);
+    AuctionHouseEntry const* ahEntry = AuctionHouseMgr::GetAuctionHouseEntry(unit->getFaction());
     if (!ahEntry)
         return;
 
@@ -119,8 +119,7 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
         return;
     }
 
-    uint32 houseId = 0;
-    AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(creature->getFaction(), &houseId);
+    AuctionHouseEntry const* auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(creature->getFaction());
     if (!auctionHouseEntry)
     {
         TC_LOG_DEBUG("network", "WORLD: HandleAuctionSellItem - Unit (GUID: %u) has wrong faction.", packet.Auctioneer.GetGUIDLow());
@@ -226,9 +225,30 @@ void WorldSession::HandleAuctionSellItem(WorldPackets::AuctionHouse::AuctionSell
         AH->Id = sObjectMgr->GenerateAuctionID();
 
         if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
-            AH->auctioneer = 35606;
+            AH->houseId = AUCTIONHOUSE_NEUTRAL;
         else
-            AH->auctioneer = packet.Auctioneer.GetEntry();
+        {
+            CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(creature->GetDBTableGUIDLow());
+            if (!auctioneerData)
+            {
+                TC_LOG_ERROR("misc", "Data for auctioneer not found (%s)", packet.Auctioneer.ToString().c_str());
+                SendAuctionCommandResult(nullptr, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
+                delete AH;
+                return;
+            }
+
+            CreatureTemplate const* auctioneerInfo = sObjectMgr->GetCreatureTemplate(auctioneerData->id);
+            if (!auctioneerInfo)
+            {
+                TC_LOG_ERROR("misc", "Non existing auctioneer (%s)", packet.Auctioneer.ToString().c_str());
+                SendAuctionCommandResult(nullptr, AUCTION_SELL_ITEM, ERR_AUCTION_DATABASE_ERROR);
+                delete AH;
+                return;
+            }
+
+            AuctionHouseEntry const* AHEntry = sAuctionMgr->GetAuctionHouseEntry(auctioneerInfo->faction);
+            AH->houseId = AHEntry->ID;
+        }
 
         // Required stack size of auction matches to current item stack size, just move item to auctionhouse
         if (packet.Items.size() == 1 && item->GetCount() == packet.Items[0].UseCount)
