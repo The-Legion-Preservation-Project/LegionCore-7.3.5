@@ -78,12 +78,12 @@ struct AuctionEntry
     ObjectGuid::LowType itemGUIDLow;
     uint32 itemEntry;
     uint32 itemCount;
-    ObjectGuid::LowType owner;
+    ObjectGuid Owner;
+    ObjectGuid Bidder;
     uint64 startbid;                                        //maybe useless
     uint64 bid;
     uint64 buyout;
     time_t expire_time;
-    ObjectGuid::LowType bidder;
     uint32 deposit;                                         //deposit can be calculated only when creating auction
     AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
     uint32 factionTemplateId;
@@ -181,6 +181,8 @@ class AuctionHouseMgr
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
 
         Item* GetAItem(ObjectGuid::LowType const& id);
+
+        static std::string BuildAuctionWonMailBody(ObjectGuid guid, uint64 bid, uint64 buyout);
 
         //auction messages
         void SendAuctionWonMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
