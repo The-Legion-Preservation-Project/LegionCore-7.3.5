@@ -172,7 +172,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction, CharacterDatabas
             bidder->UpdateAchievementCriteria(CRITERIA_TYPE_WON_AUCTIONS, 1);
         }
 
-        MailDraft(auction->BuildAuctionMailSubject(AUCTION_WON), AuctionHouseMgr::BuildAuctionWonMailBody(auction->Owner, auction->bid, auction->buyout))
+        MailDraft(auction->BuildAuctionMailSubject(AUCTION_WON), AuctionEntry::BuildAuctionMailBody(auction->Owner.GetCounter(), auction->bid, auction->buyout, 0, 0))
             .AddItem(pItem)
             .SendMailTo(trans, MailReceiver(bidder, auction->Bidder.GetCounter()), auction, MAIL_CHECK_MASK_COPIED);
     }
@@ -836,21 +836,14 @@ std::string AuctionEntry::BuildAuctionMailSubject(MailAuctionAnswers response) c
 
 std::string AuctionEntry::BuildAuctionMailBody(uint32 lowGuid, uint64 bid, uint64 buyout, uint64 deposit, uint64 cut)
 {
+    auto guid = ObjectGuid::Create<HighGuid::Player>(lowGuid);
+    std::string player = Trinity::StringFormat("Player-%u-%08llX", guid.GetRealmId(), guid.GetGUIDLow());
+
     std::ostringstream strm;
     strm.width(16);
-    strm << std::right << std::hex << ObjectGuid::Create<HighGuid::Player>(lowGuid);   // HighGuid::Player always present, even for empty guids
+    strm << std::right << std::hex << player;  // HighGuid::Player always present, even for empty guids
     strm << std::dec << ':' << bid << ':' << buyout;
     strm << ':' << deposit << ':' << cut;
-    return strm.str();
-}
-
-std::string AuctionHouseMgr::BuildAuctionWonMailBody(ObjectGuid guid, uint64 bid, uint64 buyout)
-{
-    std::ostringstream strm;
-    strm.width(16);
-    strm << std::right << std::hex << ObjectGuid::Create<HighGuid::Player>(guid.GetCounter());   // HighGuid::Player always present, even for empty guids
-    strm << std::dec << ':' << bid << ':' << buyout;
-    strm << ":1000000";
     return strm.str();
 }
 

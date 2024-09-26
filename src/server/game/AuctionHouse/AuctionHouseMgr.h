@@ -188,8 +188,6 @@ class AuctionHouseMgr
 
         Item* GetAItem(ObjectGuid::LowType const& id);
 
-        static std::string BuildAuctionWonMailBody(ObjectGuid guid, uint64 bid, uint64 buyout);
-
         //auction messages
         void SendAuctionWonMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
         void SendAuctionSalePendingMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
