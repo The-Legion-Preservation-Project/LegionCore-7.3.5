@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,8 +15,25 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <vector>
-#include "MapTree.h"
-#include "VMapManager2.h"
-#include "WorldModel.h"
-#include "ModelInstance.h"
+#ifndef DB2FileSystemSource_h__
+#define DB2FileSystemSource_h__
+
+#include "DB2FileLoader.h"
+#include <string>
+
+struct TC_COMMON_API DB2FileSystemSource : public DB2FileSource
+{
+    DB2FileSystemSource(std::string const& fileName);
+    ~DB2FileSystemSource();
+    bool IsOpen() const override;
+    bool Read(void* buffer, std::size_t numBytes) override;
+    std::size_t GetPosition() const override;
+    std::size_t GetFileSize() const override;
+    char const* GetFileName() const override;
+
+private:
+    std::string _fileName;
+    FILE* _file;
+};
+
+#endif // DB2FileSystemSource_h__
