@@ -42,7 +42,7 @@
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_MICROSOFT
 
-#define snprintf _snprintf
+//#define snprintf _snprintf
 #define atoll _atoi64
 #define vsnprintf _vsnprintf
 #define llabs _abs64
