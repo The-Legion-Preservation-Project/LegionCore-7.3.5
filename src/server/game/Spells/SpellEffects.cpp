@@ -7734,6 +7734,9 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     if (caster->isTotem())
         caster = caster->ToTotem()->GetOwner();
 
+    // in another case summon new
+    uint8 level = caster->getLevel();
+
     float radius = 5.0f;
     int32 duration = m_spellInfo->GetDuration(m_diffMode);
     if (!numGuardians)
@@ -7766,20 +7769,22 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             return;
         if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
         {
-            for (uint8 idx = 0; idx < summon->GetPetCastSpellSize(); ++idx)
-            {
-                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(summon->GetPetCastSpellOnPos(idx)))
-                {
-                    if (sInfo->GetMaxRange(false) >= 30.0f && sInfo->GetMaxRange(false) > summon->GetAttackDist() && (sInfo->AttributesCu[0] & SPELL_ATTR0_CU_DIRECT_DAMAGE) && !sInfo->IsTargetingAreaCast())
-                    {
-                        PetStats const* pStats = sObjectMgr->GetPetStats(entry);
-                        if (!pStats)
-                            summon->SetCasterPet(true);
-                        if (!sInfo->IsPositive())
-                            summon->SetAttackDist(sInfo->GetMaxRange(false));
-                    }
-                }
-            }
+            ((Guardian*)summon)->InitStatsForLevel(level);
+
+//            for (uint8 idx = 0; idx < summon->GetPetCastSpellSize(); ++idx)
+//            {
+//                if (SpellInfo const* sInfo = sSpellMgr->GetSpellInfo(summon->GetPetCastSpellOnPos(idx)))
+//                {
+//                    if (sInfo->GetMaxRange(false) >= 30.0f && sInfo->GetMaxRange(false) > summon->GetAttackDist() && (sInfo->AttributesCu[0] & SPELL_ATTR0_CU_DIRECT_DAMAGE) && !sInfo->IsTargetingAreaCast())
+//                    {
+//                        PetStats const* pStats = sObjectMgr->GetPetStats(entry);
+//                        if (!pStats)
+//                            summon->SetCasterPet(true);
+//                        if (!sInfo->IsPositive())
+//                            summon->SetAttackDist(sInfo->GetMaxRange(false));
+//                    }
+//                }
+//            }
         }
 
         if (properties && properties->Control == SUMMON_CATEGORY_ALLY)
@@ -7796,21 +7801,22 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
                 summon->SetDisplayId(1126);
         }
 
-        if (summon->GetEntry() == 100820 && m_caster->IsPlayer())
-        {
-            switch (summon->GetDisplayId())
-            {
-                case 66843:
-                    summon->addSpell(224125);
-                    break;
-                case 66844:
-                    summon->addSpell(224126);
-                    break;
-                case 66845:
-                    summon->addSpell(224127);
-                    break;
-            }
-        }
+        // TODO: fix spirit wolf in waycrest manor
+//        if (summon->GetEntry() == 100820 && m_caster->IsPlayer())
+//        {
+//            switch (summon->GetDisplayId())
+//            {
+//                case 66843:
+//                    summon->addSpell(224125);
+//                    break;
+//                case 66844:
+//                    summon->addSpell(224126);
+//                    break;
+//                case 66845:
+//                    summon->addSpell(224127);
+//                    break;
+//            }
+//        }
 
         if (Player* plr = caster->ToPlayer())
         {

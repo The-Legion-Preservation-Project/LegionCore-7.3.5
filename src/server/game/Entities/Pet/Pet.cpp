@@ -311,6 +311,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber)
     _LoadSpells();
     _LoadSpellCooldowns();
     LearnPetPassives();
+    InitLevelupSpellsForLevel();
 
     if (owner->HasSpell(108415)) // active talent Soul Link
         CastSpell(this, 108446, true);
@@ -399,7 +400,7 @@ void Pet::SavePetToDB(bool isDelete)
 
     PetSlot curentSlot = GetSlot();
 
-    //not delete, just remove from curent slot
+    //not delete, just remove from current slot
     if((m_owner->getClass() == CLASS_WARLOCK || m_owner->getClass() == CLASS_DEATH_KNIGHT) && isDelete)
         owner->m_currentPetNumber = 0;
 
@@ -739,6 +740,7 @@ void Pet::GivePetLevel(uint8 level)
     }
 
     InitStatsForLevel(level);
+    InitLevelupSpellsForLevel();
 }
 
 bool Pet::CreateBaseAtCreature(Creature* creature)
@@ -902,14 +904,11 @@ bool Guardian::InitStatsForLevel(uint8 petlevel, bool initSpells)
     else
         SetUInt32Value(UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE, 2147483647);
 
-    if (initSpells)
-        InitLevelupSpellsForLevel();
-
     SetFullHealth();
     return true;
 }
 
-void TempSummon::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
+void Pet::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
 {
     if (!spellInfo->IsAutocastable())
         return;
@@ -1297,7 +1296,7 @@ void Pet::_SaveAuras(CharacterDatabaseTransaction& trans)
     }
 }
 
-bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpellState state /*= PETSPELL_NEW*/, PetSpellType type /*= PETSPELL_NORMAL*/)
+bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpellState state /*= PETSPELL_NEW*/, PetSpellType type /*= PETSPELL_NORMAL*/)
 {
     //TC_LOG_ERROR("misc", "TempSummon::addSpell spellId %i Entry %i", spellId, GetEntry());
 
@@ -1378,7 +1377,7 @@ bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, 
         if (spellInfo->IsPassive() && (!spellInfo->AuraRestrictions.CasterAuraState || HasAuraState(AuraStateType(spellInfo->AuraRestrictions.CasterAuraState))))
             CastSpell(this, spellId, true);
         else
-            AddPetCastSpell(spellId);
+            m_castspells.push_back(spellId);
 
         if(GetCasterPet() && spellInfo->GetMaxRange(false) > GetAttackDist() && (spellInfo->AttributesCu[0] & SPELL_ATTR0_CU_DIRECT_DAMAGE) && !spellInfo->IsTargetingAreaCast())
             SetAttackDist(spellInfo->GetMaxRange(false));
@@ -1399,7 +1398,7 @@ bool TempSummon::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, 
     return true;
 }
 
-bool TempSummon::learnSpell(uint32 spellID)
+bool Pet::learnSpell(uint32 spellID)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     if (!spellInfo)
@@ -1417,7 +1416,7 @@ bool TempSummon::learnSpell(uint32 spellID)
     return true;
 }
 
-void TempSummon::InitLevelupSpellsForLevel()
+void Pet::InitLevelupSpellsForLevel()
 {
     uint8 level = getLevel();
 
@@ -1475,7 +1474,7 @@ void TempSummon::InitLevelupSpellsForLevel()
     }
 }
 
-bool TempSummon::unlearnSpell(uint32 spellID)
+bool Pet::unlearnSpell(uint32 spellID)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
     if (!spellInfo)
@@ -1493,7 +1492,7 @@ bool TempSummon::unlearnSpell(uint32 spellID)
     return false;
 }
 
-bool TempSummon::removeSpell(uint32 spell_id)
+bool Pet::removeSpell(uint32 spell_id)
 {
     auto itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
@@ -1548,6 +1547,8 @@ void Pet::InitPetCreateSpells()
 
     LearnPetPassives();
     InitLevelupSpellsForLevel();
+
+    CastPetAuras(false);
 }
 
 bool Pet::IsPermanentPetFor(Player* owner)
@@ -1600,7 +1601,7 @@ bool Pet::HasSpell(uint32 spell)
     return itr != m_spells.end() && itr->second.state != PETSPELL_REMOVED;
 }
 
-void TempSummon::LearnPetPassives()
+void Pet::LearnPetPassives()
 {
     CreatureTemplate const* cInfo = GetCreatureTemplate();
     if (!cInfo)
@@ -1616,7 +1617,7 @@ void TempSummon::LearnPetPassives()
         addSpell(spell, ACT_DECIDE, PETSPELL_NEW, PETSPELL_FAMILY);
 }
 
-void TempSummon::CastPetAuras(bool apply, uint32 spellId)
+void Pet::CastPetAuras(bool apply, uint32 spellId)
 {
     // TC_LOG_DEBUG("spells", "Pet::CastPetAuras guid %u, apply %u, GetEntry() %u IsInWorld %u", GetGUIDLow(), apply, GetEntry(), IsInWorld());
 

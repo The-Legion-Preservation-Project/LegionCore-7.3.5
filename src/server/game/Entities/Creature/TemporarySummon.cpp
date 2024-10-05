@@ -451,7 +451,6 @@ void TempSummon::UnSummon(uint32 msTime)
 
     onUnload = true;
 
-    CastPetAuras(false);
     //ASSERT(!isPet());
     if (isPet())
     {

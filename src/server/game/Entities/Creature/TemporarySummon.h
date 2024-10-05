@@ -59,16 +59,7 @@ class TempSummon : public Creature
         TempSummonType const& GetSummonType() { return m_type; }
         uint32 GetTimer() { return m_timer; }
 		void AddDuration(uint32 time) { m_timer += time; }
-        void CastPetAuras(bool current, uint32 spellId = 0);
-        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
-        bool removeSpell(uint32 spell_id);
-        void LearnPetPassives();
-        void InitLevelupSpellsForLevel();
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
-
-        bool learnSpell(uint32 spell_id);
-        bool unlearnSpell(uint32 spell_id);
-        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
 
         PetType getPetType() const { return m_petType; }
         void setPetType(PetType type) { m_petType = type; }

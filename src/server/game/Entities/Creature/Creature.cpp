@@ -21,6 +21,7 @@
 #include "CombatPackets.h"
 #include "Common.h"
 #include "Chat.h"
+#include "CharmInfo.h"
 #include "Creature.h"
 #include <utility>
 #include "CreatureAI.h"
@@ -2315,33 +2316,12 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
     return false;
 }
 
-uint8 Creature::GetPetAutoSpellSize() const
-{
-    return m_autospells.size();
-}
-
 uint32 Creature::GetPetAutoSpellOnPos(uint8 pos) const
 {
-    if (pos >= m_autospells.size())
+    if (pos >= MAX_SPELL_CHARM || m_charmInfo->GetCharmSpell(pos)->GetType() != ACT_ENABLED)
         return 0;
-    return m_autospells[pos];
-}
-
-uint8 Creature::GetPetCastSpellSize() const
-{
-    return m_castspells.size();
-}
-
-void Creature::AddPetCastSpell(uint32 spellid)
-{
-    m_castspells.push_back(spellid);
-}
-
-uint32 Creature::GetPetCastSpellOnPos(uint8 pos) const
-{
-    if (pos >= m_castspells.size())
-        return 0;
-    return m_castspells[pos];
+    else
+        return m_charmInfo->GetCharmSpell(pos)->GetAction();
 }
 
 void Creature::DeleteFromDB()
@@ -3731,24 +3711,6 @@ bool Creature::IsPlayerRewarded(ObjectGuid targetGuid) const
 
 void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)
 {
-    for (uint8 i = 0; i < GetPetCastSpellSize(); ++i)
-    {
-        uint32 spellID = GetPetCastSpellOnPos(i);
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID);
-        if (!spellInfo)
-            continue;
-
-        // Not send cooldown for this spells
-        if (spellInfo->HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
-            continue;
-
-        if (!(spellInfo->Categories.PreventionType & SPELL_PREVENTION_TYPE_SILENCE))
-            continue;
-
-        if ((idSchoolMask & spellInfo->GetSchoolMask()) && _GetSpellCooldownDelay(spellID) < unTimeMs)
-            _AddCreatureSpellCooldown(spellID, time(nullptr) + unTimeMs/IN_MILLISECONDS);
-    }
-
     for (uint8 i = 0; (1 << i) < SPELL_SCHOOL_MASK_ALL; ++i)
         if ((1 << i) & idSchoolMask)
             m_CreatureSchoolCooldowns[(1 << i)] = time(nullptr) + unTimeMs / IN_MILLISECONDS;

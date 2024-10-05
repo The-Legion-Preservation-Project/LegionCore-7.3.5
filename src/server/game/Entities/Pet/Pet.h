@@ -19,22 +19,8 @@
 #ifndef PET_H
 #define PET_H
 
-#include "Unit.h"
+#include "PetDefines.h"
 #include "TemporarySummon.h"
-
-enum ActionFeedback
-{
-    FEEDBACK_NONE            = 0,
-    FEEDBACK_PET_DEAD        = 1,
-    FEEDBACK_NOTHING_TO_ATT  = 2,
-    FEEDBACK_CANT_ATT_TARGET = 3
-};
-
-enum PetTalk
-{
-    PET_TALK_SPECIAL_SPELL  = 0,
-    PET_TALK_ATTACK         = 1
-};
 
 enum PetNameInvalidReason
 {
@@ -58,8 +44,15 @@ enum PetNameInvalidReason
 
 #define ACTIVE_SPELLS_MAX           4
 
-#define PET_FOLLOW_DIST  1.0f
-#define PET_FOLLOW_ANGLE (M_PI/2)
+struct PetSpell
+{
+    ActiveStates active;
+    PetSpellState state;
+    PetSpellType type;
+};
+
+typedef std::unordered_map<uint32, PetSpell> PetSpellMap;
+typedef std::vector<uint32> AutoSpellList;
 
 class Player;
 
@@ -100,9 +93,15 @@ class Pet : public Guardian
         void SetDuration(int32 dur) { m_duration = dur; }
         int32 GetDuration() { return m_duration; }
 
+        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
+
         bool HasSpell(uint32 spell) override;
 
+        void LearnPetPassives();
+        void CastPetAuras(bool current, uint32 spellId = 0);
         bool IsPetAura(Aura const* aura);
+
+        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
 
         void _LoadSpellCooldowns();
         void _SaveSpellCooldowns(CharacterDatabaseTransaction& trans);
@@ -111,12 +110,20 @@ class Pet : public Guardian
         void _LoadSpells();
         void _SaveSpells(CharacterDatabaseTransaction& trans);
 
+        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
+        bool learnSpell(uint32 spell_id);
+        void InitLevelupSpellsForLevel();
+        bool unlearnSpell(uint32 spell_id);
+        bool removeSpell(uint32 spell_id);
         void CleanupActionBar();
 
         void InitPetCreateSpells();
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
 
+        AutoSpellList   m_autospells;
+        AutoSpellList   m_castspells;
+        PetSpellMap     m_spells;
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
         Unit* GetOwner() { return m_owner; }
@@ -126,8 +133,7 @@ class Pet : public Guardian
         void LearnSpecializationSpell();
         void UnlearnSpecializationSpell();
         void CheckSpecialization();
-        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
-        
+
         uint32 GetGroupUpdateFlag() const { return m_groupUpdateMask; }
         void SetGroupUpdateFlag(uint32 flag);
         void ResetGroupUpdateFlag();

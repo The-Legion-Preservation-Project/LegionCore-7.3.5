@@ -2461,7 +2461,8 @@ void Player::UpdateCRSpeed()
     SetFloatValue(PLAYER_FIELD_SPEED, std::max(0.0f, val));
 
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
-        UpdateSpeed(UnitMoveType(i), true);
+        if (i != MOVE_TURN_RATE && i != MOVE_PITCH_RATE) // unsupported in UpdateSpeed
+            UpdateSpeed(UnitMoveType(i), true);
 }
 
 void Player::UpdateLifesteal()

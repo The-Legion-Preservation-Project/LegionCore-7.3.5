@@ -26581,7 +26581,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     pet->Relocate(x, y, z, ang);
 
-    //summoned pets always non-curent!
+    //summoned pets always non-current!
     if (petType == SUMMON_PET || petType == HUNTER_PET)
     {
         // This check done in LoadPetFromDB, but we should not continue this function if pet not alowed

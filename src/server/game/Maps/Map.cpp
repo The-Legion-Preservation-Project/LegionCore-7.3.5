@@ -4828,7 +4828,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
     AddToMap(summon->ToCreature());
     summon->InitSummon();
-    summon->CastPetAuras(true);
+    //summon->CastPetAuras(true);
 
     //TC_LOG_DEBUG("misc", "Map::SummonCreature summoner %u entry %i mask %i", summoner ? summoner->GetGUID() : 0, entry, mask);
 

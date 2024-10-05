@@ -139,7 +139,6 @@ void Totem::UnSummon(uint32 msTime)
 
     CombatStop();
     RemoveAurasDueToSpell(GetSpell(), GetGUID());
-    CastPetAuras(false);
 
     // clear owner's totem slot
     for (int i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
