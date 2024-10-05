@@ -4588,7 +4588,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (m_caster->GetPetGUID())
+    if (!m_caster->GetPetGUID().IsEmpty())
         return;
 
     Player* player = m_caster->ToPlayer();
@@ -4687,8 +4687,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             return;
     }
 
-    auto slot = PetSlot(RoundingFloatValue(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints));
-
     Position pos;
     if (canHitTargetInLOS && owner->ToCreature())
         owner->GetNearPoint2D(pos, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -4714,7 +4712,6 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         if (!new_name.empty())
             pet->SetName(new_name);
     }
-    pet->SetSlot(slot);
 
     ExecuteLogEffectSummonObject(effIndex, pet);
 }

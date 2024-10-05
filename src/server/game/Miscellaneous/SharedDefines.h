@@ -4969,26 +4969,6 @@ enum SpellFamilyNames
     SPELLFAMILY_DEMON_HUNTER = 107,
 };
 
-// stored in character_pet.slot
-enum PetSlot
-{
-    //Some not-in-db slots
-    PET_SLOT_FULL_LIST              =  -4,        //Used when there is no slot free for tameing
-    PET_SLOT_UNK_SLOT               =  -3,        //Used in some scripts.
-
-    //Hunter pet slots, sended to client at stable.
-    PET_SLOT_HUNTER_FIRST           =   0,        //PetType == HUNTER_PET
-    PET_SLOT_HUNTER_LAST            =   4,        //PetType == HUNTER_PET
-    PET_SLOT_STABLE_FIRST           =   5,
-    PET_SLOT_STABLE_LAST            =  55,
-
-    //Non-hunter pet slot
-    PET_SLOT_OTHER_PET              = 56,        // PetType != HUNTER_PET
-    PET_SLOT_LAST                                // For iteration
-};
-
-const uint8 MAX_PET_STABLES = PET_SLOT_STABLE_LAST;
-
 enum TradeStatus
 {
     TRADE_STATUS_PLAYER_BUSY           = 0,

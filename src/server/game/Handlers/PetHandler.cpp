@@ -783,58 +783,65 @@ void WorldSession::SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std:
     SendPacket(petNameInvalid.Write());
 }
 
-void WorldSession::SendStablePet(ObjectGuid const& /*guid*/ /*= ObjectGuid::Empty*/)
+void WorldSession::SendStablePet(ObjectGuid const& guid /*= ObjectGuid::Empty*/)
 {
-//    Player* player = GetPlayer();
-//    if (!player)
-//        return;
-//
-//    WorldPackets::PetPackets::StableList list;
-//
-//    std::set<uint32> stableNumber;
-//    PetInfoDataMap* petMap = player->GetPetInfoData();
-//    if (!petMap->empty())
-//    {
-//        for (auto& petData : *petMap)
-//        {
-//            PetSlot petSlot = player->GetSlotForPetId(petData.second.id);
-//            stableNumber.insert(petData.second.id);
-//
-//            if (petSlot > PET_SLOT_STABLE_LAST)
-//                continue;
-//
-//            if (petSlot == PET_SLOT_FULL_LIST)
-//                petSlot = static_cast<PetSlot>(player->SetOnAnyFreeSlot(petData.second.id));
-//
-//            if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
-//            {
-//                WorldPackets::PetPackets::StableInfo info;
-//                info.PetSlot = petSlot;
-//                info.PetNumber = petData.second.id;
-//                info.CreatureID = petData.second.entry;
-//                info.DisplayID = petData.second.modelid;
-//                info.ExperienceLevel = petData.second.level;
-//                info.PetFlags = petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3;
-//                info.PetName = petData.second.name;
-//                list.Stables.push_back(info);
-//            }
-//        }
-//    }
-//
-//    if (player->getClass() == CLASS_HUNTER)
-//    {
-//        SendPacket(list.Write());
-//        SendStableResult(STABLE_ERR_NONE);
-//    }
-//
-//    PlayerPetSlotList const& petSlots = player->GetPetSlotList();
-//    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < uint32(PET_SLOT_STABLE_LAST); ++i)
-//    {
-//        if (!petSlots[i])
-//            continue;
-//
-//        auto find = stableNumber.find(petSlots[i]);
-//        if (find == stableNumber.end())
-//            player->cleanPetSlotForMove(PetSlot(i), petSlots[i]);
-//    }
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_SLOTS_DETAIL);
+
+    stmt->setUInt64(0, _player->GetGUID().GetCounter());
+    stmt->setUInt8(1, PET_SAVE_FIRST_STABLE_SLOT);
+    stmt->setUInt8(2, PET_SAVE_LAST_STABLE_SLOT);
+
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
+}
+
+void WorldSession::SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result)
+{
+    if (!GetPlayer())
+        return;
+
+    WorldPackets::PetPackets::StableList packet;
+
+    packet.StableMaster = guid;
+
+    Pet* pet = _player->GetPet();
+
+    int32 petSlot = 0;
+        // not let move dead pet in slot
+    if (pet && pet->isAlive() && pet->getPetType() == HUNTER_PET)
+    {
+        WorldPackets::PetPackets::StableInfo stableEntry;
+        stableEntry.PetSlot = petSlot;
+        stableEntry.PetNumber = pet->GetCharmInfo()->GetPetNumber();
+        stableEntry.CreatureID = pet->GetEntry();
+        stableEntry.DisplayID = pet->GetDisplayId();
+        stableEntry.ExperienceLevel = pet->getLevel();
+        stableEntry.PetFlags = PET_STABLE_ACTIVE;
+        stableEntry.PetName = pet->GetName();
+        ++petSlot;
+
+        packet.Stables.push_back(stableEntry);
+    }
+
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            WorldPackets::PetPackets::StableInfo stableEntry;
+
+            stableEntry.PetSlot = petSlot;
+            stableEntry.PetNumber = fields[1].GetUInt32();          // petnumber
+            stableEntry.CreatureID = fields[2].GetUInt32();         // creature entry
+            stableEntry.DisplayID = fields[5].GetUInt32();          // creature displayid
+            stableEntry.ExperienceLevel = fields[3].GetUInt16();    // level
+            stableEntry.PetFlags = PET_STABLE_INACTIVE;
+            stableEntry.PetName = fields[4].GetString();            // Name
+
+            ++petSlot;
+            packet.Stables.push_back(stableEntry);
+        }
+        while (result->NextRow());
+    }
+
+    SendPacket(packet.Write());
 }

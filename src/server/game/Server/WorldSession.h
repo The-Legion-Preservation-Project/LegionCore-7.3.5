@@ -1160,6 +1160,7 @@ class WorldSession
         void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
         void SendStablePet(ObjectGuid const& guid = ObjectGuid::Empty);
+        void SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result);
         void SendStableResult(StableResultCode res);
 
         // Account Data

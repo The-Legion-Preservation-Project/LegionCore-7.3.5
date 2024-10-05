@@ -51,6 +51,12 @@ struct PetSpell
     PetSpellType type;
 };
 
+enum PetStableinfo
+{
+    PET_STABLE_ACTIVE = 1,
+    PET_STABLE_INACTIVE = 2
+};
+
 typedef std::unordered_map<uint32, PetSpell> PetSpellMap;
 typedef std::vector<uint32> AutoSpellList;
 
@@ -82,9 +88,6 @@ class Pet : public Guardian
 
         void setDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
         void Update(uint32 diff) override;                           // overwrite virtual Creature::Update and Unit::Update
-
-        void SetSlot(PetSlot slot) { m_slot = slot; }
-        PetSlot GetSlot() { return m_slot; }
 
         void GivePetLevel(uint8 level);
         void SynchronizeLevelWithOwner();
@@ -142,7 +145,6 @@ class Pet : public Guardian
     protected:
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
         uint32  m_specialization;
-        PetSlot m_slot;
         uint32  m_groupUpdateMask;
 
         DeclinedName *m_declinedname;
