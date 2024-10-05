@@ -50,16 +50,18 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_MAIL_LIST_INFO, "SELECT id, sender, (SELECT name FROM characters WHERE guid = sender) AS sendername, receiver, (SELECT name FROM characters WHERE guid = receiver) AS receivername,"
                      "SUBJECT, deliver_time, expire_time, money, has_items FROM mail WHERE receiver = ? ", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_MAIL_LIST_ITEMS, "SELECT itemEntry,count FROM item_instance WHERE guid = ?", CONNECTION_SYNCH);
-    PrepareStatement(CHAR_SEL_ENUM, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.id = c.currentpetnumber LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.account = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_ENUM_DELETED, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.id = c.currentpetnumber LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.deleteInfos_Account = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_ENUM_DECLINED_NAME, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, cd.genitive, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.id = c.currentpetnumber LEFT JOIN character_declinedname AS cd ON c.guid = cd.guid LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.account = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_ENUM, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.slot = ? LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.account = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_ENUM_DELETED, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.slot = ? LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.deleteInfos_Account = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_ENUM_DECLINED_NAME, "SELECT c.guid, c.name, c.race, c.class, c.skin, c.face, c.hairStyle, c.hairColor, c.facialStyle, c.blindfold, c.gender, c.tattoo, c.horn, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid, c.slot, cd.genitive, c.logout_time, c.specialization FROM characters AS c LEFT JOIN character_pet AS cp ON c.guid = cp.owner AND cp.slot = ? LEFT JOIN character_declinedname AS cd ON c.guid = cd.guid LEFT JOIN guild_member AS gm ON c.guid = gm.guid LEFT JOIN character_banned AS cb ON c.guid = cb.guid AND cb.active = 1 WHERE c.account = ?", CONNECTION_ASYNC);
 
     // Pet
-    PrepareStatement(CHAR_INS_PET, "REPLACE INTO character_pet (id, entry, owner, modelid, level, exp, Reactstate, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_PET_DETAIL, "SELECT id, entry, level, name, modelid FROM character_pet WHERE owner = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_PET_BY_ID, "SELECT entry, id, PetType FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_PET, "SELECT `id`, `entry`, `owner`, `modelid`, `level`, `exp`, `Reactstate`, `name`, `renamed`, `curhealth`, `curmana`, `abdata`, `savetime`, `CreatedBySpell`, `PetType`, `specialization` FROM character_pet WHERE `owner` = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_PET_SLOTS, "SELECT owner, slot FROM character_pet WHERE owner = ?  AND slot >= ? AND slot <= ? ORDER BY slot", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_PET_SLOTS_DETAIL, "SELECT owner, id, entry, level, name, modelid FROM character_pet WHERE owner = ? AND slot >= ? AND slot <= ? ORDER BY slot", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_INS_PET, "INSERT INTO character_pet (id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_PET_SLOT_BY_ID, "SELECT slot, entry FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_PET_BY_ID, "DELETE FROM character_pet WHERE id = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_DEL_CHAR_PET_BY_SLOT, "DELETE FROM character_pet WHERE owner = ? AND (slot = ? OR slot > ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_PET_DECLINED_BY_ID, "DELETE FROM character_pet_declinedname WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_PET_AURA_BY_ID, "DELETE FROM pet_aura WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_CHAR_PET_SPELL_BY_ID, "DELETE FROM pet_spell WHERE guid = ?", CONNECTION_ASYNC);
@@ -95,10 +97,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Start LoginQueryHolder content
     PrepareStatement(CHAR_SEL_CHARACTER, "SELECT guid, account, name, race, class, level, xp, money, skin, face, hairStyle, hairColor, facialStyle, blindfold, gender, tattoo, horn, inventorySlots, bankSlots, drunk, playerFlags, "
     "playerFlagsEx, position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, "
-    "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, at_login, zone, online, death_expire_time, taxi_path, dungeonDifficulty, "
+    "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, dungeonDifficulty, "
     "totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, "
     "health, mana, instance_id, activespec, specialization, lootspecialization, exploredZones, equipmentCache, knownTitles, actionBars, "
-    "currentpetnumber, petslot, grantableLevels, lfgBonusFaction, raidDifficulty, legacyRaidDifficulty, created_time, killPoints FROM characters WHERE guid = ?", CONNECTION_ASYNC);
+    "grantableLevels, lfgBonusFaction, raidDifficulty, legacyRaidDifficulty, created_time, killPoints FROM characters WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_GROUP_MEMBER, "SELECT guid FROM group_member WHERE memberGuid = ?", CONNECTION_BOTH);
     PrepareStatement(CHAR_SEL_CHARACTER_AURAS, "SELECT caster_guid, slot, spell, effect_mask, recalculate_mask, stackcount, maxduration, remaintime, remaincharges FROM character_aura WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_CHARACTER_AURAS_EFFECTS, "SELECT slot, effect, baseamount, amount FROM character_aura_effect WHERE guid = ?", CONNECTION_ASYNC);
@@ -463,17 +465,17 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Player saving
     PrepareStatement(CHAR_INS_CHARACTER, "INSERT INTO characters (guid, account, name, race, class, level, xp, money, skin, face, hairStyle, hairColor, facialStyle, blindfold, gender, tattoo, horn, inventorySlots, bankSlots, drunk, playerFlags, "
     "playerFlagsEx, map, instance_id, dungeonDifficulty, raidDifficulty, legacyRaidDifficulty, position_x, position_y, position_z, orientation, trans_x, trans_y, trans_z, trans_o, transguid, "
-    "taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, extra_flags, at_login, zone, "
+    "taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, extra_flags, stable_slots, at_login, zone, "
     "death_expire_time, taxi_path, totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, health, mana, "
-    "latency, activespec, specialization, lootspecialization, exploredZones, equipmentCache, knownTitles, actionBars, currentpetnumber, petslot, grantableLevels, created_time, killPoints) VALUES "
-    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    "latency, activespec, specialization, lootspecialization, exploredZones, equipmentCache, knownTitles, actionBars, grantableLevels, created_time, killPoints) VALUES "
+    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_UPD_CHARACTER, "UPDATE characters SET name=?,race=?,class=?,level=?,xp=?,money=?,skin=?,face=?,hairStyle=?,hairColor=?,facialStyle=?,blindfold=?,gender=?,tattoo=?,horn=?,inventorySlots=?,bankSlots=?,drunk=?,playerFlags=?,"
     "playerFlagsEx=?,map=?,instance_id=?,dungeonDifficulty=?,raidDifficulty=?,legacyRaidDifficulty=?,position_x=?,position_y=?,position_z=?,orientation=?,trans_x=?,trans_y=?,trans_z=?,trans_o=?,transguid=?,taximask=?,cinematic=?,totaltime=?,leveltime=?,rest_bonus=?,"
-    "logout_time=?,is_logout_resting=?,extra_flags=?,at_login=?,zone=?,death_expire_time=?,taxi_path=?,"
+    "logout_time=?,is_logout_resting=?,extra_flags=?,stable_slots=?,at_login=?,zone=?,death_expire_time=?,taxi_path=?,"
     "totalKills=?,todayKills=?,yesterdayKills=?,chosenTitle=?,"
     "watchedFaction=?,health=?,mana=?,latency=?,activespec=?,specialization=?,lootspecialization=?,exploredZones=?,"
-    "equipmentCache=?,knownTitles=?,actionBars=?,currentpetnumber=?,petslot=?,grantableLevels=?,online=?,lfgBonusFaction=?,killPoints=? WHERE guid=?", CONNECTION_ASYNC);
+    "equipmentCache=?,knownTitles=?,actionBars=?,grantableLevels=?,online=?,lfgBonusFaction=?,killPoints=? WHERE guid=?", CONNECTION_ASYNC);
 
     PrepareStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG, "UPDATE characters SET at_login = at_login | ? WHERE guid = ?", CONNECTION_BOTH);
     PrepareStatement(CHAR_UPD_REM_AT_LOGIN_FLAG, "UPDATE characters set at_login = at_login & ~ ? WHERE guid = ?", CONNECTION_ASYNC);
@@ -566,6 +568,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_CHAR_PET_DECLINEDNAME, "DELETE FROM character_pet_declinedname WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_ADD_CHAR_PET_DECLINEDNAME, "INSERT INTO character_pet_declinedname (id, owner, genitive, dative, accusative, instrumental, prepositional) VALUES (?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_CHAR_PET_NAME, "UPDATE character_pet SET name = ?, renamed = 1 WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_UPD_CHAR_PET_SLOT_BY_SLOT_EXCLUDE_ID, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ? AND id <> ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_UPD_CHAR_PET_SLOT_BY_SLOT, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ?", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID, "UPDATE character_pet SET slot = ? WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_PETITION, "INSERT INTO petition (ownerguid, petitionguid, name) VALUES (?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_PETITION_BY_GUID, "DELETE FROM petition WHERE petitionguid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_PETITION_SIGNATURE_BY_GUID, "DELETE FROM petition_sign WHERE petitionguid = ?", CONNECTION_ASYNC);
@@ -578,6 +583,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_INS_PET_SPELL, "INSERT IGNORE INTO pet_spell (guid, spell, active) VALUES (?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_PET_AURA, "INSERT IGNORE INTO pet_aura (guid, slot, caster_guid, spell, effect_mask, recalculate_mask, stackcount, maxduration, remaintime, remaincharges) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_PET_AURA_EFFECT, "INSERT IGNORE INTO pet_aura_effect (guid, slot, effect, baseamount, amount) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_CHAR_PET_BY_ENTRY, "SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_CHAR_PET_BY_ENTRY_AND_SLOT_2, "SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ? AND entry = ? AND (slot = ? OR slot > ?)", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_CHAR_PET_BY_SLOT, "SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ? AND (slot = ? OR slot > ?) ", CONNECTION_SYNCH);
+    PrepareStatement(CHAR_SEL_CHAR_PET_BY_ENTRY_AND_SLOT, "SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ? AND slot = ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_DEL_CHAR_DECLINED_NAME, "DELETE FROM character_declinedname WHERE guid = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_CHAR_DECLINED_NAME, "INSERT INTO character_declinedname (guid, genitive, dative, accusative, instrumental, prepositional) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_UPD_FACTION_OR_RACE, "UPDATE characters SET name = ?, race = ?, at_login = at_login & ~ ? WHERE guid = ?", CONNECTION_ASYNC);

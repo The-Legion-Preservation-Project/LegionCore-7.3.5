@@ -2928,7 +2928,7 @@ public:
         pet->SetEffectiveLevel(creatureTarget->GetEffectiveLevel());
 
         player->SetMinion(pet, true);
-        pet->SavePetToDB();
+        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
         player->PetSpellInitialize();
 
         return true;
@@ -3057,10 +3057,10 @@ public:
             {
                 if (Pet* pet = player->GetPet())
                 {
-                    pet->SavePetToDB();
+                    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
                  // not let dismiss dead pet
                  if (pet && pet->isAlive())
-                    player->RemovePet(pet);
+                    player->RemovePet(pet, PET_SAVE_AS_CURRENT, true);
                 }
             }
 

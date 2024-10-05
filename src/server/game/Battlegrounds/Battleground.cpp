@@ -1268,7 +1268,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
             if (IsArena() || IsRBG())
             {
                 bgTypeId = IsArena() ? MS::Battlegrounds::BattlegroundTypeId::ArenaAll : MS::Battlegrounds::BattlegroundTypeId::RatedBattleground;
-                player->RemovePet(nullptr);
+                player->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
                 player->ResummonPetTemporaryUnSummonedIfAny();
 
                 if (IsRated() && GetStatus() == STATUS_IN_PROGRESS)

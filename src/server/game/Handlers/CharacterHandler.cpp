@@ -147,7 +147,8 @@ void WorldSession::SendCharacterEnum(bool deleted /*= false*/)
     else
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ENUM);
 
-    stmt->setUInt32(0, GetAccountId());
+    stmt->setUInt8(0, PET_SAVE_AS_CURRENT);
+    stmt->setUInt32(1, GetAccountId());
 
     _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharEnum, this, std::placeholders::_1, deleted)));
 }
@@ -837,7 +838,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         SendPacket(artifactKnowledgeFishingPole.Write());
 
         //Show cinematic at the first time that player login
-        bool firstLogin = !player->getCinematic(); // it's needed below
         if (!player->getCinematic())
         {
             player->setCinematic(1);
@@ -967,10 +967,15 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
             SendNotification(LANG_RESET_TALENTS);
         }
 
-        if (player->HasAtLoginFlag(AT_LOGIN_FIRST))
+        bool firstLogin = pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST);
+        if (firstLogin)
         {
-            player->RemoveAtLoginFlag(AT_LOGIN_FIRST);
-            player->CreateDefaultPet();
+            pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
+
+            PlayerInfo const* info = sObjectMgr->GetPlayerInfo(pCurrChar->getRace(), pCurrChar->getClass());
+            // TODO: default pets should come from cast spells
+//            for (uint32 spellId : info->castSpells)
+//                pCurrChar->CastSpell(pCurrChar, spellId, true);
         }
 
         // show time before shutdown if shutdown planned.

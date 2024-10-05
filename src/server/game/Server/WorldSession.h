@@ -1506,7 +1506,7 @@ class WorldSession
         void HandleQueryNPCText(WorldPackets::Query::QueryNPCText& packet);
         void HandleBinderActivate(WorldPackets::NPC::Hello& packet);
         void HandleRequestStabledPets(WorldPackets::NPC::RequestStabledPets& packet);
-        void HanleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet);
+        void HandleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet);
         void HandleStableChangeSlotCallback(PreparedQueryResult const& result, uint8 new_slot);
         void SendTrainerService(ObjectGuid guid, uint32 spellId, uint32 trainState);
 

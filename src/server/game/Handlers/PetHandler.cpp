@@ -306,7 +306,7 @@ void WorldSession::HandlePetAbandon(WorldPackets::PetPackets::PetAbandon& packet
     {
         if (pet->isPet())
         {
-            _player->RemovePet(pet->ToPet(), true);
+            _player->RemovePet((Pet*)pet, PET_SAVE_AS_DELETED);
             _player->GetSession()->SendStablePet();
         }
         else if (pet->GetGUID() == _player->GetCharmGUID())
@@ -469,83 +469,83 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPackets::Spells::PetCastSpell& 
     }
 }
 
-void WorldSession::HanleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet)
+void WorldSession::HandleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet)
 {
-    if (!GetPlayer()->GetNPCIfCanInteractWith(packet.NpcGUID, UNIT_NPC_FLAG_STABLEMASTER))
-    {
-        TC_LOG_DEBUG("network", "Stablemaster (GUID:%u) not found or you can't interact with him.", packet.NpcGUID.GetGUIDLow());
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    if (packet.NewSlot > MAX_PET_STABLES)
-    {
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
-        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
-
-    Pet* pet = _player->GetPet();
-    if (pet && pet->GetCharmInfo() && pet->GetCharmInfo()->GetPetNumber() == packet.PetIndex)
-        _player->RemovePet(pet);
-
-    PetSlot curentSlot = GetPlayer()->GetSlotForPetId(GetPlayer()->m_currentPetNumber);
-    if (pet && curentSlot == packet.NewSlot)
-        _player->RemovePet(pet);
-
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_BY_ID);
-    stmt->setUInt64(0, _player->GetGUIDLow());
-    stmt->setUInt32(1, packet.PetIndex);
-
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableChangeSlotCallback, this, std::placeholders::_1, packet.PetIndex)));
+//    if (!GetPlayer()->GetNPCIfCanInteractWith(packet.NpcGUID, UNIT_NPC_FLAG_STABLEMASTER))
+//    {
+//        TC_LOG_DEBUG("network", "Stablemaster (GUID:%u) not found or you can't interact with him.", packet.NpcGUID.GetGUIDLow());
+//        SendStableResult(STABLE_ERR_STABLE);
+//        return;
+//    }
+//
+//    if (packet.NewSlot > MAX_PET_STABLES)
+//    {
+//        SendStableResult(STABLE_ERR_STABLE);
+//        return;
+//    }
+//
+//    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+//        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
+//
+//    Pet* pet = _player->GetPet();
+//    if (pet && pet->GetCharmInfo() && pet->GetCharmInfo()->GetPetNumber() == packet.PetIndex)
+//        _player->RemovePet(pet);
+//
+//    PetSlot currentSlot = GetPlayer()->GetSlotForPetId(GetPlayer()->m_currentPetNumber);
+//    if (pet && currentSlot == packet.NewSlot)
+//        _player->RemovePet(pet);
+//
+//    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_BY_ID);
+//    stmt->setUInt64(0, _player->GetGUIDLow());
+//    stmt->setUInt32(1, packet.PetIndex);
+//
+//    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableChangeSlotCallback, this, std::placeholders::_1, packet.PetIndex)));
 }
 
 void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult const& result, uint8 new_slot)
 {
-    if (!GetPlayer())
-        return;
-
-    if (!result)
-    {
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    Field *fields = result->Fetch();
-
-    uint32 pet_entry = fields[0].GetUInt32();
-    uint32 pet_number = fields[1].GetUInt32();
-    //bool isHunter = fields[2].GetUInt8() == HUNTER_PET;
-
-    PetSlot slot = GetPlayer()->GetSlotForPetId(pet_number);
-
-    if (!pet_entry)
-    {
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(pet_entry);
-    if (!creatureInfo || !creatureInfo->isTameable(_player))
-    {
-        // if problem in exotic pet
-        if (creatureInfo && creatureInfo->isTameable(_player))
-            SendStableResult(STABLE_ERR_EXOTIC);
-        else
-            SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    // Update if its a Hunter pet
-    if (new_slot != 100)
-    {
-        // We need to remove and add the new pet to there diffrent slots
-        GetPlayer()->SwapPetSlot(slot, static_cast<PetSlot>(new_slot));
-    }
-
-    SendStableResult(STABLE_SUCCESS_STABLE);
+//    if (!GetPlayer())
+//        return;
+//
+//    if (!result)
+//    {
+//        SendStableResult(STABLE_ERR_STABLE);
+//        return;
+//    }
+//
+//    Field *fields = result->Fetch();
+//
+//    uint32 pet_entry = fields[0].GetUInt32();
+//    uint32 pet_number = fields[1].GetUInt32();
+//    //bool isHunter = fields[2].GetUInt8() == HUNTER_PET;
+//
+//    PetSlot slot = GetPlayer()->GetSlotForPetId(pet_number);
+//
+//    if (!pet_entry)
+//    {
+//        SendStableResult(STABLE_ERR_STABLE);
+//        return;
+//    }
+//
+//    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(pet_entry);
+//    if (!creatureInfo || !creatureInfo->isTameable(_player))
+//    {
+//        // if problem in exotic pet
+//        if (creatureInfo && creatureInfo->isTameable(_player))
+//            SendStableResult(STABLE_ERR_EXOTIC);
+//        else
+//            SendStableResult(STABLE_ERR_STABLE);
+//        return;
+//    }
+//
+//    // Update if its a Hunter pet
+//    if (new_slot != 100)
+//    {
+//        // We need to remove and add the new pet to there diffrent slots
+//        GetPlayer()->SwapPetSlot(slot, static_cast<PetSlot>(new_slot));
+//    }
+//
+//    SendStableResult(STABLE_SUCCESS_STABLE);
 }
 
 void WorldSession::SendStableResult(StableResultCode res)
@@ -664,11 +664,19 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid petGuid, uint32 s
                         _player->StopCastingCharm();
                     else if (pet->GetOwnerGUID() == GetPlayer()->GetGUID())
                     {
-                        ASSERT(pet->IsCreature());
+                        ASSERT(pet->GetTypeId() == TYPEID_UNIT);
                         if (pet->isPet())
-                            GetPlayer()->RemovePet(pet->ToPet());
+                        {
+                            if (((Pet*)pet)->getPetType() == HUNTER_PET)
+                                GetPlayer()->RemovePet((Pet*)pet, PET_SAVE_AS_DELETED);
+                            else
+                                //dismissing a summoned pet is like killing them (this prevents returning a soulshard...)
+                                pet->setDeathState(CORPSE);
+                        }
                         else if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
-                            dynamic_cast<Minion*>(pet)->UnSummon();
+                        {
+                            ((Minion*)pet)->UnSummon();
+                        }
                     }
                     break;
                 case COMMAND_MOVE_TO:
@@ -777,56 +785,56 @@ void WorldSession::SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std:
 
 void WorldSession::SendStablePet(ObjectGuid const& /*guid*/ /*= ObjectGuid::Empty*/)
 {
-    Player* player = GetPlayer();
-    if (!player)
-        return;
-
-    WorldPackets::PetPackets::StableList list;
-
-    std::set<uint32> stableNumber;
-    PetInfoDataMap* petMap = player->GetPetInfoData();
-    if (!petMap->empty())
-    {
-        for (auto& petData : *petMap)
-        {
-            PetSlot petSlot = player->GetSlotForPetId(petData.second.id);
-            stableNumber.insert(petData.second.id);
-
-            if (petSlot > PET_SLOT_STABLE_LAST)
-                continue;
-
-            if (petSlot == PET_SLOT_FULL_LIST)
-                petSlot = static_cast<PetSlot>(player->SetOnAnyFreeSlot(petData.second.id));
-
-            if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
-            {
-                WorldPackets::PetPackets::StableInfo info;
-                info.PetSlot = petSlot;
-                info.PetNumber = petData.second.id;
-                info.CreatureID = petData.second.entry;
-                info.DisplayID = petData.second.modelid;
-                info.ExperienceLevel = petData.second.level;
-                info.PetFlags = petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3;
-                info.PetName = petData.second.name;
-                list.Stables.push_back(info);
-            }
-        }
-    }
-
-    if (player->getClass() == CLASS_HUNTER)
-    {
-        SendPacket(list.Write());
-        SendStableResult(STABLE_ERR_NONE);
-    }
-
-    PlayerPetSlotList const& petSlots = player->GetPetSlotList();
-    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < uint32(PET_SLOT_STABLE_LAST); ++i)
-    {
-        if (!petSlots[i])
-            continue;
-
-        auto find = stableNumber.find(petSlots[i]);
-        if (find == stableNumber.end())
-            player->cleanPetSlotForMove(PetSlot(i), petSlots[i]);
-    }
+//    Player* player = GetPlayer();
+//    if (!player)
+//        return;
+//
+//    WorldPackets::PetPackets::StableList list;
+//
+//    std::set<uint32> stableNumber;
+//    PetInfoDataMap* petMap = player->GetPetInfoData();
+//    if (!petMap->empty())
+//    {
+//        for (auto& petData : *petMap)
+//        {
+//            PetSlot petSlot = player->GetSlotForPetId(petData.second.id);
+//            stableNumber.insert(petData.second.id);
+//
+//            if (petSlot > PET_SLOT_STABLE_LAST)
+//                continue;
+//
+//            if (petSlot == PET_SLOT_FULL_LIST)
+//                petSlot = static_cast<PetSlot>(player->SetOnAnyFreeSlot(petData.second.id));
+//
+//            if (petSlot >= PET_SLOT_HUNTER_FIRST &&  petSlot < PET_SLOT_STABLE_LAST)
+//            {
+//                WorldPackets::PetPackets::StableInfo info;
+//                info.PetSlot = petSlot;
+//                info.PetNumber = petData.second.id;
+//                info.CreatureID = petData.second.entry;
+//                info.DisplayID = petData.second.modelid;
+//                info.ExperienceLevel = petData.second.level;
+//                info.PetFlags = petSlot < PET_SLOT_STABLE_FIRST ? 1 : 3;
+//                info.PetName = petData.second.name;
+//                list.Stables.push_back(info);
+//            }
+//        }
+//    }
+//
+//    if (player->getClass() == CLASS_HUNTER)
+//    {
+//        SendPacket(list.Write());
+//        SendStableResult(STABLE_ERR_NONE);
+//    }
+//
+//    PlayerPetSlotList const& petSlots = player->GetPetSlotList();
+//    for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < uint32(PET_SLOT_STABLE_LAST); ++i)
+//    {
+//        if (!petSlots[i])
+//            continue;
+//
+//        auto find = stableNumber.find(petSlots[i]);
+//        if (find == stableNumber.end())
+//            player->cleanPetSlotForMove(PetSlot(i), petSlots[i]);
+//    }
 }

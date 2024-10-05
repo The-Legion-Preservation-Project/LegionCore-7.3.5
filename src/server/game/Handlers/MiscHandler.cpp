@@ -54,7 +54,7 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
     }
 
     //this is spirit release confirm?
-    GetPlayer()->RemovePet(nullptr);
+    GetPlayer()->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
     GetPlayer()->BuildPlayerRepop();
     GetPlayer()->RepopAtGraveyard();
 }

@@ -111,7 +111,7 @@ void Arena::AddPlayer(Player* player)
 
         if (player->HasSpell(155228) || player->HasSpell(205024) || player->GetSpecializationId() == SPEC_MAGE_FIRE &&
             player->GetSpecializationId() == SPEC_MAGE_ARCANE || player->GetSpecializationId() == SPEC_DK_BLOOD || player->GetSpecializationId() == SPEC_DK_FROST)
-            player->RemovePet(pet);
+            player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
     }
 
     player->RemoveArenaEnchantments(TEMP_ENCHANTMENT_SLOT);

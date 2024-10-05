@@ -1661,7 +1661,7 @@ class Unit : public WorldObject
 
         Pet* CreateTamedPetFrom(Creature* creatureTarget, uint32 spell_id = 0);
         Pet* CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id = 0);
-        bool InitTamedPet(Pet* pet, uint32 spell_id);
+        bool InitTamedPet(Pet* pet, uint8 level, uint32 spell_id);
 
         // aura apply/remove helpers - you should better not use these
         Aura* _TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, float* baseAmount = nullptr, Item* castItem = nullptr, ObjectGuid casterGUID = ObjectGuid::Empty);

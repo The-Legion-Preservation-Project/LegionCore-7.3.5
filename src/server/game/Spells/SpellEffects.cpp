@@ -384,7 +384,7 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     {
         if (!unitTarget->GetHealth() || !unitTarget->isAlive())
         {
-            unitTarget->ToPet()->Remove();
+            unitTarget->ToPet()->Remove(PET_SAVE_NOT_IN_SLOT, false);
             return;
         }
 
@@ -4632,7 +4632,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     // caster have pet now
     m_caster->SetMinion(pet, true);
 
-    pet->SavePetToDB();
+    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     player->PetSpellInitialize();
     player->GetSession()->SendStablePet();
 }
@@ -4682,13 +4682,12 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->IsPlayer())
-            owner->ToPlayer()->RemovePet(OldSummon);
+            owner->ToPlayer()->RemovePet(OldSummon, (OldSummon->getPetType() == HUNTER_PET ? PET_SAVE_AS_DELETED : PET_SAVE_NOT_IN_SLOT), false);
         else
             return;
     }
 
     auto slot = PetSlot(RoundingFloatValue(m_spellInfo->GetEffect(effIndex, m_diffMode)->BasePoints));
-    owner->m_currentSummonedSlot = slot;
 
     Position pos;
     if (canHitTargetInLOS && owner->ToCreature())
@@ -4742,7 +4741,7 @@ void Spell::EffectLearnPetSpell(SpellEffIndex effIndex)
         return;
 
     pet->learnSpell(learn_spellproto->Id);
-    pet->SavePetToDB();
+    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     if (Player* player = pet->GetOwner()->ToPlayer())
         player->PetSpellInitialize();
 }
@@ -6403,10 +6402,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
 
     ExecuteLogEffectUnsummonObject(effIndex, pet);
     if (Player* player = pet->GetOwner()->ToPlayer())
-    {
-        player->RemovePet(pet);
-        player->m_currentPetNumber = 0;
-    }
+        player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
 }
 
 void Spell::EffectSummonObject(SpellEffIndex effIndex)
@@ -7157,7 +7153,7 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 
     //pet->AIM_Initialize();
     //player->PetSpellInitialize();
-    pet->SavePetToDB();
+    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 }
 
 void Spell::EffectDurabilityDamage(SpellEffIndex effIndex)
@@ -7648,7 +7644,7 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
 
     unitTarget->SetMinion(pet, true);
 
-    pet->SavePetToDB();
+    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     player->PetSpellInitialize();
     player->GetSession()->SendStablePet();
 }
@@ -7939,7 +7935,6 @@ void Spell::EffectActivateSpec(SpellEffIndex /*effIndex*/)
             pet->UnlearnSpecializationSpell();
             pet->SetSpecialization(m_miscData[0]);
             pet->LearnSpecializationSpell();
-            player->AddPetInfo(pet);
             player->SendTalentsInfoData(true);
             break;
         }

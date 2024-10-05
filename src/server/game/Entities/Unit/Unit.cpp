@@ -11838,7 +11838,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
-                        oldPet->ToPet()->Remove();
+                        oldPet->ToPet()->Remove(PET_SAVE_AS_CURRENT);
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());
@@ -19189,11 +19189,6 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget, uint32 spellID)
     if (!player)
         return nullptr;
 
-    player->m_currentSummonedSlot = player->getSlotForNewPet();
-
-    if (player->m_currentSummonedSlot == PET_SLOT_FULL_LIST)
-        return nullptr;
-
     Pet* pet = new Pet(player, HUNTER_PET);
 
     if (!pet->CreateBaseAtCreature(creatureTarget))
@@ -19202,9 +19197,9 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget, uint32 spellID)
         return nullptr;
     }
 
-    InitTamedPet(pet, spellID);
-    pet->SetSlot(player->m_currentSummonedSlot);
-    player->AddPetInfo(pet);
+    uint8 level = creatureTarget->getLevelForTarget(this) + 5 < getLevel() ? (getLevel() - 5) : creatureTarget->getLevelForTarget(this);
+
+    InitTamedPet(pet, level, spellID);
 
     return pet;
 }
@@ -19215,34 +19210,26 @@ Pet* Unit::CreateTamedPetFrom(uint32 creatureEntry, uint32 spellID)
     if (!player)
         return nullptr;
 
-    player->m_currentSummonedSlot = player->getSlotForNewPet();
-
-    if (player->m_currentSummonedSlot == PET_SLOT_FULL_LIST)
-        return nullptr;
-
     CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureEntry);
     if (!creatureInfo)
         return nullptr;
 
     Pet* pet = new Pet(player, HUNTER_PET);
 
-    if (!pet->CreateBaseAtCreatureInfo(creatureInfo, this) || !InitTamedPet(pet, spellID))
+    if (!pet->CreateBaseAtCreatureInfo(creatureInfo, this) || !InitTamedPet(pet, getLevel(), spellID))
     {
         delete pet;
         return nullptr;
     }
 
-    pet->SetSlot(player->m_currentSummonedSlot);
-    player->AddPetInfo(pet);
-
     return pet;
 }
 
-bool Unit::InitTamedPet(Pet* pet, uint32 spellID)
+bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 {
     pet->SetCreatorGUID(GetGUID());
     pet->setFaction(getFaction());
-    pet->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, spellID);
+    pet->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, spell_id);
 
     if (IsPlayer())
     {
@@ -19250,7 +19237,7 @@ bool Unit::InitTamedPet(Pet* pet, uint32 spellID)
         pet->AddUnitTypeMask(UNIT_MASK_CREATED_BY_PLAYER);
     }
 
-    if (!pet->InitStatsForLevel(GetEffectiveLevel(), false))
+    if (!pet->InitStatsForLevel(level, false))
     {
         TC_LOG_ERROR("entities.unit", "Pet::InitStatsForLevel() failed for creature (Entry: %u)!", pet->GetEntry());
         return false;

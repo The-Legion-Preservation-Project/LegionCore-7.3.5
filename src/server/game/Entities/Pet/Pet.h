@@ -74,10 +74,10 @@ class Pet : public Guardian
         bool CreateBaseAtCreature(Creature* creature);
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
-        bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0);
+        bool LoadPetFromDB(Player* owner, uint32 petEntry = 0, uint32 petnumber = 0, bool current = false);
         bool isBeingLoaded() const override { return m_loading;}
-        void SavePetToDB(bool isDelete = false);
-        void Remove();
+        void SavePetToDB(PetSaveMode mode);
+        void Remove(PetSaveMode mode, bool returnreagent = false);
         static void DeleteFromDB(uint32 guidlow);
 
         void setDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
@@ -116,6 +116,7 @@ class Pet : public Guardian
         bool unlearnSpell(uint32 spell_id);
         bool removeSpell(uint32 spell_id);
         void CleanupActionBar();
+        std::string GenerateActionBarData() const;
 
         void InitPetCreateSpells();
 
