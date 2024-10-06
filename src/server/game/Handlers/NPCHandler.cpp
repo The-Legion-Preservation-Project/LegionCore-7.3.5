@@ -703,9 +703,11 @@ void WorldSession::HandleRequestStabledPets(WorldPackets::NPC::RequestStabledPet
         return;
     }
 
+    // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
+    // remove mounts this fix bug where getting pet from stable while mounted deletes pet.
     if (GetPlayer()->IsMounted())
         GetPlayer()->RemoveAurasByType(SPELL_AURA_MOUNTED);
 

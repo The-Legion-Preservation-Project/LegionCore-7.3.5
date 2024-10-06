@@ -480,6 +480,10 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPackets::Spells::PetCastSpell& 
 
 void WorldSession::HandleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet)
 {
+    if (packet.PetIndex)
+    {
+        TC_LOG_INFO("network", "HandleSetPetSlot");
+    }
 //    if (!GetPlayer()->GetNPCIfCanInteractWith(packet.NpcGUID, UNIT_NPC_FLAG_STABLEMASTER))
 //    {
 //        TC_LOG_DEBUG("network", "Stablemaster (GUID:%u) not found or you can't interact with him.", packet.NpcGUID.GetGUIDLow());

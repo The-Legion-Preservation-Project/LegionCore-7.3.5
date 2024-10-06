@@ -4588,7 +4588,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!m_caster->GetPetGUID().IsEmpty())
+    if (!m_caster || !m_caster->GetPetGUID().IsEmpty())
         return;
 
     Player* player = m_caster->ToPlayer();
@@ -4634,7 +4634,6 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
 
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     player->PetSpellInitialize();
-    player->GetSession()->SendStablePet();
 }
 
 void Spell::EffectSummonPet(SpellEffIndex effIndex)
@@ -4663,7 +4662,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     // if pet requested type already exist
     if (OldSummon)
     {
-        if (petentry == 0)
+        if (petentry == 0 || OldSummon->GetEntry() == petentry)
         {
             // pet in corpse state can't be summoned
             if (OldSummon->isDead())

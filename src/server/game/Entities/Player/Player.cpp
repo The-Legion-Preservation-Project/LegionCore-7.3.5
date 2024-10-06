@@ -26600,6 +26600,9 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         return nullptr;
     }
 
+    if (petType == SUMMON_PET && petStable.CurrentPet)
+        RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
+
     pet->SetTratsport(GetTransport());
     pet->SetCreatorGUID(GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE, getFaction());
@@ -26619,11 +26622,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     // After SetPetNumber
     SetMinion(pet, true);
 
-    map->AddToMap(pet->ToCreature());
-
-    ASSERT(!petStable.CurrentPet && (petType != HUNTER_PET || !petStable.GetUnslottedHunterPet()));
-    pet->FillPetInfo(&petStable.CurrentPet.emplace());
-
     switch (petType)
     {
         case SUMMON_PET:
@@ -26639,6 +26637,11 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         default:
             break;
     }
+
+    map->AddToMap(pet->ToCreature());
+
+    ASSERT(!petStable.CurrentPet && (petType != HUNTER_PET || !petStable.GetUnslottedHunterPet()));
+    pet->FillPetInfo(&petStable.CurrentPet.emplace());
 
     switch (petType)
     {
@@ -30130,8 +30133,6 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
 
     if (getClass() == CLASS_DEATH_KNIGHT)
         SetPower(POWER_RUNIC_POWER, 0);
-
-    GetSession()->SendStablePet();
 
     InstanceMap* inst = GetMap()->ToInstanceMap();
     // send step data when entering scenarios
