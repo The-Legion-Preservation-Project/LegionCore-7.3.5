@@ -1006,6 +1006,16 @@ void WorldSession::ProcessQueryCallbacks()
     _queryHolderProcessor.ProcessReadyCallbacks();
 }
 
+TransactionCallback& WorldSession::AddTransactionCallback(TransactionCallback&& callback)
+{
+    return _transactionCallbacks.AddCallback(std::move(callback));
+}
+
+SQLQueryHolderCallback& WorldSession::AddQueryHolderCallback(SQLQueryHolderCallback&& callback)
+{
+    return _queryHolderProcessor.AddCallback(std::move(callback));
+}
+
 bool WorldSession::InitializeWarden(BigNumber* k, std::string const& os)
 {
     if (os == "Win" || os == "Wn64")

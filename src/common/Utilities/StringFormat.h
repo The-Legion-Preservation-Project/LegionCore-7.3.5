@@ -25,14 +25,22 @@
 namespace Trinity
 {
     /// Default TC string format function.
-    template<typename Format, typename... Args>
-    inline std::string StringFormat(Format&& fmt, Args&&... args)
+    template<typename... Args>
+    std::string StringFormat(std::string_view fmt, Args&&... args)
     {
-        return fmt::sprintf(std::forward<Format>(fmt), std::forward<Args>(args)...);
+        try
+        {
+            return fmt::sprintf(fmt, std::forward<Args>(args)...);
+        }
+        catch (fmt::format_error const& formatError)
+        {
+            std::string error = "An error occurred formatting string \"" + std::string(fmt) + "\" : " + formatError.what();
+            return error;
+        }
     }
 
     /// Returns true if the given char pointer is null.
-    inline bool IsFormatEmptyOrNull(const char* fmt)
+    inline bool IsFormatEmptyOrNull(char const* fmt)
     {
         return fmt == nullptr;
     }
@@ -49,5 +57,9 @@ namespace Trinity
         return fmt.empty();
     }
 }
+
+// allow implicit enum to int conversions for formatting
+template <typename E, std::enable_if_t<std::is_enum_v<E>, std::nullptr_t> = nullptr>
+auto format_as(E e) { return std::underlying_type_t<E>(e); }
 
 #endif
