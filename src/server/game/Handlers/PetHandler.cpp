@@ -791,7 +791,7 @@ void WorldSession::SendStablePet(ObjectGuid const& guid /*= ObjectGuid::Empty*/)
     stmt->setUInt8(1, PET_SAVE_FIRST_STABLE_SLOT);
     stmt->setUInt8(2, PET_SAVE_LAST_STABLE_SLOT);
 
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
 }
 
 void WorldSession::SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result)

@@ -150,7 +150,7 @@ void WorldSession::SendCharacterEnum(bool deleted /*= false*/)
     stmt->setUInt8(0, PET_SAVE_AS_CURRENT);
     stmt->setUInt32(1, GetAccountId());
 
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharEnum, this, std::placeholders::_1, deleted)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharEnum, this, std::placeholders::_1, deleted)));
 }
 
 void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateChar& charCreate)
@@ -278,7 +278,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateChar& c
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
     stmt->setString(0, charCreate.CreateInfo->Name);
 
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt)
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt)
         .WithChainingPreparedCallback([this, SendCharCreate](QueryCallback& queryCallback, PreparedQueryResult result)
     {
         if (result)
@@ -605,9 +605,9 @@ void WorldSession::HandleLoadScreenOpcode(WorldPackets::Character::LoadingScreen
     }
 }
 
-void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
+void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 {
-    auto playerGuid = holder->GetGuid();
+    auto playerGuid = holder.GetGuid();
 
     auto pCurrChar = new Player(this);
     // for send server info and strings (config)
@@ -619,7 +619,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         SetPlayer(nullptr);
         KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
         delete pCurrChar;                                   // delete it manually
-        delete holder;                                      // delete all unprocessed queries
         m_playerLoading.Clear();
         return;
     }
@@ -638,7 +637,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendPacket(loginVerifyWorld.Write());
 
     // load player specific part before send times
-    LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), PER_CHARACTER_CACHE_MASK);
+    LoadAccountData(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTDATA), PER_CHARACTER_CACHE_MASK);
 
 //    // rewrite client channel mask if not valid (autojoin LFG channel)
 //    if (auto aData = GetAccountData(PER_CHARACTER_CHAT_CACHE))
@@ -793,7 +792,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     SendSetTimeZoneInformation();
 
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guildid, rank FROM guild_member WHERE guid = '%u'", pCurrChar->GetGUIDLow());
-    if (PreparedQueryResult resultGuild = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGUILD))
+    if (PreparedQueryResult resultGuild = holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGUILD))
     {
         Field* fields = resultGuild->Fetch();
         pCurrChar->SetInGuild(fields[0].GetUInt64());
@@ -1000,8 +999,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         sScriptMgr->OnPlayerLogin(player, firstLogin);
         player->SetChangeMap(false);
     });
-
-    delete holder;
 }
 
 void WorldSession::HandleSetFactionAtWar(WorldPackets::Character::SetFactionAtWar& packet)
@@ -1279,7 +1276,7 @@ void WorldSession::HandleCharCustomize(WorldPackets::Character::CharCustomize& p
 {
     auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_CUSTOMIZE_INFO);
     stmt->setUInt64(0, packet.CustomizeInfo->CharGUID.GetCounter());
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharCustomizeCallback, this, packet.CustomizeInfo, std::placeholders::_1)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleCharCustomizeCallback, this, packet.CustomizeInfo, std::placeholders::_1)));
 }
 
 void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<WorldPackets::Character::CharCustomizeInfo> customizeInfo, PreparedQueryResult result)
@@ -2010,10 +2007,9 @@ void WorldSession::HandleContinuePlayerLogin()
         return;
     }
 
-    auto holder = new LoginQueryHolder(GetAccountId(), m_playerLoading);
+    std::shared_ptr<LoginQueryHolder> holder = std::make_shared<LoginQueryHolder>(GetAccountId(), m_playerLoading);
     if (!holder->Initialize())
     {
-        delete holder;                                      // delete all unprocessed queries
         m_playerLoading.Clear();
         return;
     }
@@ -2021,7 +2017,11 @@ void WorldSession::HandleContinuePlayerLogin()
     TC_LOG_INFO("network.opcode", "WorldSession::HandleContinuePlayerLogin");
 
     SendPacket(WorldPackets::Auth::ResumeComms(CONNECTION_TYPE_INSTANCE).Write());
-    _charLoginCallback = CharacterDatabase.DelayQueryHolder(holder);
+
+    AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder)).AfterComplete([this](SQLQueryHolderBase const& holder)
+    {
+        HandlePlayerLogin(dynamic_cast<LoginQueryHolder const&>(holder));
+    });
 }
 
 void WorldSession::AbortLogin(WorldPackets::Character::LoginFailureReason reason)
@@ -2175,7 +2175,7 @@ void WorldSession::HandleUndeleteCharacter(WorldPackets::Character::UndeleteChar
     stmt->setUInt32(0, GetAccountId());
 
     auto undeleteInfo = packet.UndeleteInfo;
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithChainingPreparedCallback([undeleteInfo, SendUndeleteCharacterResponse](QueryCallback& queryCallback, PreparedQueryResult result)
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithChainingPreparedCallback([undeleteInfo, SendUndeleteCharacterResponse](QueryCallback& queryCallback, PreparedQueryResult result)
     {
         if (result)
         {
@@ -2252,7 +2252,7 @@ void WorldSession::HandleGetUndeleteCharacterCooldownStatus(WorldPackets::Charac
 {
     auto stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_LAST_CHAR_UNDELETE);
     stmt->setUInt32(0, GetAccountId());
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleUndeleteCooldownStatusCallback, this, std::placeholders::_1)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleUndeleteCooldownStatusCallback, this, std::placeholders::_1)));
 }
 
 void WorldSession::HandleUndeleteCooldownStatusCallback(PreparedQueryResult const& result)
