@@ -479,7 +479,7 @@ void World::LoadConfigSettings(bool reload)
     m_defaultDbcLocale = LocaleConstant(sConfigMgr->GetIntDefault("DBC.Locale", 0));
     if (m_defaultDbcLocale >= MAX_LOCALES || m_defaultDbcLocale < LOCALE_enUS || m_defaultDbcLocale == LOCALE_none)
     {
-        TC_LOG_ERROR("server.loading", "Incorrect DBC.Locale! Must be >= 0 and < %d and not %d (set to 0)", MAX_LOCALES, LOCALE_none);
+        TC_LOG_ERROR("server.loading", "Incorrect DBC.Locale! Must be >= 0 and < %u and not %u (set to 0)", uint32(MAX_LOCALES), uint32(LOCALE_none));
         m_defaultDbcLocale = LOCALE_enUS;
     }
 
@@ -3356,7 +3356,7 @@ void World::UpdateRealmCharCount(uint32 accountId)
 {
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_COUNT);
     stmt->setUInt32(0, accountId);
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&World::_UpdateRealmCharCount, this, std::placeholders::_1)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&World::_UpdateRealmCharCount, this, std::placeholders::_1)));
 }
 
 void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
@@ -3767,7 +3767,6 @@ void World::InstanceDailyResetTime()
         }
     }
     CharacterDatabase.CommitTransaction(trans);
-    CharacterDatabase.WaitExecution();
 
     if (sWorld->getBoolConfig(CONFIG_WORLD_QUEST))
         sQuestDataStore->GenerateWorldQuestUpdate();
@@ -3798,7 +3797,6 @@ void World::InstanceWeeklyResetTime()
         }
     }
     CharacterDatabase.CommitTransaction(trans);
-    CharacterDatabase.WaitExecution();
 }
 
 void World::ChallengeKeyResetTime()
@@ -4163,7 +4161,7 @@ uint32 World::getWorldState(uint32 index) const
 
 void World::ProcessQueryCallbacks()
 {
-    _queryProcessor.ProcessReadyQueries();
+    _queryProcessor.ProcessReadyCallbacks();
 }
 
 void World::LoadCharacterNameData()
@@ -4575,7 +4573,7 @@ void World::Transfer()
             std::string dump;
             DumpReturn dumpState = PlayerDumpWriter().WriteDump(guid, dump);
 
-            TC_LOG_DEBUG("network", "Transfer toDump guid %lu, dump %u", guid, dumpState);
+            TC_LOG_DEBUG("network", "Transfer toDump guid %lu, dump %u", guid, uint32(dumpState));
 
             if (dumpState == DUMP_SUCCESS)
             {
@@ -4594,7 +4592,7 @@ void World::Transfer()
             }
             else
             {
-                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = %u WHERE `id` = '%u'", dumpState, transaction);
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = %u WHERE `id` = '%u'", uint32(dumpState), transaction);
                 continue;
             }
         }
@@ -4619,7 +4617,7 @@ void World::Transfer()
 
             DumpReturn dumpState = PlayerDumpReader().LoadDump(toacc, dump, "", newguid);
 
-            TC_LOG_DEBUG("network", "Transfer toLoad guid %lu, dump %u", guid, dumpState);
+            TC_LOG_DEBUG("network", "Transfer toLoad guid %lu, dump %u", guid, uint32(dumpState));
 
             if (dumpState == DUMP_SUCCESS)
             {
@@ -4642,15 +4640,15 @@ void World::Transfer()
                         if (realm.Id.Realm == 59)
                             LoginDatabase.PQuery("UPDATE `transfer_requests` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
                         else
-                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", dumpState, newguid, transferId);
+                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", uint32(dumpState), newguid, transferId);
                     }
                 }
             }
             else
             {
-                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", dumpState, transaction);
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", uint32(dumpState), transaction);
                 if (transferId && realm.Id.Realm != 59)
-                    LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", dumpState, transferId);
+                    LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", uint32(dumpState), transferId);
                 continue;
             }
         }

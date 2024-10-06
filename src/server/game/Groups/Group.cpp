@@ -2404,7 +2404,7 @@ InstanceGroupBind* Group::BindToInstance(InstanceSave* save, bool permanent, boo
     bind.perm = permanent;
     if (!load)
         TC_LOG_DEBUG("maps", "Group::BindToInstance: Group (guid: %u, storage id: %u) is now bound to map %d, instance %d, difficulty %d",
-        GetGUIDLow(), m_dbStoreId, save->GetMapId(), save->GetInstanceId(), save->GetDifficultyID());
+        GetGUIDLow(), m_dbStoreId, save->GetMapId(), save->GetInstanceId(), uint32(save->GetDifficultyID()));
 
     return &bind;
 }

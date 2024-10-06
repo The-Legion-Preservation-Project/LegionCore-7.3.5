@@ -387,7 +387,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             _type = PATHFIND_NOPATH;
 
         if (_sourceUnit->IsPlayer() || _sourceUnit->isSummon())
-            TC_LOG_DEBUG("maps", "++ BuildPolyPath :: path type %d\n", _type);
+            TC_LOG_DEBUG("maps", "++ BuildPolyPath :: path type %u\n", uint32(_type));
         return;
     }
 
@@ -663,7 +663,7 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
     }
 
     if (_sourceUnit->IsPlayer() || _sourceUnit->isSummon())
-        TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath path type %d size %d poly-size %d _forceDestination %u", _type, pointCount, _polyLength, _forceDestination);
+        TC_LOG_DEBUG("maps", "++ PathGenerator::BuildPointPath path type %u size %d poly-size %d _forceDestination %u", uint32(_type), pointCount, _polyLength, _forceDestination);
 }
 
 void PathGenerator::SetStartPosition(G3D::Vector3 const& point)

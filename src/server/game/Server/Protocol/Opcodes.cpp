@@ -81,13 +81,13 @@ void OpcodeTable::ValidateAndSetClientOpcode(OpcodeClient opcode, char const* na
 
     if (uint16(opcode) >= NUM_OPCODE_HANDLERS)
     {
-        TC_LOG_ERROR("network", "Tried to set handler for an invalid opcode %d", opcode);
+        TC_LOG_ERROR("network", "Tried to set handler for an invalid opcode %d", uint32(opcode));
         return;
     }
 
     if (_internalTableClient[opcode] != nullptr)
     {
-        TC_LOG_ERROR("network", "Tried to override client handler of %s with %s (opcode %u)", GetOpcodeNameForLogging(opcode).c_str(), name, opcode);
+        TC_LOG_ERROR("network", "Tried to override client handler of %s with %s (opcode %u)", GetOpcodeNameForLogging(opcode).c_str(), name, uint32(opcode));
         return;
     }
 
@@ -125,31 +125,31 @@ void OpcodeTable::ValidateAndSetServerOpcode(OpcodeServer opcode, char const* na
 
     if (uint16(opcode) >= NUM_OPCODE_HANDLERS)
     {
-        TC_LOG_ERROR("network", "Tried to set handler for an invalid opcode %d", opcode);
+        TC_LOG_ERROR("network", "Tried to set handler for an invalid opcode %u", uint32(opcode));
         return;
     }
 
     if (_internalTableServer[opcode] != nullptr)
     {
-        TC_LOG_ERROR("network", "Tried to override server handler of %s with %s (opcode %u)", GetOpcodeNameForLogging(opcode).c_str(), name, opcode);
+        TC_LOG_ERROR("network", "Tried to override server handler of %s with %s (opcode %u)", GetOpcodeNameForLogging(opcode).c_str(), name, uint32(opcode));
         return;
     }
 
     if (conIdx >= MAX_CONNECTION_TYPES)
     {
-        TC_LOG_ERROR("network", "Tried to set invalid connection type %u for opcode %s", conIdx, name);
+        TC_LOG_ERROR("network", "Tried to set invalid connection type %u for opcode %s", uint32(conIdx), name);
         return;
     }
 
     if (IsInstanceOnlyOpcode(opcode) && conIdx != CONNECTION_TYPE_INSTANCE)
     {
-        TC_LOG_ERROR("network", "Tried to set invalid connection type %u for instance only opcode %s", conIdx, name);
+        TC_LOG_ERROR("network", "Tried to set invalid connection type %u for instance only opcode %s", uint32(conIdx), name);
         return;
     }
 
     if (_internalTableServer[opcode] != nullptr)
     {
-        TC_LOG_ERROR("network", "Tried to override server handler of %s with %s (opcode %u)", opcodeTable[opcode]->Name, name, opcode);
+        TC_LOG_ERROR("network", "Tried to override server handler of %s with %s (opcode %u)", opcodeTable[opcode]->Name, name, uint32(opcode));
         return;
     }
 

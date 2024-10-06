@@ -57,7 +57,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::GarrisonFollowe
     for (auto ability : follower.AbilityID)
         data << uint32(ability);
 
-    data.WriteString(follower.CustomName, 7);
+    data.WriteString(follower.CustomName.c_str(), 7);
 
     return data;
 }

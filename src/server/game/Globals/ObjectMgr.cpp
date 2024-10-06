@@ -1775,7 +1775,7 @@ void ObjectMgr::LoadTempSummons()
                 }
                 break;
             default:
-                TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has unhandled summoner type %u for summoner %u, skipped.", summonerType, summonerId);
+                TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has unhandled summoner type %u for summoner %u, skipped.", uint32(summonerType), summonerId);
                 continue;
         }
 
@@ -1784,7 +1784,7 @@ void ObjectMgr::LoadTempSummons()
 
         if (!GetCreatureTemplate(data.entry))
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has creature in group [Summoner ID: %u, Summoner Type: %u, Group ID: %u] with non existing creature entry %u, skipped.", summonerId, summonerType, group, data.entry);
+            TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has creature in group [Summoner ID: %u, Summoner Type: %u, Group ID: %u] with non existing creature entry %u, skipped.", summonerId, uint32(summonerType), group, data.entry);
             continue;
         }
 
@@ -1802,7 +1802,7 @@ void ObjectMgr::LoadTempSummons()
 
         if (data.sumType > TEMPSUMMON_MANUAL_DESPAWN)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has unhandled temp summon type %u in group [Summoner ID: %u, Summoner Type: %u, Group ID: %u] for creature entry %u, skipped.", data.sumType, summonerId, summonerType, group, data.entry);
+            TC_LOG_ERROR("sql.sql", "Table `creature_summon_groups` has unhandled temp summon type %u in group [Summoner ID: %u, Summoner Type: %u, Group ID: %u] for creature entry %u, skipped.", uint32(data.sumType), summonerId, uint32(summonerType), group, data.entry);
             continue;
         }
 
@@ -5059,7 +5059,7 @@ inline void CheckGOLinkedTrapId(GameObjectTemplate const* goInfo, uint32 dataN, 
     {
         if (trapInfo->type != GAMEOBJECT_TYPE_TRAP)
             TC_LOG_ERROR("sql.sql", "Gameobject (Entry: %u GoType: %u) have data%d=%u but GO (Entry %u) have not GAMEOBJECT_TYPE_TRAP (%u) type.",
-            goInfo->entry, goInfo->type, N, dataN, dataN, GAMEOBJECT_TYPE_TRAP);
+            goInfo->entry, goInfo->type, N, dataN, dataN, uint32(GAMEOBJECT_TYPE_TRAP));
     }
 }
 
@@ -5564,7 +5564,7 @@ void ObjectMgr::LoadCorpses()
         CorpseType type = CorpseType(fields[12].GetUInt8());
         if (type >= MAX_CORPSE_TYPE)
         {
-            TC_LOG_ERROR("misc", "Corpse (guid: %lu) have wrong corpse type (%u), not loading.", guid, type);
+            TC_LOG_ERROR("misc", "Corpse (guid: %lu) have wrong corpse type (%u), not loading.", guid, uint32(type));
             continue;
         }
 
@@ -7691,7 +7691,6 @@ void ObjectMgr::RestructCreatureGUID()
         worldTrans->PAppend("TRUNCATE linked_respawnrestruct1;");
 
         WorldDatabase.CommitTransaction(worldTrans);
-        WorldDatabase.WaitExecution();
         newGUID++;
     } while (result->NextRow());
 
@@ -7770,7 +7769,6 @@ void ObjectMgr::RestructGameObjectGUID()
         worldTrans->PAppend("TRUNCATE pool_gameobjectRestruct1;");
 
         WorldDatabase.CommitTransaction(worldTrans);
-        WorldDatabase.WaitExecution();
 
         newGUID++;
     } while (result->NextRow());

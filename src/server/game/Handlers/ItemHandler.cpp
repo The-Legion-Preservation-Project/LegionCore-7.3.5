@@ -524,7 +524,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPackets::Item::BuyItem& packet)
             break;
         default:
         {
-            TC_LOG_DEBUG("network", "WORLD: received wrong itemType (%u) in HandleBuyItemOpcode", packet.ItemType);
+            TC_LOG_DEBUG("network", "WORLD: received wrong itemType (%u) in HandleBuyItemOpcode", uint32(packet.ItemType));
             break;
         }
     }

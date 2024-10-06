@@ -459,7 +459,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons)
     if (HasQueue(playerGuid) && PlayerDungeons[playerGuid].size() >= sWorld->getIntConfig(CONFIG_LFG_MAX_QUEUES))
     {
         joinData.result = LFG_JOIN_FAILED_REASON_TOO_MANY_LFG;
-        TC_LOG_DEBUG("lfg.join", "LFGMgr::Join: [%u] joining with %u members. result: %u", playerGuid.GetGUIDLow(), group ? group->GetMembersCount() : 1, joinData.result);
+        TC_LOG_DEBUG("lfg.join", "LFGMgr::Join: [%u] joining with %u members. result: %u", playerGuid.GetGUIDLow(), group ? group->GetMembersCount() : 1, uint32(joinData.result));
         SendLfgJoinResult(playerGuid, joinData);
         return;
     }
@@ -631,7 +631,7 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons)
 
     if (joinData.result != LFG_JOIN_OK)
     {
-        TC_LOG_DEBUG("lfg.join", "LFGMgr::Join: [%u] joining with %u members. result: %u", playerGuid.GetGUIDLow(), group ? group->GetMembersCount() : 1, joinData.result);
+        TC_LOG_DEBUG("lfg.join", "LFGMgr::Join: [%u] joining with %u members. result: %u", playerGuid.GetGUIDLow(), group ? group->GetMembersCount() : 1, uint32(joinData.result));
         if (!dungeons.empty())                             // Only should show lockmap when have no dungeons available
             joinData.lockmap.clear();
         SendLfgJoinResult(playerGuid, joinData);
@@ -1294,7 +1294,7 @@ void LFGMgr::RemoveProposal(LfgProposalContainer::iterator itProposal, LfgUpdate
     LfgProposal& proposal = itProposal->second;
     proposal.state = LFG_PROPOSAL_FAILED;
 
-    TC_LOG_DEBUG("lfg.proposal.remove", "LFGMgr::RemoveProposal: Proposal %u, state FAILED, UpdateType %u", itProposal->first, type);
+    TC_LOG_DEBUG("lfg.proposal.remove", "LFGMgr::RemoveProposal: Proposal %u, state FAILED, UpdateType %u", itProposal->first, uint32(type));
 
     if (type == LFG_UPDATETYPE_PROPOSAL_FAILED)
         for (auto& player : proposal.players)
@@ -1572,7 +1572,7 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
     //if (error != LFG_TELEPORTERROR_OK)
     player->SendLfgTeleportError(uint8(error));
 
-    TC_LOG_DEBUG("lfg.teleport", "TeleportPlayer: Player %s is being teleported in to map %u (x: %f, y: %f, z: %f) Result: %u", player->GetName(), dungeon->map, dungeon->x, dungeon->y, dungeon->z, error);
+    TC_LOG_DEBUG("lfg.teleport", "TeleportPlayer: Player %s is being teleported in to map %u (x: %f, y: %f, z: %f) Result: %u", player->GetName(), dungeon->map, dungeon->x, dungeon->y, dungeon->z, uint32(error));
 }
 
 void LFGMgr::SendUpdateStatus(ObjectGuid guid, LfgUpdateData const& updateData, bool Suspended)
@@ -1845,7 +1845,7 @@ LfgState LFGMgr::GetState(ObjectGuid guid, uint32 queueId)
     else
         state = PlayersStore[guid][queueId].GetState();
 
-    TC_LOG_DEBUG("lfg.data.state.get", "LFGMgr::GetState: %s = %u", guid.ToString().c_str(), state);
+    TC_LOG_DEBUG("lfg.data.state.get", "LFGMgr::GetState: %s = %u", guid.ToString().c_str(), uint32(state));
     return state;
 }
 
@@ -1857,7 +1857,7 @@ LfgState LFGMgr::GetOldState(ObjectGuid guid, uint32 queueId)
     else
         state = PlayersStore[guid][queueId].GetOldState();
 
-    TC_LOG_DEBUG("lfg.data.oldstate.get", "LFGMgr::GetOldState: %s = %u", guid.ToString().c_str(), state);
+    TC_LOG_DEBUG("lfg.data.oldstate.get", "LFGMgr::GetOldState: %s = %u", guid.ToString().c_str(), uint32(state));
     return state;
 }
 

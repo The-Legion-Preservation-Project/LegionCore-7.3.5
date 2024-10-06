@@ -483,7 +483,7 @@ void BattlegroundAlteracValley::EventPlayerDestroyedPoint(BG_AV_Nodes node)
 {
 
     uint32 object = GetObjectThroughNode(node);
-    TC_LOG_DEBUG("bg.battleground", "bg_av: player destroyed point node %i object %i", node, object);
+    TC_LOG_DEBUG("bg.battleground", "bg_av: player destroyed point node %u object %u", uint32(node), object);
 
     //despawn banner
     SpawnBGObject(object, RESPAWN_ONE_DAY);
@@ -664,7 +664,7 @@ void BattlegroundAlteracValley::PopulateNode(BG_AV_Nodes node)
             DelCreature(node);
 
         if (!AddSpiritGuide(node, BG_AV_CreaturePos[node], team2))
-            TC_LOG_ERROR("bg.battleground", "AV: couldn't spawn spiritguide at node %i", node);
+            TC_LOG_ERROR("bg.battleground", "AV: couldn't spawn spiritguide at node %u", uint32(node));
 
     }
 
@@ -733,7 +733,7 @@ BG_AV_Nodes BattlegroundAlteracValley::GetNodeThroughObject(uint32 object)
 
 uint32 BattlegroundAlteracValley::GetObjectThroughNode(BG_AV_Nodes node)
 { //this function is the counterpart to GetNodeThroughObject()
-    TC_LOG_DEBUG("bg.battleground", "bg_AV GetObjectThroughNode %i", node);
+    TC_LOG_DEBUG("bg.battleground", "bg_AV GetObjectThroughNode %u", uint32(node));
     if (m_Nodes[node].Owner == ALLIANCE)
     {
         if (m_Nodes[node].State == POINT_ASSAULTED)
@@ -764,7 +764,7 @@ uint32 BattlegroundAlteracValley::GetObjectThroughNode(BG_AV_Nodes node)
     }
     else if (m_Nodes[node].Owner == AV_NEUTRAL_TEAM)
         return BG_AV_OBJECT_FLAG_N_SNOWFALL_GRAVE;
-    TC_LOG_ERROR("bg.battleground", "BattlegroundAlteracValley: Error! GetPlaceNode couldn't resolve node %i", node);
+    TC_LOG_ERROR("bg.battleground", "BattlegroundAlteracValley: Error! GetPlaceNode couldn't resolve node %u", uint32(node));
     ASSERT(false);
     return 0;
 }
@@ -815,10 +815,10 @@ void BattlegroundAlteracValley::EventPlayerDefendsPoint(Player* player, uint32 o
         EventPlayerAssaultsPoint(player, object);
         return;
     }
-    TC_LOG_DEBUG("bg.battleground", "player defends point object: %i node: %i", object, node);
+    TC_LOG_DEBUG("bg.battleground", "player defends point object: %i node: %u", object, uint32(node));
     if (m_Nodes[node].PrevOwner != team)
     {
-        TC_LOG_ERROR("bg.battleground", "BG_AV: player defends point which doesn't belong to his team %i", node);
+        TC_LOG_ERROR("bg.battleground", "BG_AV: player defends point which doesn't belong to his team %u", uint32(node));
         return;
     }
 
@@ -877,7 +877,7 @@ void BattlegroundAlteracValley::EventPlayerAssaultsPoint(Player* player, uint32 
     BG_AV_Nodes node = GetNodeThroughObject(object);
     uint32 owner = m_Nodes[node].Owner; //maybe name it prevowner
     uint32 team = player->GetBGTeam();
-    TC_LOG_DEBUG("bg.battleground", "bg_av: player assaults point object %i node %i", object, node);
+    TC_LOG_DEBUG("bg.battleground", "bg_av: player assaults point object %i node %u", object, uint32(node));
     if (owner == team || team == m_Nodes[node].TotalOwner)
         return; //surely a gm used this object
 
@@ -1296,7 +1296,7 @@ const char* BattlegroundAlteracValley::GetNodeName(BG_AV_Nodes node)
         case BG_AV_NODES_FROSTWOLF_WTOWER:  return GetTrinityString(LANG_BG_AV_NODE_TOWER_FROST_W);
         case BG_AV_NODES_FROSTWOLF_HUT:     return GetTrinityString(LANG_BG_AV_NODE_GRAVE_FROST_HUT);
         default:
-            TC_LOG_ERROR("bg.battleground", "tried to get name for node %u", node);
+            TC_LOG_ERROR("bg.battleground", "tried to get name for node %u", uint32(node));
             break;
     }
 

@@ -563,7 +563,7 @@ void AreaTriggerDataStoreMgr::LoadAreaTriggerActionsAndData()
             if (action.actionType >= AT_ACTION_TYPE_MAX)
             {
                 TC_LOG_ERROR("sql.sql", "LoadAreaTriggerActionsAndData() >> DB table `areatrigger_actions` has invalid action type '%u' for areatrigger entry %u",
-                    action.actionType, entry);
+                    uint32(action.actionType), entry);
                 continue;
             }
 

@@ -489,7 +489,7 @@ void ScriptedAI::DoTeleportPlayer(Unit* unit, float x, float y, float z, float o
     if (Player* player = unit->ToPlayer())
         player->TeleportTo(unit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
     else
-        TC_LOG_ERROR("scripts", "Creature " UI64FMTD " (Entry: %u) Tried to teleport non-player unit (Type: %u GUID: " UI64FMTD ") to x: %f y:%f z: %f o: %f. Aborted.", me->GetGUID().GetCounter(), me->GetEntry(), unit->GetTypeId(), unit->GetGUID().GetCounter(), x, y, z, o);
+        TC_LOG_ERROR("scripts", "Creature " UI64FMTD " (Entry: %u) Tried to teleport non-player unit (Type: %u GUID: " UI64FMTD ") to x: %f y:%f z: %f o: %f. Aborted.", me->GetGUID().GetCounter(), me->GetEntry(), uint32(unit->GetTypeId()), unit->GetGUID().GetCounter(), x, y, z, o);
 }
 
 void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)

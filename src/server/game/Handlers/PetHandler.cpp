@@ -174,7 +174,7 @@ void WorldSession::HandlePetSetAction(WorldPackets::PetPackets::PetSetAction& pa
     CharmInfo* charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        TC_LOG_ERROR("network", "WorldSession::HandlePetSetAction: object (GUID: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", pet->GetGUIDLow(), pet->GetTypeId());
+        TC_LOG_ERROR("network", "WorldSession::HandlePetSetAction: object (GUID: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", pet->GetGUIDLow(), uint32(pet->GetTypeId()));
         return;
     }
 
@@ -336,7 +336,7 @@ void WorldSession::HandlePetSpellAutocast(WorldPackets::PetPackets::PetSpellAuto
     CharmInfo* charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        TC_LOG_ERROR("network", "WorldSession::HandlePetSpellAutocastOpcod: object (GUID: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", pet->GetGUIDLow(), pet->GetTypeId());
+        TC_LOG_ERROR("network", "WorldSession::HandlePetSpellAutocastOpcod: object (GUID: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", pet->GetGUIDLow(), uint32(pet->GetTypeId()));
         return;
     }
 
@@ -499,7 +499,7 @@ void WorldSession::HanleSetPetSlot(WorldPackets::PetPackets::SetPetSlot& packet)
     stmt->setUInt64(0, _player->GetGUIDLow());
     stmt->setUInt32(1, packet.PetIndex);
 
-    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableChangeSlotCallback, this, std::placeholders::_1, packet.PetIndex)));
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableChangeSlotCallback, this, std::placeholders::_1, packet.PetIndex)));
 }
 
 void WorldSession::HandleStableChangeSlotCallback(PreparedQueryResult const& result, uint8 new_slot)
@@ -560,7 +560,7 @@ void WorldSession::HandlePetActionHelper(Unit* pet, ObjectGuid petGuid, uint32 s
     CharmInfo* charmInfo = pet->GetCharmInfo();
     if (!charmInfo)
     {
-        TC_LOG_ERROR("network", "WorldSession::HandlePetAction(petGuid: " UI64FMTD ", tagGuid: " UI64FMTD ", spellId: %u, flag: %u): object (entry: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", petGuid.GetCounter(), targetGuid.GetCounter(), spellid, flag, pet->GetGUIDLow(), pet->GetTypeId());
+        TC_LOG_ERROR("network", "WorldSession::HandlePetAction(petGuid: " UI64FMTD ", tagGuid: " UI64FMTD ", spellId: %u, flag: %u): object (entry: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", petGuid.GetCounter(), targetGuid.GetCounter(), spellid, flag, pet->GetGUIDLow(), uint32(pet->GetTypeId()));
         return;
     }
 

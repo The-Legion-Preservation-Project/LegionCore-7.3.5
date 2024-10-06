@@ -228,7 +228,7 @@ void WorldStateMgr::LoadTemplatesFromDB()
 void WorldStateMgr::LoadTemplatesFromObjectTemplateDB()
 {
     uint32 count = 0;
-    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", GAMEOBJECT_TYPE_CONTROL_ZONE))
+    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", uint32(GAMEOBJECT_TYPE_CONTROL_ZONE)))
     {
         do
         {
@@ -260,7 +260,7 @@ void WorldStateMgr::LoadTemplatesFromObjectTemplateDB()
         while (result->NextRow());
     }
 
-    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", GAMEOBJECT_TYPE_NEW_FLAG))
+    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", uint32(GAMEOBJECT_TYPE_NEW_FLAG)))
     {
         do
         {
@@ -280,7 +280,7 @@ void WorldStateMgr::LoadTemplatesFromObjectTemplateDB()
         while (result->NextRow());
     }
 
-    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", GAMEOBJECT_TYPE_CAPTURE_POINT))
+    if (auto result = WorldDatabase.PQuery("SELECT `entry` FROM `gameobject_template` WHERE `type` = %u", uint32(GAMEOBJECT_TYPE_CAPTURE_POINT)))
     {
         do
         {

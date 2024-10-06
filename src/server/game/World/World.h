@@ -23,6 +23,7 @@
 #ifndef __WORLD_H
 #define __WORLD_H
 
+#include "AsyncCallbackProcessor.h"
 #include "Common.h"
 #include "Realm/Realm.h"
 #include "ObjectGuid.h"

@@ -1214,7 +1214,7 @@ void Loot::FillPersonalLootFor(Player* lootOwner)
 {
     if (Group* group = lootOwner->GetGroup())
     {
-        TC_LOG_DEBUG("loot", "LootItem::FillPersonalLootFor GetLootMethod %u", group->GetLootMethod());
+        TC_LOG_DEBUG("loot", "LootItem::FillPersonalLootFor GetLootMethod %u", uint32(group->GetLootMethod()));
 
         // if (group->GetLootMethod() != PERSONAL_LOOT)
             // return;

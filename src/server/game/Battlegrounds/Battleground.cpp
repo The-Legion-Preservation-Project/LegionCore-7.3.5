@@ -2129,7 +2129,7 @@ void Battleground::HandleTriggerBuff(ObjectGuid go_guid)
         index--;
     if (index < 0)
     {
-        TC_LOG_ERROR("bg.battleground", "Battleground::HandleTriggerBuff: cannot find buff gameobject (GUID: %lu, entry: %u, type: %u) in internal data for BG (map: %u, instance id: %u)!", go_guid.GetCounter(), obj->GetEntry(), obj->GetGoType(), m_MapId, m_InstanceID);
+        TC_LOG_ERROR("bg.battleground", "Battleground::HandleTriggerBuff: cannot find buff gameobject (GUID: %lu, entry: %u, type: %u) in internal data for BG (map: %u, instance id: %u)!", go_guid.GetCounter(), obj->GetEntry(), uint32(obj->GetGoType()), m_MapId, m_InstanceID);
         return;
     }
 

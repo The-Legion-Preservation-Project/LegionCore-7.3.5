@@ -567,7 +567,7 @@ void ScriptDataStoreMgr::LoadEventScripts()
         std::set<uint32>::const_iterator itr2 = evt_scripts.find(itr->first);
         if (itr2 == evt_scripts.end())
             TC_LOG_ERROR("sql.sql", "Table `event_scripts` has script (Id: %u) not referring to any gameobject_template type 10 data2 field, type 3 data6 field, type 13 data 2 field or any spell effect %u",
-                itr->first, SPELL_EFFECT_SEND_EVENT);
+                itr->first, uint32(SPELL_EFFECT_SEND_EVENT));
     }
 }
 

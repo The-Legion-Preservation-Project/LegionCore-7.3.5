@@ -74,7 +74,7 @@ void LoadDisables()
         auto type = DisableType(fields[0].GetUInt32());
         if (type >= DISABLE_TYPE_MAX)
         {
-            TC_LOG_ERROR("sql.sql", "Invalid type %u specified in `disables` table, skipped.", type);
+            TC_LOG_ERROR("sql.sql", "Invalid type %u specified in `disables` table, skipped.", uint32(type));
             continue;
         }
 

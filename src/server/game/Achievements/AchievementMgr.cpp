@@ -172,7 +172,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
 {
     if (dataType >= MAX_ACHIEVEMENT_CRITERIA_DATA_TYPE)
     {
-        TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` for criteria (Entry: %u) has wrong data type (%u), ignored.", criteria->ID, dataType);
+        TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` for criteria (Entry: %u) has wrong data type (%u), ignored.", criteria->ID, uint32(dataType));
         return false;
     }
 
@@ -222,7 +222,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!creature.id || !sObjectMgr->GetCreatureTemplate(creature.id))
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_CREATURE (%u) has non-existing creature id in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, creature.id);
+                    criteria->ID, criteria->Type, uint32(dataType), creature.id);
                 return false;
             }
             return true;
@@ -230,13 +230,13 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (classRace.class_id && ((1 << (classRace.class_id - 1)) & CLASSMASK_ALL_PLAYABLE) == 0)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_PLAYER_CLASS_RACE (%u) has non-existing class in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, classRace.class_id);
+                    criteria->ID, criteria->Type, uint32(dataType), classRace.class_id);
                 return false;
             }
             if (classRace.race_id && ((1 << (classRace.race_id - 1)) & RACEMASK_ALL_PLAYABLE) == 0)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_PLAYER_CLASS_RACE (%u) has non-existing race in value2 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, classRace.race_id);
+                    criteria->ID, criteria->Type, uint32(dataType), classRace.race_id);
                 return false;
             }
             return true;
@@ -244,7 +244,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (health.percent < 1 || health.percent > 100)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_PLAYER_LESS_HEALTH (%u) has wrong percent value in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, health.percent);
+                    criteria->ID, criteria->Type, uint32(dataType), health.percent);
                 return false;
             }
             return true;
@@ -255,19 +255,19 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!spellEntry)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type %s (%u) has wrong spell id in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), dataType, aura.spell_id);
+                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), uint32(dataType), aura.spell_id);
                 return false;
             }
             if (aura.effect_idx >= 3)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type %s (%u) has wrong spell effect index in value2 (%u), ignored.",
-                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), dataType, aura.effect_idx);
+                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), uint32(dataType), aura.effect_idx);
                 return false;
             }
             if (!spellEntry->Effects[aura.effect_idx]->ApplyAuraName)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type %s (%u) has non-aura spell effect (ID: %u Effect: %u), ignores.",
-                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), dataType, aura.spell_id, aura.effect_idx);
+                    criteria->ID, criteria->Type, (dataType == ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA ? "ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AURA" : "ACHIEVEMENT_CRITERIA_DATA_TYPE_T_AURA"), uint32(dataType), aura.spell_id, aura.effect_idx);
                 return false;
             }
             return true;
@@ -276,7 +276,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!sAreaTableStore.LookupEntry(area.id))
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_AREA (%u) has wrong area id in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, area.id);
+                    criteria->ID, criteria->Type, uint32(dataType), area.id);
                 return false;
             }
             return true;
@@ -284,7 +284,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (level.minlevel > STRONG_MAX_LEVEL)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_LEVEL (%u) has wrong minlevel in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, level.minlevel);
+                    criteria->ID, criteria->Type, uint32(dataType), level.minlevel);
                 return false;
             }
             return true;
@@ -292,7 +292,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (gender.gender > GENDER_NONE)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_GENDER (%u) has wrong gender in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, gender.gender);
+                    criteria->ID, criteria->Type, uint32(dataType), gender.gender);
                 return false;
             }
             return true;
@@ -300,7 +300,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!ScriptId)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_SCRIPT (%u) does not have ScriptName set, ignored.",
-                    criteria->ID, criteria->Type, dataType);
+                    criteria->ID, criteria->Type, uint32(dataType));
                 return false;
             }
             return true;
@@ -311,7 +311,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (map_players.maxcount <= 0)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_MAP_PLAYER_COUNT (%u) has wrong max players count in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, map_players.maxcount);
+                    criteria->ID, criteria->Type, uint32(dataType), map_players.maxcount);
                 return false;
             }
             return true;
@@ -319,7 +319,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (team.team != ALLIANCE && team.team != HORDE)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_T_TEAM (%u) has unknown team in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, team.team);
+                    criteria->ID, criteria->Type, uint32(dataType), team.team);
                 return false;
             }
             return true;
@@ -327,7 +327,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (drunk.state >= MAX_DRUNKEN)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_DRUNK (%u) has unknown drunken state in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, drunk.state);
+                    criteria->ID, criteria->Type, uint32(dataType), drunk.state);
                 return false;
             }
             return true;
@@ -335,7 +335,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!sHolidaysStore.LookupEntry(holiday.id))
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_HOLIDAY (%u) has unknown holiday in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, holiday.id);
+                    criteria->ID, criteria->Type, uint32(dataType), holiday.id);
                 return false;
             }
             return true;
@@ -345,7 +345,7 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (equipped_item.item_quality >= MAX_ITEM_QUALITY)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_requirement` (Entry: %u Type: %u) for requirement ACHIEVEMENT_CRITERIA_REQUIRE_S_EQUIPED_ITEM (%u) has unknown quality state in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, equipped_item.item_quality);
+                    criteria->ID, criteria->Type, uint32(dataType), equipped_item.item_quality);
                 return false;
             }
             return true;
@@ -353,24 +353,24 @@ bool AchievementCriteriaData::IsValid(CriteriaEntry const* criteria)
             if (!classRace.class_id && !classRace.race_id)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_PLAYER_CLASS_RACE (%u) must not have 0 in either value field, ignored.",
-                    criteria->ID, criteria->Type, dataType);
+                    criteria->ID, criteria->Type, uint32(dataType));
                 return false;
             }
             if (classRace.class_id && ((1 << (classRace.class_id - 1)) & CLASSMASK_ALL_PLAYABLE) == 0)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_PLAYER_CLASS_RACE (%u) has non-existing class in value1 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, classRace.class_id);
+                    criteria->ID, criteria->Type, uint32(dataType), classRace.class_id);
                 return false;
             }
             if (classRace.race_id && ((1 << (classRace.race_id - 1)) & RACEMASK_ALL_PLAYABLE) == 0)
             {
                 TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) for data type ACHIEVEMENT_CRITERIA_DATA_TYPE_S_PLAYER_CLASS_RACE (%u) has non-existing race in value2 (%u), ignored.",
-                    criteria->ID, criteria->Type, dataType, classRace.race_id);
+                    criteria->ID, criteria->Type, uint32(dataType), classRace.race_id);
                 return false;
             }
             return true;
         default:
-            TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) has data for non-supported data type (%u), ignored.", criteria->ID, criteria->Type, dataType);
+            TC_LOG_ERROR("sql.sql", "Table `achievement_criteria_data` (Entry: %u Type: %u) has data for non-supported data type (%u), ignored.", criteria->ID, criteria->Type, uint32(dataType));
             return false;
     }
 }
@@ -448,14 +448,14 @@ bool AchievementCriteriaData::Meets(uint32 criteria_id, AchievementCachePtr cach
             if (!map->IsDungeon())
             {
                 TC_LOG_ERROR("criteria.achievement", "Achievement system call ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT (%u) for achievement criteria %u for non-dungeon/non-raid map %u",
-                    ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT, criteria_id, map->GetId());
+                    uint32(ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT), criteria_id, map->GetId());
                 return false;
             }
             InstanceScript* instance = (static_cast<InstanceMap*>(map))->GetInstanceScript();
             if (!instance)
             {
                 TC_LOG_ERROR("criteria.achievement", "Achievement system call ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT (%u) for achievement criteria %u for map %u but map does not have a instance script",
-                    ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT, criteria_id, map->GetId());
+                    uint32(ACHIEVEMENT_CRITERIA_DATA_INSTANCE_SCRIPT), criteria_id, map->GetId());
                 return false;
             }
             return instance->CheckAchievementCriteriaMeet(criteria_id, cachePtr->player, cachePtr->target.unit, cachePtr->miscValue1);
@@ -4654,7 +4654,7 @@ void AchievementGlobalMgr::LoadCriteriaList()
     _criteriaTreeForQuest.assign(MAX_CRITERIA_TREE, 0);
 
     //support for QUEST_OBJECTIVE_COMPLETE_CRITERIA_TREE
-    if (QueryResult result = WorldDatabase.PQuery("SELECT ObjectID, QuestID FROM `quest_objectives` WHERE `Type` = %u", QUEST_OBJECTIVE_COMPLETE_CRITERIA_TREE))
+    if (QueryResult result = WorldDatabase.PQuery("SELECT ObjectID, QuestID FROM `quest_objectives` WHERE `Type` = %u", uint32(QUEST_OBJECTIVE_COMPLETE_CRITERIA_TREE)))
     {
         do
         {

@@ -255,7 +255,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
             {
                 invalidDifficulties = true;
                 TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: Invalid difficulty id (%u) for entryorguid (%ld) source_type (%u) id (%u), skipped loading.",
-                             difficultyId, temp.entryOrGuid, temp.GetScriptType(), temp.event_id);
+                             uint32(difficultyId), temp.entryOrGuid, temp.GetScriptType(), temp.event_id);
                 break;
             }
 

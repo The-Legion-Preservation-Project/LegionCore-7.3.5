@@ -237,7 +237,7 @@ public:
         CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
         if (!q.IsCoordValid())
         {
-            TC_LOG_ERROR("misc", "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+            TC_LOG_ERROR("misc", "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), uint32(obj->GetTypeId()), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
             return nullptr;
         }
 

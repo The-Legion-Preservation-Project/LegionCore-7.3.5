@@ -689,7 +689,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
     if (nodePoint->nodeType != NODE_TYPE_REFINERY && nodePoint->nodeType != NODE_TYPE_QUARRY)
     {
         if (!AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1 + nodePoint->nodeType - 2, BG_IC_SpiritGuidePos[nodePoint->nodeType], static_cast<TeamId>(nodePoint->faction)))
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: Failed to spawn spirit guide! point: %u, team: %u, ", nodePoint->nodeType, nodePoint->faction);
+            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: Failed to spawn spirit guide! point: %u, team: %u, ", uint32(nodePoint->nodeType), nodePoint->faction);
     }
 
     switch (nodePoint->gameobject_type)

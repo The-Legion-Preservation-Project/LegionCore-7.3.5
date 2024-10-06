@@ -3029,10 +3029,10 @@ void Unit::AttackerStateUpdate(Unit* victim, WeaponAttackType attType, bool extr
 
             if (IsPlayer())
                 TC_LOG_DEBUG("entities.unit", "AttackerStateUpdate: (Player) %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                    GetGUIDLow(), redirectVictim->GetGUIDLow(), redirectVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+                    GetGUIDLow(), redirectVictim->GetGUIDLow(), uint32(redirectVictim->GetTypeId()), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
             else
                 TC_LOG_DEBUG("entities.unit", "AttackerStateUpdate: (NPC)    %u attacked %u (TypeId: %u) for %u dmg, absorbed %u, blocked %u, resisted %u.",
-                    GetGUIDLow(), redirectVictim->GetGUIDLow(), redirectVictim->GetTypeId(), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
+                    GetGUIDLow(), redirectVictim->GetGUIDLow(), uint32(redirectVictim->GetTypeId()), damageInfo.damage, damageInfo.absorb, damageInfo.blocked_amount, damageInfo.resist);
             if (replacementAttackAura)
                 RemoveAura(replacementAttackAura);
         }
@@ -4621,7 +4621,7 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     aurApp->SetRemoveMode(removeMode);
     Aura* aura = aurApp->GetBase();
     SpellInfo const* spellInfo = aura->GetSpellInfo();
-    TC_LOG_DEBUG("spells", "Aura %u now is remove mode %d", aura->GetId(), removeMode);
+    TC_LOG_DEBUG("spells", "Aura %u now is remove mode %d", aura->GetId(), uint32(removeMode));
 
     // dead loop is killing the server probably
     ASSERT(m_removedAurasCount < 0xFFFFFFFF);
@@ -4900,7 +4900,7 @@ void Unit::RemoveOwnedAuraAll()
 
             aurApp->SetRemoveMode(AURA_REMOVE_BY_DEFAULT);
             Aura* aura = aurApp->GetBase();
-            TC_LOG_DEBUG("spells", "Aura %u now is remove mode %d", aura->GetId(), AURA_REMOVE_BY_DEFAULT);
+            TC_LOG_DEBUG("spells", "Aura %u now is remove mode %u", aura->GetId(), uint32(AURA_REMOVE_BY_DEFAULT));
 
             // dead loop is killing the server probably
             ASSERT(m_removedAurasCount < 0xFFFFFFFF);
@@ -15666,7 +15666,7 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             break;
         }
         default:
-            TC_LOG_ERROR("entities.unit", "Unit::UpdateSpeed: Unsupported move type (%d)", mtype);
+            TC_LOG_ERROR("entities.unit", "Unit::UpdateSpeed: Unsupported move type (%u)", uint32(mtype));
             return;
     }
 
@@ -21211,7 +21211,7 @@ bool Unit::SpellProcCheck(Unit* victim, SpellInfo const* spellProto, SpellInfo c
 
 void Unit::CalculateFromDummy(Unit* victim, float &amount, SpellInfo const* spellProto, uint32 mask, SpellAuraDummyType type) const
 {
-    TC_LOG_DEBUG("spells", "Unit::CalculateFromDummy start GetId %i, amount %f, mask %i type %u", spellProto->Id, amount, mask, type);
+    TC_LOG_DEBUG("spells", "Unit::CalculateFromDummy start GetId %i, amount %f, mask %i type %u", spellProto->Id, amount, mask, uint32(type));
 
     if (std::vector<SpellAuraDummy> const* spellAuraDummy = sSpellMgr->GetSpellAuraDummy(spellProto->Id))
     {
@@ -22770,7 +22770,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
                         if (GetCharmInfo())
                             GetCharmInfo()->SetPetNumber(0, true);
                         else
-                            TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID().GetCounter(), GetTypeId());
+                            TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: target=" UI64FMTD " with typeid=%u has a charm aura but no charm info!", GetGUID().GetCounter(), uint32(GetTypeId()));
                     }
                 }
                 break;

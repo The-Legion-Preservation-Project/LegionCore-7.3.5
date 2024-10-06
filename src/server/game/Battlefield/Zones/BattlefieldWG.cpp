@@ -1218,7 +1218,7 @@ void BattlefieldWG::RewardMarkOfHonor(Player *plr, uint32 count)
 
     if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
     {
-        TC_LOG_ERROR("bg.battlefield", "Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
+        TC_LOG_ERROR("bg.battlefield", "Wintergrasp reward item (Entry %u) not exist in `item_template`.", uint32(WG_MARK_OF_HONOR));
         return;
     }
 

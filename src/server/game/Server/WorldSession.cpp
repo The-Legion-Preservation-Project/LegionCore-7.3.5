@@ -205,7 +205,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     {
         if (packet->GetConnection() != CONNECTION_TYPE_INSTANCE && IsInstanceOnlyOpcode(opcode))
         {
-            TC_LOG_ERROR("misc", "Prevented sending of instance only opcode %u with connection type %u to %s", opcode, packet->GetConnection(), GetPlayerName().c_str());
+            TC_LOG_ERROR("misc", "Prevented sending of instance only opcode %u with connection type %u to %s", opcode, uint32(packet->GetConnection()), GetPlayerName().c_str());
             return;
         }
 
@@ -214,7 +214,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     if (!m_Socket[conIdx])
     {
-        TC_LOG_DEBUG("misc", "Prevented sending of %s to non existent socket %u to %s", GetOpcodeNameForLogging(static_cast<OpcodeServer>(opcode)).c_str(), conIdx, GetPlayerName().c_str());
+        TC_LOG_DEBUG("misc", "Prevented sending of %s to non existent socket %u to %s", GetOpcodeNameForLogging(static_cast<OpcodeServer>(opcode)).c_str(), uint32(conIdx), GetPlayerName().c_str());
         return;
     }
 
@@ -1001,14 +1001,9 @@ void WorldSession::SetPlayer(Player* player)
 
 void WorldSession::ProcessQueryCallbacks()
 {
-    _queryProcessor.ProcessReadyQueries();
-
-    if (_realmAccountLoginCallback.valid() && _realmAccountLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready &&
-        _accountLoginCallback.valid() && _accountLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-        InitializeSessionCallback(static_cast<LoginDatabaseQueryHolder*>(_realmAccountLoginCallback.get()), static_cast<CharacterDatabaseQueryHolder*>(_accountLoginCallback.get()));
-
-    if (_charLoginCallback.valid() && _charLoginCallback.wait_for(Seconds(0)) == std::future_status::ready)
-        HandlePlayerLogin(reinterpret_cast<LoginQueryHolder*>(_charLoginCallback.get()));
+    _queryProcessor.ProcessReadyCallbacks();
+    _transactionCallbacks.ProcessReadyCallbacks();
+    _queryHolderProcessor.ProcessReadyCallbacks();
 }
 
 bool WorldSession::InitializeWarden(BigNumber* k, std::string const& os)
@@ -1123,33 +1118,49 @@ public:
 
 void WorldSession::InitializeSession()
 {
-    auto realmHolder = new AccountInfoQueryHolderPerRealm();
+    std::shared_ptr<AccountInfoQueryHolderPerRealm> realmHolder = std::make_shared<AccountInfoQueryHolderPerRealm>();
     if (!realmHolder->Initialize(GetAccountId()))
     {
-        delete realmHolder;
         SendAuthResponse(ERROR_INTERNAL, false);
         return;
     }
 
-    auto holder = new AccountInfoQueryHolder();
+    std::shared_ptr<AccountInfoQueryHolder> holder = std::make_shared<AccountInfoQueryHolder>();
     if (!holder->Initialize(GetAccountId(), _realmID))
     {
-        delete realmHolder;
-        delete holder;
         SendAuthResponse(ERROR_INTERNAL, false);
         return;
     }
 
-    _realmAccountLoginCallback = CharacterDatabase.DelayQueryHolder(realmHolder);
-    _accountLoginCallback = LoginDatabase.DelayQueryHolder(holder);
+    struct ForkJoinState
+    {
+        std::shared_ptr<AccountInfoQueryHolderPerRealm> Character;
+        std::shared_ptr<AccountInfoQueryHolder> Login;
+    };
+
+    std::shared_ptr<ForkJoinState> state = std::make_shared<ForkJoinState>();
+
+    AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(realmHolder)).AfterComplete([this, state, realmHolder](SQLQueryHolderBase const& /*result*/)
+    {
+        state->Character = realmHolder;
+        if (state->Login && state->Character)
+            InitializeSessionCallback(*state->Login, *state->Character);
+    });
+
+    AddQueryHolderCallback(LoginDatabase.DelayQueryHolder(holder)).AfterComplete([this, state, holder](SQLQueryHolderBase const& /*result*/)
+    {
+        state->Login = holder;
+        if (state->Login && state->Character)
+            InitializeSessionCallback(*state->Login, *state->Character);
+    });
 }
 
-void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder* realmHolder, CharacterDatabaseQueryHolder* holder)
+void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& realmHolder, CharacterDatabaseQueryHolder const& holder)
 {
-    LoadAccountData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
-    LoadTutorialsData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
-    LoadCharacterTemplates(holder->GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_TEMPLATE));
-    LoadAchievement(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::ACHIEVEMENTS));
+    LoadAccountData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
+    LoadTutorialsData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
+    LoadCharacterTemplates(holder.GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_TEMPLATE));
+    LoadAchievement(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::ACHIEVEMENTS));
 
     if (!m_inQueue)
         SendAuthResponse(ERROR_OK, false);
@@ -1166,7 +1177,7 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder* realmHold
     SendTutorialsData();
     SendDisplayPromo();
 
-    if (PreparedQueryResult characterCountsResult = holder->GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_COUNTS))
+    if (PreparedQueryResult characterCountsResult = holder.GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_COUNTS))
     {
         do
         {
@@ -1185,9 +1196,6 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder* realmHold
         if (_warden && _warden->GetState() == WARDEN_MODULE_NOT_LOADED)
             _warden->ConnectToMaievModule();
     }
-
-    delete realmHolder;
-    delete holder;
 }
 
 void WorldSession::SetPersonalXPRate(float rate)

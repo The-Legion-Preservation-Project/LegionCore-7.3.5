@@ -29,7 +29,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Calendar::CalendarSendCal
     data << eventInfo.EventGuildID;
     data << eventInfo.OwnerGuid;
 
-    data.WriteString(eventInfo.EventName, 8);
+    data.WriteString(eventInfo.EventName.c_str(), 8);
 
     return data;
 }

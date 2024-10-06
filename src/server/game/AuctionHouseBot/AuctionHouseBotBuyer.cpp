@@ -152,7 +152,7 @@ uint32 AuctionBotBuyer::GetItemInformation(BuyerConfiguration& config)
         }
     }
 
-    TC_LOG_DEBUG("auctionHouse", "AHBot: %u items added to buyable/biddable vector for ah type: %u", count, config.GetHouseType());
+    TC_LOG_DEBUG("auctionHouse", "AHBot: %u items added to buyable/biddable vector for ah type: %u", count, uint32(config.GetHouseType()));
     TC_LOG_DEBUG("auctionHouse", "AHBot: SameItemInfo size = %u", (uint32)config.SameItemInfo.size());
     return count;
 }

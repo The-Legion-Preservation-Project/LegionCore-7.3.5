@@ -195,7 +195,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* target)
 
     if (iTextEntry >= 0)
     {
-        TC_LOG_ERROR("scripts", "DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.", pSource->GetEntry(), pSource->GetTypeId(), pSource->GetGUIDLow(), iTextEntry);
+        TC_LOG_ERROR("scripts", "DoScriptText with source entry %u (TypeId=%u, guid=%u) attempts to process text entry %i, but text entry must be negative.", pSource->GetEntry(), uint32(pSource->GetTypeId()), pSource->GetGUIDLow(), iTextEntry);
         return;
     }
 
@@ -203,7 +203,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* target)
 
     if (!pData)
     {
-        TC_LOG_ERROR("scripts", "DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.", pSource->GetEntry(), pSource->GetTypeId(), pSource->GetGUIDLow(), iTextEntry);
+        TC_LOG_ERROR("scripts", "DoScriptText with source entry %u (TypeId=%u, guid=%u) could not find text entry %i.", pSource->GetEntry(), uint32(pSource->GetTypeId()), pSource->GetGUIDLow(), iTextEntry);
         return;
     }
 
@@ -214,7 +214,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* target)
         if (pSource->IsCreature() || pSource->IsPlayer())
             pSource->ToUnit()->HandleEmoteCommand(pData->uiEmote);
         else
-            TC_LOG_ERROR("scripts", "DoScriptText entry %i tried to process emote for invalid TypeId (%u).", iTextEntry, pSource->GetTypeId());
+            TC_LOG_ERROR("scripts", "DoScriptText entry %i tried to process emote for invalid TypeId (%u).", iTextEntry, uint32(pSource->GetTypeId()));
     }
 
     switch (pData->uiType)
