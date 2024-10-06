@@ -310,8 +310,6 @@ m_achievementMgr(sf::safe_ptr<AchievementMgr<Player>>(this))
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
 
-    m_stableSlots = 0;
-
     /////////////////// Instance System /////////////////////
 
     m_HomebindTimer = 0;
@@ -634,7 +632,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     bool addArtifact = true;
     uint32 itemIlevel = 0;
     auto charTemplate = static_cast<CharacterTemplate const*>(nullptr);
-    if (createInfo->TemplateSet.is_initialized())
+    if (createInfo->TemplateSet.has_value())
     {
             if (CharacterTemplateData* charTemplateData = GetSession()->GetCharacterTemplateData(*createInfo->TemplateSet))
             {
@@ -2332,24 +2330,24 @@ bool Player::SafeTeleport(uint32 mapid, float x, float y, float z, float orienta
                     transferPending.MapID = mapid;
                     if (Transport* transport = GetTransport())
                     {
-                        transferPending.Ship = boost::in_place();
+                        transferPending.Ship.emplace();
                         transferPending.Ship->ID = transport->GetEntry();
                         transferPending.Ship->OriginMapID = GetMapId();
                     }
                     if (spellID)
                     {
-                        transferPending.TransferSpellID = boost::in_place();
+                        transferPending.TransferSpellID.emplace();
                         transferPending.TransferSpellID = spellID;
                     }
 
                     switch (mapid)
                     {
                     case 1460: // Hack for broken Island scenario.
-                        transferPending.Ship = boost::in_place();
+                        transferPending.Ship.emplace();
                         transferPending.Ship->ID = GetTeam() == ALLIANCE ? 251513 : 254124;
                         transferPending.Ship->OriginMapID = GetMapId();
 
-                        transferPending.TransferSpellID = boost::in_place();
+                        transferPending.TransferSpellID.emplace();
                         transferPending.TransferSpellID = GetTeam() == ALLIANCE ? 217273 : 225143;
 
                         SendDirectMessage(WorldPackets::Misc::CustomLoadScreen(GetTeam() == ALLIANCE ? 217273 : 225143, 0).Write());
@@ -2360,7 +2358,7 @@ bool Player::SafeTeleport(uint32 mapid, float x, float y, float z, float orienta
                         if (!bg)
                             break;
 
-                        transferPending.Ship = boost::in_place();
+                        transferPending.Ship.emplace();
                         transferPending.Ship->OriginMapID = -1;
 
                         switch (GetBGTeamId())
@@ -6666,7 +6664,7 @@ void Player::DeleteFromDB(ObjectGuid playerguid, uint32 accountId, bool updateRe
 
             // Unsummon and delete for pets in world is not required: player deleted from CLI or character list with not loaded pet.
             // NOW we can finally clear other DB data related to character
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PETS);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_IDS);
             stmt->setUInt64(0, guid);
             PreparedQueryResult resultPets = CharacterDatabase.Query(stmt);
 
@@ -22332,13 +22330,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
 
     uint32 extraflags = fields[f_extra_flags].GetUInt16();
 
-    m_stableSlots = fields[43].GetUInt8();
-    if (m_stableSlots > MAX_PET_STABLES)
-    {
-        TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player (%s) can't have more stable slots than %u, but has %u in DB",
-            GetGUID().ToString().c_str(), MAX_PET_STABLES, uint32(m_stableSlots));
-        m_stableSlots = MAX_PET_STABLES;
-    }
+    _LoadPetStable(fields[43].GetUInt8(), holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PET_SLOTS));
 
     // Honor system
     // Update Honor kills data
@@ -23781,7 +23773,7 @@ void Player::LoadPet()
 {
     //fixme: the pet should still be loaded if the player is not in world
     // just not added to the map
-    if (IsInWorld())
+    if (m_petStable && IsInWorld())
     {
         Pet* pet = new Pet(this);
         if (!pet->LoadPetFromDB(this, 0, 0, true))
@@ -24976,7 +24968,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt32(index++, uint32(time(nullptr)));
         stmt->setUInt8(index++,  (HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++,  m_stableSlots);
+        stmt->setUInt8(index++,  m_petStable ? m_petStable->MaxStabledPets : 0);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, m_zoneId ? m_zoneId : m_oldZoneId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -25103,7 +25095,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++,  (HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
 
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++, m_stableSlots);
+        stmt->setUInt8(index++, m_petStable ? m_petStable->MaxStabledPets : 0);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, m_zoneId ? m_zoneId : m_oldZoneId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -25416,7 +25408,7 @@ void Player::ResurectUsingRequestData()
 
                     WorldPackets::Misc::DisplayGameError display;
                     display.Error = UIErrors::ERR_SPELL_FAILED_S;
-                    display.Arg = boost::in_place();
+                    display.Arg.emplace();
                     display.Arg = 236;
                     SendDirectMessage(display.Write());
 
@@ -26498,6 +26490,52 @@ void Player::UpdateDuelFlag(uint32 diff)
         duel->countdownTimer -= diff;
 }
 
+void Player::_LoadPetStable(uint8 petStableSlots, PreparedQueryResult result)
+{
+    if (!petStableSlots && !result)
+        return;
+    m_petStable = std::make_unique<PetStable>();
+    m_petStable->MaxStabledPets = petStableSlots;
+    if (m_petStable->MaxStabledPets > MAX_PET_STABLES)
+    {
+        TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player (%s) can't have more stable slots than %u, but has %u in DB",
+            GetGUID().ToString().c_str(), MAX_PET_STABLES, m_petStable->MaxStabledPets);
+        m_petStable->MaxStabledPets = MAX_PET_STABLES;
+    }
+    //         0      1        2      3    4           5     6     7        8          9       10      11        12              13       14              15
+    // SELECT id, entry, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ?
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            PetStable::PetInfo petInfo;
+            petInfo.PetNumber = fields[0].GetUInt32();
+            petInfo.CreatureId = fields[1].GetUInt32();
+            petInfo.DisplayId = fields[2].GetUInt32();
+            petInfo.Level = fields[3].GetUInt16();
+            petInfo.Experience = fields[4].GetUInt32();
+            petInfo.ReactState = ReactStates(fields[5].GetUInt8());
+            PetSaveMode slot = PetSaveMode(fields[6].GetUInt8());
+            petInfo.Name = fields[7].GetString();
+            petInfo.WasRenamed = fields[8].GetBool();
+            petInfo.Health = fields[9].GetUInt32();
+            petInfo.Mana = fields[10].GetUInt32();
+            petInfo.ActionBar = fields[11].GetString();
+            petInfo.LastSaveTime = fields[12].GetUInt32();
+            petInfo.CreatedBySpellId = fields[13].GetUInt32();
+            petInfo.Type = PetType(fields[14].GetUInt8());
+            petInfo.SpecializationId = fields[15].GetUInt16();
+            if (slot == PET_SAVE_AS_CURRENT)
+                m_petStable->CurrentPet = std::move(petInfo);
+            else if (slot >= PET_SAVE_FIRST_STABLE_SLOT && slot <= PET_SAVE_LAST_STABLE_SLOT)
+                m_petStable->StabledPets[slot - 1] = std::move(petInfo);
+            else if (slot == PET_SAVE_NOT_IN_SLOT)
+                m_petStable->UnslottedPets.push_back(std::move(petInfo));
+        } while (result->NextRow());
+    }
+}
+
 Pet* Player::GetPet() const
 {
     ObjectGuid pet_guid = GetPetGUID();
@@ -26525,9 +26563,11 @@ Pet* Player::GetPet() const
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, uint32 spellId)
 {
+    PetStable& petStable = GetOrInitPetStable();
+
     Pet* pet = new Pet(this, petType);
 
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false))
     {
         if (duration > 0)
             pet->SetDuration(duration);
@@ -26580,6 +26620,9 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     SetMinion(pet, true);
 
     map->AddToMap(pet->ToCreature());
+
+    ASSERT(!petStable.CurrentPet && (petType != HUNTER_PET || !petStable.GetUnslottedHunterPet()));
+    pet->FillPetInfo(&petStable.CurrentPet.emplace());
 
     switch (petType)
     {
@@ -26683,6 +26726,17 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     // only if current pet in slot
     pet->SavePetToDB(mode);
+
+    ASSERT(m_petStable->CurrentPet && m_petStable->CurrentPet->PetNumber == pet->GetCharmInfo()->GetPetNumber());
+    if (mode == PET_SAVE_NOT_IN_SLOT)
+    {
+        m_petStable->UnslottedPets.push_back(std::move(*m_petStable->CurrentPet));
+        m_petStable->CurrentPet.reset();
+    }
+    else if (mode == PET_SAVE_AS_DELETED)
+        m_petStable->CurrentPet.reset();
+    // else if (stable slots) handled in opcode handlers due to required swaps
+    // else (current pet) doesnt need to do anything
 
     SetMinion(pet, false);
 
@@ -26939,7 +26993,7 @@ void Player::PetSpellInitialize()
     WorldPackets::PetPackets::Spells spellsMessage;
     spellsMessage.PetGUID = pet->GetGUID();
     spellsMessage.CreatureFamily = pet->GetCreatureTemplate()->Family;
-    spellsMessage.Specialization = pet->GetSpecializationId();
+    spellsMessage.Specialization = pet->GetSpecialization();
     spellsMessage.TimeLimit = pet->GetDuration();
     spellsMessage.ReactState = pet->GetReactState();
     spellsMessage.CommandState = charmInfo->GetCommandState();
@@ -32072,7 +32126,7 @@ void PetInfoData::UpdateData(Pet* pet)
     savetime = time(NULL);
     CreatedBySpell = pet->GetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL);
     pet_type = pet->getPetType();
-    specialization = pet->GetSpecializationId();
+    specialization = pet->GetSpecialization();
 }
 
 void Player::StopCastingBindSight()
@@ -33470,7 +33524,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 
     Pet* NewPet = new Pet(this);
 
-    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber))
+    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
         delete NewPet;
 
     m_temporaryUnsummonedPetNumber = 0;
@@ -33513,7 +33567,7 @@ void Player::SendTalentsInfoData(bool pet)
     if (pet)
     {
         Pet* pPet = GetPet();
-        SendDirectMessage(WorldPackets::PetPackets::SetPetSpecialization(pPet ? pPet->GetSpecializationId() : 0).Write());
+        SendDirectMessage(WorldPackets::PetPackets::SetPetSpecialization(pPet ? pPet->GetSpecialization() : 0).Write());
         return;
     }
 
@@ -34430,6 +34484,13 @@ bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount, Objec
     return true;
 }
 
+PetStable& Player::GetOrInitPetStable()
+{
+    if (!m_petStable)
+        m_petStable = std::make_unique<PetStable>();
+    return *m_petStable;
+}
+
 void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece, uint8 error)
 {
     WorldPackets::Item::ItemPurchaseRefundResult refundResult;
@@ -34437,7 +34498,7 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
     refundResult.Result = error;
     if (!error)
     {
-        refundResult.Contents = boost::in_place();
+        refundResult.Contents.emplace();
         refundResult.Contents->Money = item->GetPaidMoney();
         for (uint8 i = 0; i < MAX_ITEM_EXT_COST_ITEMS; ++i)
         {
@@ -38065,7 +38126,7 @@ void Player::SendDisplayPlayerChoice(ObjectGuid sender, int32 choiceId)
 
         if (playerChoiceResponseTemplate.Reward)
         {
-            playerChoiceResponse.Reward = boost::in_place();
+            playerChoiceResponse.Reward.emplace();
             playerChoiceResponse.Reward->TitleID = playerChoiceResponseTemplate.Reward->TitleId;
             playerChoiceResponse.Reward->PackageID = playerChoiceResponseTemplate.Reward->PackageId;
             playerChoiceResponse.Reward->SkillLineID = playerChoiceResponseTemplate.Reward->SkillLineId;
@@ -38083,7 +38144,7 @@ void Player::SendDisplayPlayerChoice(ObjectGuid sender, int32 choiceId)
                 rewardEntry.Quantity = item.Quantity;
                 if (!item.BonusListIDs.empty())
                 {
-                    rewardEntry.Item.ItemBonus = boost::in_place();
+                    rewardEntry.Item.ItemBonus.emplace();
                     rewardEntry.Item.ItemBonus->BonusListIDs = item.BonusListIDs;
                 }
             }

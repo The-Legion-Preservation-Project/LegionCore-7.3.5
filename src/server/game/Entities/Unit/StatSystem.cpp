@@ -2077,7 +2077,7 @@ bool Guardian::UpdateStats(Stats stat)
 
                 if (isPet())
                 {
-                    switch (ToPet()->GetSpecializationId())
+                    switch (ToPet()->GetSpecialization())
                     {
                         case SPEC_PET_ADAPTATION_FEROCITY:
                         case SPEC_PET_FEROCITY: mod = 0.67f; break;

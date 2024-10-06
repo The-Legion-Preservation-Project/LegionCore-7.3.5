@@ -1234,7 +1234,7 @@ void InstanceScript::OnPlayerDiesForScript(Player* player)
     if (_challenge)
         _challenge->OnPlayerDiesForScript(player);
 
-    if (_logData.Encounter.is_initialized() && _logData.Encounter->EncounterStarded)
+    if (_logData.Encounter.has_value() && _logData.Encounter->EncounterStarded)
         ++_logData.Encounter->DeadCount;
 }
 
@@ -1276,7 +1276,7 @@ void InstanceScript::OnGameObjectRemoveForScript(GameObject* go)
 void InstanceScript::StartEncounterLogging(uint32 encounterId)
 {
     _logData = {};
-    _logData.Encounter = boost::in_place();
+    _logData.Encounter.emplace();
 
     _logData.Encounter->Expansion = instance->GetEntry()->ExpansionID;
     if (_logData.Encounter->Expansion != CURRENT_EXPANSION)
@@ -1296,7 +1296,7 @@ void InstanceScript::StartEncounterLogging(uint32 encounterId)
                 if (!player->GetGuild() || !group->IsGuildGroup())
                     continue;
 
-                _logData.Guild = boost::in_place();
+                _logData.Guild.emplace();
                 _logData.Guild->GuildID = player->GetGuildId();
                 _logData.Guild->GuildFaction = player->GetTeamId();
                 _logData.Guild->GuildName = player->GetGuildName();
@@ -1314,7 +1314,7 @@ void InstanceScript::LogCompletedEncounter(bool success)
     if (instance->IsLfr())
         return;
 
-    _logData.Encounter = boost::in_place();
+    _logData.Encounter.emplace();
     _logData.Encounter->CombatDuration = uint32(time(nullptr)) - _logData.Encounter->StartTime;
     _logData.Encounter->EndTime = uint32(time(nullptr));
     _logData.Encounter->Success = success;

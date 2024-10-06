@@ -4682,7 +4682,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->IsPlayer())
-            owner->ToPlayer()->RemovePet(OldSummon, (OldSummon->getPetType() == HUNTER_PET ? PET_SAVE_AS_DELETED : PET_SAVE_NOT_IN_SLOT), false);
+            owner->ToPlayer()->RemovePet(OldSummon, PET_SAVE_NOT_IN_SLOT, false);
         else
             return;
     }

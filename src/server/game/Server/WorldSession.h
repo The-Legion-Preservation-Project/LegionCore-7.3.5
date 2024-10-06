@@ -30,6 +30,7 @@
 #include "EventProcessor.h"
 #include "FunctionProcessor.h"
 #include "Opcodes.h"
+#include "Optional.h"
 #include "Packet.h"
 #include "SharedDefines.h"
 #include "World.h"
@@ -1065,7 +1066,7 @@ class WorldSession
         void AddInstanceConnection(std::shared_ptr<WorldSocket> sock) { m_Socket[CONNECTION_TYPE_INSTANCE] = sock; }
         void SendNotification(const char *format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(uint32 string_id, ...);
-        void SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std::string const& name, DeclinedName *declinedName = nullptr);
+        void SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std::string const& name, Optional<DeclinedName> const& declinedName);
         void SendPartyResult(PartyOperation operation, std::string const& member, PartyResult res, uint32 val = 0);
         void SendSetPhaseShift(std::vector<WorldPackets::Misc::PhaseShiftDataPhase> phases, std::vector<uint16> const& visibleMapIDs, std::vector<uint16> const& uiWorldMapAreaIDSwaps, std::vector<uint16> const& preloadMapIDs, uint32 phaseShiftFlags = 0x1F);
         void SendQueryTimeResponse();
@@ -1161,7 +1162,6 @@ class WorldSession
         void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
         void SendStablePet(ObjectGuid const& guid = ObjectGuid::Empty);
-        void SendStablePetCallback(ObjectGuid guid, PreparedQueryResult result);
         void SendStableResult(StableResultCode res);
 
         // Account Data

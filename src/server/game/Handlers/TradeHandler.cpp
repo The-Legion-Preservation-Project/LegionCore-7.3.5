@@ -75,7 +75,7 @@ void WorldSession::SendUpdateTrade(bool traderData /*= true*/)
             tradeItem.GiftCreator = item->GetGuidValue(ITEM_FIELD_GIFT_CREATOR);
             if (!item->HasFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_WRAPPED))
             {
-                tradeItem.Unwrapped = boost::in_place();
+                tradeItem.Unwrapped.emplace();
                 tradeItem.Unwrapped->EnchantID = item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
                 tradeItem.Unwrapped->OnUseEnchantmentID = item->GetEnchantmentId(USE_ENCHANTMENT_SLOT);
                 tradeItem.Unwrapped->Creator = item->GetGuidValue(ITEM_FIELD_CREATOR);

@@ -5405,7 +5405,7 @@ void Spell::SendSpellStart()
 
     if (castFlags & CAST_FLAG_RUNE_LIST) // rune cooldowns list
     {
-        castData.RemainingRunes = boost::in_place();
+        castData.RemainingRunes.emplace();
 
         //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
         //The creature is the mover of a player, so HandleCastSpellOpcode uses it as the caster
@@ -5548,7 +5548,7 @@ void Spell::SendSpellGo()
 
     if (castFlags & CAST_FLAG_RUNE_LIST) // rune cooldowns list
     {
-        castData.RemainingRunes = boost::in_place();
+        castData.RemainingRunes.emplace();
         //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
         //The creature is the mover of a player, so HandleCastSpellOpcode uses it as the caster
         if (Player* player = m_caster->ToPlayer())
@@ -5738,7 +5738,7 @@ void Spell::SendChannelStart(uint32 duration)
 
     if (schoolImmunityMask || mechanicImmunityMask)
     {
-        spellChannelStart.InterruptImmunities = boost::in_place();
+        spellChannelStart.InterruptImmunities.emplace();
         spellChannelStart.InterruptImmunities->SchoolImmunities = schoolImmunityMask;
         spellChannelStart.InterruptImmunities->Immunities = mechanicImmunityMask;
     }
@@ -7581,6 +7581,35 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 if (!m_caster->GetCharmGUID().IsEmpty())
                     return SPELL_FAILED_ALREADY_HAVE_CHARM;
+
+                Player* playerCaster = m_caster->ToPlayer();
+                if (playerCaster && playerCaster->GetPetStable())
+                {
+                    std::pair<PetStable::PetInfo const*, PetSaveMode> info = Pet::GetLoadPetInfo(*playerCaster->GetPetStable(), m_spellInfo->GetEffect(i, m_diffMode)->MiscValueB, 0, false);
+                    if (!info.first)
+                    {
+                        playerCaster->SendPetTameResult(PetTameResult::PET_TAME_ERROR_NO_PET_AVAILABLE);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
+
+                    if (info.first->Type == HUNTER_PET && !info.first->Health)
+                    {
+                        playerCaster->SendPetTameResult(PetTameResult::PET_TAME_ERROR_DEAD);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
+
+                    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(info.first->CreatureId);
+                    if (!creatureInfo || !creatureInfo->isTameable(playerCaster))
+                    {
+//                        // if problem in exotic pet
+//                        if (creatureInfo && creatureInfo->IsTameable(true))
+//                            playerCaster->SendTameFailure(PetTameResult::CantControlExotic);
+//                        else
+                        playerCaster->SendPetTameResult(PetTameResult::PET_TAME_ERROR_NO_PET_AVAILABLE);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
+                }
+
                 break;
             }
             case SPELL_EFFECT_SUMMON_PLAYER:

@@ -76,15 +76,17 @@ class Pet : public Guardian
 
         bool IsPermanentPetFor(Player* owner);              // pet have tab in character windows and set UNIT_FIELD_PET_NUMBER
 
-        bool Create (ObjectGuid::LowType const& guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
+        bool Create(ObjectGuid::LowType const& guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
         bool CreateBaseAtCreature(Creature* creature);
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
-        bool LoadPetFromDB(Player* owner, uint32 petEntry = 0, uint32 petnumber = 0, bool current = false);
+        static std::pair<PetStable::PetInfo const*, PetSaveMode> GetLoadPetInfo(PetStable const& stable, uint32 petEntry, uint32 petNumber, bool current);
+        bool LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool current);
         bool isBeingLoaded() const override { return m_loading;}
         void SavePetToDB(PetSaveMode mode);
+        void FillPetInfo(PetStable::PetInfo* petInfo) const;
         void Remove(PetSaveMode mode, bool returnreagent = false);
-        static void DeleteFromDB(uint32 guidlow);
+        static void DeleteFromDB(uint32 petNumber);
 
         void setDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
         void Update(uint32 diff) override;                           // overwrite virtual Creature::Update and Unit::Update
@@ -108,9 +110,9 @@ class Pet : public Guardian
 
         void _LoadSpellCooldowns();
         void _SaveSpellCooldowns(CharacterDatabaseTransaction& trans);
-        void _LoadAuras(uint32 timediff);
+        void _LoadAuras(PreparedQueryResult auraResult, PreparedQueryResult effectResult, uint32 timediff);
         void _SaveAuras(CharacterDatabaseTransaction& trans);
-        void _LoadSpells();
+        void _LoadSpells(PreparedQueryResult result);
         void _SaveSpells(CharacterDatabaseTransaction& trans);
 
         bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
@@ -123,7 +125,7 @@ class Pet : public Guardian
 
         void InitPetCreateSpells();
 
-        DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
+        DeclinedName const* GetDeclinedNames() const { return m_declinedname.get(); }
 
         AutoSpellList   m_autospells;
         AutoSpellList   m_castspells;
@@ -132,8 +134,8 @@ class Pet : public Guardian
 
         Unit* GetOwner() { return m_owner; }
 
-        uint32 GetSpecializationId() const { return m_specialization; }
-        void SetSpecialization(uint32 id) { m_specialization = id; }
+        uint16 GetSpecialization() const { return m_petSpecialization; }
+        void SetSpecialization(uint16 spec);
         void LearnSpecializationSpell();
         void UnlearnSpecializationSpell();
         void CheckSpecialization();
@@ -144,10 +146,10 @@ class Pet : public Guardian
 
     protected:
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
-        uint32  m_specialization;
-        uint32  m_groupUpdateMask;
+        uint16 m_petSpecialization;
+        uint32 m_groupUpdateMask;
 
-        DeclinedName *m_declinedname;
+        std::unique_ptr<DeclinedName> m_declinedname;
 
     private:
         void SaveToDB(uint32, uint64, uint32) override

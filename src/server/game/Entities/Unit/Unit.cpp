@@ -7041,7 +7041,7 @@ void Unit::SendAttackStateUpdate(CalcDamageInfo* damageInfo)
     packet.Damage = damageInfo->damage;
     packet.OverDamage = damageInfo->damage > damageInfo->target->GetHealth(damageInfo->attacker) ? damageInfo->damage - damageInfo->target->GetHealth(damageInfo->attacker) : -1;
     
-    packet.SubDmg = boost::in_place();
+    packet.SubDmg.emplace();
     packet.SubDmg->SchoolMask = damageInfo->damageSchoolMask;
     packet.SubDmg->FDamage = damageInfo->damage;
     packet.SubDmg->Damage = damageInfo->damage;
@@ -19199,7 +19199,11 @@ Pet* Unit::CreateTamedPetFrom(Creature* creatureTarget, uint32 spellID)
 
     uint8 level = creatureTarget->getLevelForTarget(this) + 5 < getLevel() ? (getLevel() - 5) : creatureTarget->getLevelForTarget(this);
 
-    InitTamedPet(pet, level, spellID);
+    if (!InitTamedPet(pet, level, spellID))
+    {
+        delete pet;
+        return nullptr;
+    }
 
     return pet;
 }
@@ -19227,6 +19231,11 @@ Pet* Unit::CreateTamedPetFrom(uint32 creatureEntry, uint32 spellID)
 
 bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 {
+    Player* player = ToPlayer();
+    PetStable& petStable = player->GetOrInitPetStable();
+    if (petStable.CurrentPet || petStable.GetUnslottedHunterPet())
+        return false;
+
     pet->SetCreatorGUID(GetGUID());
     pet->setFaction(getFaction());
     pet->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, spell_id);
@@ -19247,6 +19256,8 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
     // this enables pet details window (Shift+P)
     pet->InitPetCreateSpells();
     pet->SetFullHealth();
+
+    pet->FillPetInfo(&petStable.CurrentPet.emplace());
     return true;
 }
 

@@ -210,7 +210,7 @@ void Arena::StartingEventOpenDoors()
     _logData = {};
     _logData.RealmID = realm.Id.Realm;
     _logData.MapID = GetMapId();
-    _logData.Arena = boost::in_place();
+    _logData.Arena.emplace();
     _logData.Arena->JoinType = GetJoinType();
 
     for (const auto& itr : GetPlayers())
@@ -222,7 +222,7 @@ void Arena::StartingEventOpenDoors()
                 if (!player->GetGuild() || !group->IsGuildGroup())
                     continue;
 
-                _logData.Guild = boost::in_place();
+                _logData.Guild.emplace();
                 _logData.Guild->GuildID = player->GetGuildId();
                 _logData.Guild->GuildFaction = player->GetTeamId();
                 _logData.Guild->GuildName = player->GetGuildName();

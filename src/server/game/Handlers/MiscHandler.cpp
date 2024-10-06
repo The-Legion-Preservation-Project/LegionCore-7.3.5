@@ -656,7 +656,7 @@ void WorldSession::HandleChoiceResponse(WorldPackets::Misc::ChoiceResponse& pack
         return;
 
     if (auto reward = playerChoiceResponse->Reward)
-        if (reward.is_initialized() && reward->SpellID)
+        if (reward.has_value() && reward->SpellID)
             _player->CastSpell(_player, reward->SpellID, true);
 }
 

@@ -362,7 +362,7 @@ class spell_hun_kill_command : public SpellScriptLoader
 
                             if (caster->HasAura(191384)) // Aspect of the Beast
                             {
-                                switch (((Pet*)pet)->GetSpecializationId())
+                                switch (((Pet*)pet)->GetSpecialization())
                                 {
                                     case SPEC_PET_ADAPTATION_FEROCITY:
                                     case SPEC_PET_FEROCITY:
@@ -521,8 +521,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
-                if (caster->GetTypeId() != TYPEID_PLAYER)
+                Player* caster = GetCaster()->ToPlayer();
+                if (!caster)
                     return SPELL_FAILED_DONT_REPORT;
 
                 if (!GetExplTargetUnit())
@@ -536,8 +536,18 @@ class spell_hun_tame_beast : public SpellScriptLoader
                     if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()))
                         return SPELL_FAILED_BAD_TARGETS;
 
-                    if (caster->GetPetGUID())
-                        return SPELL_FAILED_ALREADY_HAVE_SUMMON;
+                    PetStable const* petStable = caster->GetPetStable();
+                    if (petStable)
+                    {
+                        if (petStable->CurrentPet)
+                            return SPELL_FAILED_ALREADY_HAVE_SUMMON;
+
+                        if (petStable->GetUnslottedHunterPet())
+                        {
+                            caster->SendPetTameResult(PetTameResult::PET_TAME_ERROR_TOO_MANY_PETS);
+                            return SPELL_FAILED_DONT_REPORT;
+                        }
+                    }
 
                     if (caster->GetCharmGUID())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
@@ -707,7 +717,7 @@ class spell_hun_flanking_strike : public SpellScriptLoader
 
                 if (caster->HasAura(191384)) // Aspect of the Beast
                 {
-                    switch (pet->GetSpecializationId())
+                    switch (pet->GetSpecialization())
                     {
                         case SPEC_PET_ADAPTATION_FEROCITY:
                         case SPEC_PET_FEROCITY:

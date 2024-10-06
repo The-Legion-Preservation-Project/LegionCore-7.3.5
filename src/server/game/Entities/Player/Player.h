@@ -1011,6 +1011,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOAD_KILL_CREATURE,
     PLAYER_LOGIN_QUERY_LOADNOTINVENTORY,
     PLAYER_LOGIN_QUERY_ACCOUNT_QUEST,
+    PLAYER_LOGIN_QUERY_LOAD_PET_SLOTS,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1606,6 +1607,10 @@ class Player : public Unit, public GridObject<Player>
 
         void setDeathState(DeathState s) override;
 
+        PetStable* GetPetStable() { return m_petStable.get(); }
+        PetStable& GetOrInitPetStable();
+        PetStable const* GetPetStable() const { return m_petStable.get(); }
+
         Pet* GetPet() const;
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, uint32 spellId = 0);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
@@ -1891,8 +1896,6 @@ class Player : public Unit, public GridObject<Player>
         void LoadPet();
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = nullptr, ObjectGuid guid = ObjectGuid::Empty );
-
-        uint32 m_stableSlots;
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -3340,7 +3343,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadHonor(PreparedQueryResult result, PreparedQueryResult result2);
         void _LoadLootCooldown(PreparedQueryResult result);
-        void _LoadPetData(PreparedQueryResult result);
+        void _LoadPetStable(uint8 petStableSlots, PreparedQueryResult result);
         void _LoadWorldQuestStatus(PreparedQueryResult result);
         void _LoadChallengeKey(PreparedQueryResult result);
         void _LoadAccountProgress(PreparedQueryResult result);
@@ -3660,6 +3663,8 @@ class Player : public Unit, public GridObject<Player>
         bool m_bCanDelayTeleport;
         bool m_bHasDelayedTeleport;
         bool m_bHasglobalTeleport;
+
+        std::unique_ptr<PetStable> m_petStable;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;
