@@ -120,7 +120,7 @@ void LFGGroupScript::OnAddMember(Group* group, ObjectGuid const& guid)
     {
         LfgState gstate = sLFGMgr->GetState(gguid, queueId);
         LfgState state = sLFGMgr->GetState(guid, queueId);
-        TC_LOG_DEBUG("lfg", "LFGScripts::OnAddMember [%s]: added [%s] leader [%s] gstate: %u, state: %u", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str(), uint32(gstate), uint32(state));
+        TC_LOG_DEBUG("lfg", "LFGScripts::OnAddMember [%s]: added [%s] leader [%s] gstate: %u, state: %u", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str(), gstate, state);
 
         if (state == LFG_STATE_QUEUED)
             sLFGMgr->LeaveLfg(guid, queueId);
@@ -140,7 +140,7 @@ void LFGGroupScript::OnRemoveMember(Group* group, ObjectGuid const& guid, Remove
 
     ObjectGuid gguid = group->GetGUID();
 
-    TC_LOG_DEBUG("lfg", "LFGScripts::OnRemoveMember [%s]: remove [%s] Method: %u Kicker: [%s] Reason: %s", gguid.ToString().c_str(), guid.ToString().c_str(), uint32(method), kicker.ToString().c_str(), (reason ? reason : ""));
+    TC_LOG_DEBUG("lfg", "LFGScripts::OnRemoveMember [%s]: remove [%s] Method: %d Kicker: [%s] Reason: %s", gguid.ToString().c_str(), guid.ToString().c_str(), method, kicker.ToString().c_str(), (reason ? reason : ""));
 
     uint32 queueId = sLFGMgr->GetQueueId(gguid);
 

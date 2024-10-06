@@ -103,9 +103,9 @@ void PlayerCheatsMgr::LoadFromDB()
         s.comment       = fields[5].GetString();
 
         if (s.cheatType >= CHEATS_COUNT)
-            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid cheatType %u > CHEATS_COUNT (%u)", s.cheatType, uint32(CHEATS_COUNT));
+            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid cheatType %u > CHEATS_COUNT (%u)", s.cheatType, CHEATS_COUNT);
         else if (s.tickSanction >= CHEAT_MAX_ACTIONS || s.totalSanction >= CHEAT_MAX_ACTIONS)
-            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid action (must be < %u)", uint32(CHEAT_MAX_ACTIONS));
+            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid action (must be < %u)", CHEAT_MAX_ACTIONS);
         else
             _sanctions.emplace_back(s);
     }
@@ -852,7 +852,7 @@ void PlayerCheatData::AddCheats(uint32 cheats, uint32 count)
     {
         for (uint32 i = 0; i < CHEATS_COUNT; ++i)
             if (cheats & (1 << i))
-                ChatHandler(me).PSendSysMessage("[AntiCheat] Cheat : %s i %u CheatType %u", GetCheatTypeNameFromFlag(CheatType(i)), i, uint32(CheatType(i)));
+                ChatHandler(me).PSendSysMessage("[AntiCheat] Cheat : %s i %u CheatType %u", GetCheatTypeNameFromFlag(CheatType(i)), i, CheatType(i));
     }
 
     for (uint32 i = 0; i < CHEATS_COUNT; ++i)

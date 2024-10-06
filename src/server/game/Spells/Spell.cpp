@@ -604,7 +604,7 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
             }
             break;
         case TARGET_SELECT_CATEGORY_NYI:
-            TC_LOG_DEBUG("spells", "SPELL: target type %u, found in spellID %u, effect %u is not implemented yet!", m_spellInfo->Id, uint32(effIndex), uint32(targetType.GetTarget()));
+            TC_LOG_DEBUG("spells", "SPELL: target type %u, found in spellID %u, effect %u is not implemented yet!", m_spellInfo->Id, effIndex, targetType.GetTarget());
             break;
         default:
             printf("Spell::SelectEffectImplicitTargets: received not implemented select target category / Spell ID = %u and Effect = %u and target type = %u \n", m_spellInfo->Id, effIndex, targetType.GetTarget());
@@ -624,7 +624,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
     Spell* channeledSpell = m_originalCaster->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
     if (!channeledSpell)
     {
-        TC_LOG_DEBUG("spells", "Spell::SelectImplicitChannelTargets: cannot find channel spell for spell ID %u, effect %u", m_spellInfo->Id, uint32(effIndex));
+        TC_LOG_DEBUG("spells", "Spell::SelectImplicitChannelTargets: cannot find channel spell for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
         return;
     }
     switch (targetType.GetTarget())
@@ -639,7 +639,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
                 if (target && target->ToUnit())
                     AddUnitTarget(target->ToUnit(), 1 << effIndex);
                 else
-                    TC_LOG_DEBUG("spells", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, uint32(effIndex));
+                    TC_LOG_DEBUG("spells", "SPELL: cannot find channel spell target for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
                 break;
             }
         }
@@ -654,7 +654,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
                 if (target)
                     m_targets.SetDst(*target);
                 else
-                    TC_LOG_DEBUG("spells", "SPELL: cannot find channel spell destination for spell ID %u, effect %u", m_spellInfo->Id, uint32(effIndex));
+                    TC_LOG_DEBUG("spells", "SPELL: cannot find channel spell destination for spell ID %u, effect %u", m_spellInfo->Id, effIndex);
             }
             break;
         case TARGET_DEST_CHANNEL_CASTER:
@@ -1048,12 +1048,12 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->Effects[effIndex]->ImplicitTargetConditions, allowTargetObjSize);
 
     TC_LOG_DEBUG("spells", "Spell::SelectImplicitAreaTargets %u, radius %f, GetObjectType %u, targets count %zull, effIndex %i",
-        m_spellInfo->Id, radius, uint32(targetType.GetObjectType()), targets.size(), uint32(effIndex));
+        m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), effIndex);
 
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType.GetTarget());
 
     TC_LOG_DEBUG("spells", "Spell::SelectImplicitAreaTargets after filter %u, radius %f, GetObjectType %u, targets count %zu, GetCheckType %i, X %f, Y %f",
-    m_spellInfo->Id, radius, uint32(targetType.GetObjectType()), targets.size(), uint32(targetType.GetCheckType()), center->GetPositionX(), center->GetPositionY());
+    m_spellInfo->Id, radius, targetType.GetObjectType(), targets.size(), targetType.GetCheckType(), center->GetPositionX(), center->GetPositionY());
 
     std::list<Unit*> unitTargets;
     std::list<GameObject*> gObjTargets;
@@ -5201,7 +5201,7 @@ void Spell::SendCastResult(SpellCastResult result)
 
 void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, SpellCastResult result, SpellCustomErrors customError /*= SPELL_CUSTOM_ERROR_NONE*/, uint32* misc /*= nullptr*/, bool pet /*=false*/)
 {
-    TC_LOG_DEBUG("spells", "SendCastResult  Spell: %u result %u.", spellInfo->Id, uint32(result));
+    TC_LOG_DEBUG("spells", "SendCastResult  Spell: %u result %u.", spellInfo->Id, result);
 
     if (result == SPELL_CAST_OK)
         return;
@@ -5967,7 +5967,7 @@ void Spell::TakePower()
         else
             CallScriptTakePowerHandlers(powerType, m_powerCost[powerType]);
 
-        TC_LOG_DEBUG("spells", "Spell::TakePower hit %i, powerType %i, m_powerCost %i Id %u", hit, uint32(powerType), GetPowerCost(powerType), m_spellInfo->Id);
+        TC_LOG_DEBUG("spells", "Spell::TakePower hit %i, powerType %i, m_powerCost %i Id %u", hit, powerType, GetPowerCost(powerType), m_spellInfo->Id);
 
         if (powerType == POWER_INSANITY) // Prist not use power on cast, is use when aura tick
             continue;
@@ -6013,7 +6013,7 @@ void Spell::TakePower()
 
         if (powerType >= MAX_POWERS)
         {
-            TC_LOG_ERROR("spells", "Spell::TakePower: Unknown power type '%u'", uint32(powerType));
+            TC_LOG_ERROR("spells", "Spell::TakePower: Unknown power type '%d'", powerType);
             continue;
         }
 

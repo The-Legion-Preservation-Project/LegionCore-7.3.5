@@ -63,7 +63,7 @@ void WorldSession::HandleQuestGiverStatusQuery(WorldPackets::Quest::QuestGiverSt
             break;
         }
         default:
-            TC_LOG_ERROR("network", "QuestGiver called for unexpected type %u", uint32(questGiver->GetTypeId()));
+            TC_LOG_ERROR("network", "QuestGiver called for unexpected type %u", questGiver->GetTypeId());
             break;
     }
 

@@ -685,7 +685,7 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
                 break;
             }
             default:
-                TC_LOG_ERROR("network", "Unknown dump table type: %u", uint32(type));
+                TC_LOG_ERROR("network", "Unknown dump table type: %u", type);
                 break;
         }
 
@@ -1116,7 +1116,7 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
                 break;
             }
             default:
-                TC_LOG_ERROR("network", "Unknown dump table type: %u", uint32(type));
+                TC_LOG_ERROR("network", "Unknown dump table type: %u", type);
                 break;
         }
 

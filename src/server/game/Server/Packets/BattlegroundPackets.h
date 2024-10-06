@@ -439,8 +439,8 @@ namespace WorldPackets
             WorldPacket const* Write() override;
 
             BattlefieldStatusHeader Header;
-            uint32 StartTimer = 0;
-            uint32 ShutdownTimer = 0;
+            Milliseconds StartTimer = Milliseconds(0);
+            Milliseconds ShutdownTimer = Milliseconds(0);
             uint32 Mapid = 0;
             bool ArenaFaction = false;
             bool LeftEarly = false;

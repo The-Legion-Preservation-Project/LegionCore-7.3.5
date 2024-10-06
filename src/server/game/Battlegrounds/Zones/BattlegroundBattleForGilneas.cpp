@@ -197,7 +197,7 @@ void BattlegroundBattleForGilneas::_NodeOccupied(uint8 node, TeamId team)
         return;
 
     if (!AddSpiritGuide(node, BgBfgSpiritGuidePos[node], team))
-        TC_LOG_ERROR("bg.battleground", "Failed to spawn spirit guide! point: %u, team: %u, ", node, uint32(MS::Battlegrounds::GetTeamByTeamId(team)));
+        TC_LOG_ERROR("bg.battleground", "Failed to spawn spirit guide! point: %u, team: %u, ", node, MS::Battlegrounds::GetTeamByTeamId(team));
 
     UpdateWorldState(_capturePoints[node].Point->GetGOInfo()->capturePoint.worldState1, _capturePoints[node].Status);
 

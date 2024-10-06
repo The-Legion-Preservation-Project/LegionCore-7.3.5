@@ -479,7 +479,7 @@ void World::LoadConfigSettings(bool reload)
     m_defaultDbcLocale = LocaleConstant(sConfigMgr->GetIntDefault("DBC.Locale", 0));
     if (m_defaultDbcLocale >= MAX_LOCALES || m_defaultDbcLocale < LOCALE_enUS || m_defaultDbcLocale == LOCALE_none)
     {
-        TC_LOG_ERROR("server.loading", "Incorrect DBC.Locale! Must be >= 0 and < %u and not %u (set to 0)", uint32(MAX_LOCALES), uint32(LOCALE_none));
+        TC_LOG_ERROR("server.loading", "Incorrect DBC.Locale! Must be >= 0 and < %d and not %d (set to 0)", MAX_LOCALES, LOCALE_none);
         m_defaultDbcLocale = LOCALE_enUS;
     }
 
@@ -4573,7 +4573,7 @@ void World::Transfer()
             std::string dump;
             DumpReturn dumpState = PlayerDumpWriter().WriteDump(guid, dump);
 
-            TC_LOG_DEBUG("network", "Transfer toDump guid %lu, dump %u", guid, uint32(dumpState));
+            TC_LOG_DEBUG("network", "Transfer toDump guid %lu, dump %u", guid, dumpState);
 
             if (dumpState == DUMP_SUCCESS)
             {
@@ -4592,7 +4592,7 @@ void World::Transfer()
             }
             else
             {
-                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = %u WHERE `id` = '%u'", uint32(dumpState), transaction);
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = %u WHERE `id` = '%u'", dumpState, transaction);
                 continue;
             }
         }
@@ -4617,7 +4617,7 @@ void World::Transfer()
 
             DumpReturn dumpState = PlayerDumpReader().LoadDump(toacc, dump, "", newguid);
 
-            TC_LOG_DEBUG("network", "Transfer toLoad guid %lu, dump %u", guid, uint32(dumpState));
+            TC_LOG_DEBUG("network", "Transfer toLoad guid %lu, dump %u", guid, dumpState);
 
             if (dumpState == DUMP_SUCCESS)
             {
@@ -4640,15 +4640,15 @@ void World::Transfer()
                         if (realm.Id.Realm == 59)
                             LoginDatabase.PQuery("UPDATE `transfer_requests` SET `guid` = '%u' WHERE `id` = '%u'", newguid, transferId);
                         else
-                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", uint32(dumpState), newguid, transferId);
+                            LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u', `guid` = '%u' WHERE `id` = '%u'", dumpState, newguid, transferId);
                     }
                 }
             }
             else
             {
-                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", uint32(dumpState), transaction);
+                LoginDatabase.PQuery("UPDATE `transferts` SET `error` = '%u', `nb_attempt` = `nb_attempt` + 1 WHERE `id` = '%u'", dumpState, transaction);
                 if (transferId && realm.Id.Realm != 59)
-                    LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", uint32(dumpState), transferId);
+                    LoginDatabase.PQuery("UPDATE `transfer_requests` SET `status` = '%u' WHERE `id` = '%u'", dumpState, transferId);
                 continue;
             }
         }

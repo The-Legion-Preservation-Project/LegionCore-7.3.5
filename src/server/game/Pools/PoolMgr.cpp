@@ -958,6 +958,8 @@ void PoolMgr::SaveQuestsToDB()
         trans->Append(stmt);
     }
 
+    CharacterDatabase.CommitTransaction(trans);
+
     for (SearchMap::iterator itr = mQuestSearchMap.begin(); itr != mQuestSearchMap.end(); ++itr)
     {
         if (IsSpawnedObject<Quest>(itr->first))

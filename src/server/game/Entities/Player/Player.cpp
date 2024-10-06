@@ -1077,7 +1077,7 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, bool 
     }
 
     // item can't be added
-    TC_LOG_ERROR("entities.player.items", "STORAGE: Can't equip or store initial item %u for race %u class %u, error msg = %u", titem_id, getRace(), getClass(), uint32(msg));
+    TC_LOG_ERROR("entities.player.items", "STORAGE: Can't equip or store initial item %u for race %u class %u, error msg = %u", titem_id, getRace(), getClass(), msg);
     return false;
 }
 
@@ -2894,7 +2894,7 @@ void Player::RemoveFromWorld()
     {
         if (WorldObject* viewpoint = GetViewpoint())
         {
-            TC_LOG_ERROR("entities.player", "Player %s has viewpoint %u %u when removed from world", GetName(), viewpoint->GetEntry(), uint32(viewpoint->GetTypeId()));
+            TC_LOG_ERROR("entities.player", "Player %s has viewpoint %u %u when removed from world", GetName(), viewpoint->GetEntry(), viewpoint->GetTypeId());
             SetViewpoint(viewpoint, false);
         }
     }
@@ -21456,7 +21456,7 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
         default:
             // it's impossible, but check
             TC_LOG_ERROR("entities.player", "Player::GetQuestDialogStatus: Called with unexpected type (Entry: %u, Type: %u) by player '%s' (%s)",
-                questgiver->GetEntry(), uint32(questgiver->GetTypeId()), GetName(), GetGUID().ToString().c_str());
+                questgiver->GetEntry(), questgiver->GetTypeId(), GetName(), GetGUID().ToString().c_str());
             return QuestGiverStatus::None;
     }
 
@@ -23875,7 +23875,7 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                     ++slot;
                 }
 
-                TC_LOG_DEBUG("sql.sql", "Quest status is {%u} for quest {%u} for player (GUID: %u)", uint32(q_status.Status), quest_id, GetGUIDLow());
+                TC_LOG_DEBUG("sql.sql", "Quest status is {%u} for quest {%u} for player (GUID: %u)", q_status.Status, quest_id, GetGUIDLow());
             }
         }
         while (result->NextRow());
@@ -24601,7 +24601,7 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave* save, bool permanent, b
         bind.save = save;
         bind.perm = permanent;
         if (!load)
-            TC_LOG_DEBUG("maps", "Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %u", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), uint32(save->GetDifficultyID()));
+            TC_LOG_DEBUG("maps", "Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), save->GetDifficultyID());
         sScriptMgr->OnPlayerBindToInstance(this, save->GetDifficultyID(), save->GetMapId(), permanent);
         return &bind;
     }
@@ -26726,7 +26726,7 @@ void Player::StopCastingCharm()
 
     if (GetCharmGUID())
     {
-        TC_LOG_FATAL("entities.player", "Player %s (GUID: " UI64FMTD " is not able to uncharm unit (GUID: " UI64FMTD " Entry: %u, Type: %u)", GetName(), GetGUID().GetCounter(), GetCharmGUID().GetCounter(), charm->GetEntry(), uint32(charm->GetTypeId()));
+        TC_LOG_FATAL("entities.player", "Player %s (GUID: " UI64FMTD " is not able to uncharm unit (GUID: " UI64FMTD " Entry: %u, Type: %u)", GetName(), GetGUID().GetCounter(), GetCharmGUID().GetCounter(), charm->GetEntry(), charm->GetTypeId());
         if (charm->GetCharmerGUID())
         {
             TC_LOG_FATAL("entities.player", "Charmed unit has charmer guid " UI64FMTD, charm->GetCharmerGUID().GetCounter());
@@ -32094,7 +32094,7 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
 {
     if (apply)
     {
-        TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player %s create seer %u (TypeId: %u).", GetName(), target->GetEntry(), uint32(target->GetTypeId()));
+        TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player %s create seer %u (TypeId: %u).", GetName(), target->GetEntry(), target->GetTypeId());
 
         if (IsSpectator() && _spectateFrom)
         {
@@ -35083,7 +35083,7 @@ void Player::ValidateMovementInfo(MovementInfo* mi)
         { \
             TC_LOG_DEBUG("entities.unit", "WorldSession::ValidateMovementInfo: Violation of MovementFlags found (%s). " \
                 "MovementFlags: %u, MovementFlags2: %u for player GUID: %u. Mask %u will be removed.", \
-                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetGUIDLow(), uint32(maskToRemove)); \
+                STRINGIZE(check), mi->GetMovementFlags(), mi->GetExtraMovementFlags(), GetGUIDLow(), maskToRemove); \
             mi->RemoveMovementFlag((maskToRemove)); \
         } \
     }

@@ -248,7 +248,7 @@ void npc_escortAI::UpdateAI(uint32 diff)
 
                         m_uiWPWaitTimer = 0;
 
-                        TC_LOG_DEBUG("scripts", "EscortAI are returning home to spawn location: %u, %f, %f, %f", uint32(POINT_HOME), fRetX, fRetY, fRetZ);
+                        TC_LOG_DEBUG("scripts", "EscortAI are returning home to spawn location: %u, %f, %f, %f", POINT_HOME, fRetX, fRetY, fRetZ);
                         return;
                     }
 

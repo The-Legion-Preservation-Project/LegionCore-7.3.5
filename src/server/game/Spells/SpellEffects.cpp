@@ -438,7 +438,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
 
-    TC_LOG_DEBUG("spells", "EffectSchoolDMG %i, m_diffMode %i, effIndex %i, spellId %u, damage %f", m_damage, m_diffMode, uint32(effIndex), m_spellInfo->Id, damage);
+    TC_LOG_DEBUG("spells", "EffectSchoolDMG %i, m_diffMode %i, effIndex %i, spellId %u, damage %f", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage);
 
     if (unitTarget && unitTarget->isAlive())
     {
@@ -657,7 +657,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             m_damage /= count;                    // divide to all targets
         }
 
-        TC_LOG_DEBUG("spells", "EffectSchoolDMG end %i, m_diffMode %i, effIndex %i, spellId %u, damage %f GetComboPoints %i", m_damage, m_diffMode, uint32(effIndex), m_spellInfo->Id, damage, GetComboPoints());
+        TC_LOG_DEBUG("spells", "EffectSchoolDMG end %i, m_diffMode %i, effIndex %i, spellId %u, damage %f GetComboPoints %i", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage, GetComboPoints());
 
         switch (m_spellInfo->Id)
         {
@@ -1459,7 +1459,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     }
 
     // normal DB scripted effect
-    TC_LOG_DEBUG("spells", "Spell ScriptStart spellid %u in EffectDummy(%u) caster %s target %s", m_spellInfo->Id, uint32(effIndex), m_caster ? m_caster->ToString().c_str() : "", unitTarget ? unitTarget->ToString().c_str() : "");
+    TC_LOG_DEBUG("spells", "Spell ScriptStart spellid %u in EffectDummy(%u) caster %s target %s", m_spellInfo->Id, effIndex, m_caster ? m_caster->ToString().c_str() : "", unitTarget ? unitTarget->ToString().c_str() : "");
     m_caster->GetMap()->ScriptsStart(sSpellScripts, uint32(m_spellInfo->Id | (effIndex << 24)), m_caster, unitTarget);
 
     // Script based implementation. Must be used only for not good for implementation in core spell effects
@@ -1727,7 +1727,7 @@ void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
     if (!spellInfo)
     {
         SpellDummyTriggered(effIndex);
-        TC_LOG_DEBUG("spells", "Spell::EffectTriggerMissileSpell spell %u tried to trigger unknown spell %u effectHandleMode %u", m_spellInfo->Id, triggered_spell_id, uint32(effectHandleMode));
+        TC_LOG_DEBUG("spells", "Spell::EffectTriggerMissileSpell spell %u tried to trigger unknown spell %u effectHandleMode %u", m_spellInfo->Id, triggered_spell_id, effectHandleMode);
         return;
     }
 
@@ -3378,7 +3378,7 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
     m_addpower = gain;
     m_caster->EnergizeBySpell(unitTarget, m_spellInfo->Id, gain, power);
 
-    TC_LOG_DEBUG("spells", "Spell::EffectEnergizePct Id %i damage %f power %i gain %i", m_spellInfo->Id, damage, uint32(power), gain);
+    TC_LOG_DEBUG("spells", "Spell::EffectEnergizePct Id %i damage %f power %i gain %i", m_spellInfo->Id, damage, power, gain);
 }
 
 void Spell::SendLoot(ObjectGuid const& guid, LootType loottype)
@@ -4489,7 +4489,7 @@ void Spell::EffectEnchantItemPrismatic(SpellEffIndex effIndex)
 
     if (!add_socket)
     {
-        TC_LOG_ERROR("spells", "Spell::EffectEnchantItemPrismatic: attempt apply enchant spell %u with SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC (%u) but without ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET (%u), not suppoted yet.", m_spellInfo->Id, uint32(SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC), uint32(ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET));
+        TC_LOG_ERROR("spells", "Spell::EffectEnchantItemPrismatic: attempt apply enchant spell %u with SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC (%u) but without ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET (%u), not suppoted yet.", m_spellInfo->Id, SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC, ITEM_ENCHANTMENT_TYPE_PRISMATIC_SOCKET);
         return;
     }
 
@@ -4534,13 +4534,13 @@ void Spell::EffectEnchantItemTmp(SpellEffIndex effIndex)
 
     if (!enchant_id)
     {
-        TC_LOG_ERROR("spells", "Spell %u Effect %u (SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) have 0 as enchanting id", m_spellInfo->Id, uint32(effIndex));
+        TC_LOG_ERROR("spells", "Spell %u Effect %u (SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) have 0 as enchanting id", m_spellInfo->Id, effIndex);
         return;
     }
 
     if (!sSpellItemEnchantmentStore.LookupEntry(enchant_id))
     {
-        TC_LOG_ERROR("spells", "Spell %u Effect %u (SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) have not existed enchanting id %u ", m_spellInfo->Id, uint32(effIndex), enchant_id);
+        TC_LOG_ERROR("spells", "Spell %u Effect %u (SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) have not existed enchanting id %u ", m_spellInfo->Id, effIndex, enchant_id);
         return;
     }
 
@@ -5894,7 +5894,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
     }
 
     // normal DB scripted effect
-    TC_LOG_DEBUG("spells", "Spell ScriptStart spellid %u in EffectScriptEffect(%u)", m_spellInfo->Id, uint32(effIndex));
+    TC_LOG_DEBUG("spells", "Spell ScriptStart spellid %u in EffectScriptEffect(%u)", m_spellInfo->Id, effIndex);
     m_caster->GetMap()->ScriptsStart(sSpellScripts, uint32(m_spellInfo->Id | (effIndex << 24)), m_caster, unitTarget);
 }
 

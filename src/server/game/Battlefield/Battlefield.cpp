@@ -1047,7 +1047,7 @@ bool BfCapturePoint::SetCapturePointData(GameObject* capturePoint)
     m_State = m_value == 50.0f ? BF_CAPTUREPOINT_OBJECTIVESTATE_NEUTRAL : (m_value == 0.0f ? BF_CAPTUREPOINT_OBJECTIVESTATE_ALLIANCE : BF_CAPTUREPOINT_OBJECTIVESTATE_HORDE);
 
     TC_LOG_ERROR("misc", "m_maxValue %f; m_minValue %f; m_neutralValuePct %u; m_value %f; m_maxSpeed %f; m_State %u",
-        m_maxValue, m_minValue, m_neutralValuePct, m_value, m_maxSpeed, uint32(m_State));
+        m_maxValue, m_minValue, m_neutralValuePct, m_value, m_maxSpeed, m_State);
 
     return true;
 }
@@ -1172,7 +1172,7 @@ bool BfCapturePoint::Update(uint32 diff)
 
     if (m_OldState != m_State)
     {
-        TC_LOG_ERROR("misc", "m_OldState %u-> m_State %u", uint32(m_OldState), uint32(m_State));
+        TC_LOG_ERROR("misc", "m_OldState %u-> m_State %u", m_OldState, m_State);
         if (oldTeam != m_team)
         {
             ChangeTeam(oldTeam);

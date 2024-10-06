@@ -205,7 +205,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     {
         if (packet->GetConnection() != CONNECTION_TYPE_INSTANCE && IsInstanceOnlyOpcode(opcode))
         {
-            TC_LOG_ERROR("misc", "Prevented sending of instance only opcode %u with connection type %u to %s", opcode, uint32(packet->GetConnection()), GetPlayerName().c_str());
+            TC_LOG_ERROR("misc", "Prevented sending of instance only opcode %u with connection type %u to %s", opcode, packet->GetConnection(), GetPlayerName().c_str());
             return;
         }
 
@@ -214,7 +214,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 
     if (!m_Socket[conIdx])
     {
-        TC_LOG_DEBUG("misc", "Prevented sending of %s to non existent socket %u to %s", GetOpcodeNameForLogging(static_cast<OpcodeServer>(opcode)).c_str(), uint32(conIdx), GetPlayerName().c_str());
+        TC_LOG_DEBUG("misc", "Prevented sending of %s to non existent socket %u to %s", GetOpcodeNameForLogging(static_cast<OpcodeServer>(opcode)).c_str(), conIdx, GetPlayerName().c_str());
         return;
     }
 

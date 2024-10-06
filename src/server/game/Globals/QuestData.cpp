@@ -689,7 +689,7 @@ void QuestDataStoreMgr::LoadQuests()
 
         if (qinfo->SpecialFlags & ~QUEST_SPECIAL_FLAGS_DB_ALLOWED)
         {
-            TC_LOG_ERROR("sql.sql", "LoadQuests() >> Quest %u has `SpecialFlags` = %u > max allowed value. Correct `SpecialFlags` to value <= %u", qinfo->GetQuestId(), qinfo->SpecialFlags, uint32(QUEST_SPECIAL_FLAGS_DB_ALLOWED));
+            TC_LOG_ERROR("sql.sql", "LoadQuests() >> Quest %u has `SpecialFlags` = %u > max allowed value. Correct `SpecialFlags` to value <= %u", qinfo->GetQuestId(), qinfo->SpecialFlags, QUEST_SPECIAL_FLAGS_DB_ALLOWED);
             qinfo->SpecialFlags &= QUEST_SPECIAL_FLAGS_DB_ALLOWED;
         }
 
@@ -2170,7 +2170,7 @@ WorldQuestTypeReward QuestDataStoreMgr::GetWorldQuestTypeReward(WorldQuestTempla
     else if (qTemplate->CurrencyID && roll_chance_f(chance)) // Currency chance
         rewardType = WORLD_QUEST_TYPE_REWARD_CURRENCY;
 
-    TC_LOG_DEBUG("worldquest", "GetWorldQuestTypeReward >> rewardType %u HasArmor %u GoldMax %u CurrencyID %u", uint32(rewardType), qTemplate->HasArmor, qTemplate->GoldMax, qTemplate->CurrencyID);
+    TC_LOG_DEBUG("worldquest", "GetWorldQuestTypeReward >> rewardType %u HasArmor %u GoldMax %u CurrencyID %u", rewardType, qTemplate->HasArmor, qTemplate->GoldMax, qTemplate->CurrencyID);
 
     return rewardType;
 }
@@ -2197,7 +2197,7 @@ WorldQuestTypeReward QuestDataStoreMgr::GetWorldQuestReward(WorldQuestTemplate c
     else if (!qTemplate->ItemResourceList.empty() && qTemplate->ItemCAList.empty() && !qTemplate->HasArmor)
         rewardType = WORLD_QUEST_TYPE_REWARD_RESOURCE;
 
-    TC_LOG_DEBUG("worldquest", "GetWorldQuestReward >> rewardType %u HasArmor %u ItemResourceList %zu ItemCAList %zu", uint32(rewardType), qTemplate->HasArmor, qTemplate->ItemResourceList.size(), qTemplate->ItemCAList.size());
+    TC_LOG_DEBUG("worldquest", "GetWorldQuestReward >> rewardType %u HasArmor %u ItemResourceList %zu ItemCAList %zu", rewardType, qTemplate->HasArmor, qTemplate->ItemResourceList.size(), qTemplate->ItemCAList.size());
 
     return rewardType;
 }

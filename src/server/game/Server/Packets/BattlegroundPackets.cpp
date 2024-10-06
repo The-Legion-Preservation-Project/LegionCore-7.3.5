@@ -389,8 +389,8 @@ WorldPacket const* WorldPackets::Battleground::BattlefieldStatusActive::Write()
     _worldPacket << Header;
 
     _worldPacket << uint32(Mapid);
-    _worldPacket << uint32(StartTimer);
-    _worldPacket << uint32(ShutdownTimer);
+    _worldPacket << uint32(StartTimer.count());
+    _worldPacket << uint32(ShutdownTimer.count());
 
     _worldPacket.WriteBit(ArenaFaction);
     _worldPacket.WriteBit(LeftEarly);

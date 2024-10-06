@@ -127,7 +127,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber)
         petnumber = owner->getPetIdBySlot(owner->m_currentSummonedSlot);
     }
 
-    TC_LOG_DEBUG("spells", "LoadPetFromDB petentry %i, petnumber %i, ownerid %i slot %u m_currentPet %i", petentry, petnumber, ownerid, uint32(owner->m_currentSummonedSlot), owner->m_currentPetNumber);
+    TC_LOG_DEBUG("spells", "LoadPetFromDB petentry %i, petnumber %i, ownerid %i slot %i m_currentPet %i", petentry, petnumber, ownerid, owner->m_currentSummonedSlot, owner->m_currentPetNumber);
 
     PetInfoData* petInfo = owner->GetPetInfo(petentry, petnumber);
     if (!petInfo)
@@ -260,7 +260,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber)
         }
         default:
             if (!IsPetGhoul())
-                TC_LOG_ERROR("misc", "Pet have incorrect type (%u) for pet loading.", uint32(getPetType()));
+                TC_LOG_ERROR("misc", "Pet have incorrect type (%u) for pet loading.", getPetType());
             break;
     }
 

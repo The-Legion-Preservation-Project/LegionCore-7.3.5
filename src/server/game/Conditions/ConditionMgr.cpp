@@ -73,7 +73,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
     // object not present, return false
     if (!object)
     {
-        TC_LOG_DEBUG("condition", "Condition object not found for condition (Entry: %u Type: %u Group: %u)", SourceEntry, uint32(SourceType), SourceGroup);
+        TC_LOG_DEBUG("condition", "Condition object not found for condition (Entry: %u Type: %u Group: %u)", SourceEntry, SourceType, SourceGroup);
         return false;
     }
     bool condMeets = false;
@@ -968,7 +968,7 @@ bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, 
     std::map<uint32, bool> ElseGroupStore;
     for (ConditionList::const_iterator i = conditions.begin(); i != conditions.end(); ++i)
     {
-        TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList condType: %u val1: %u", uint32((*i)->ConditionType), (*i)->ConditionValue1);
+        TC_LOG_DEBUG("condition", "ConditionMgr::IsPlayerMeetToConditionList condType: %u val1: %u", (*i)->ConditionType, (*i)->ConditionValue1);
         if ((*i)->isLoaded())
         {
             //! Find ElseGroup in ElseGroupStore
@@ -1640,7 +1640,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!LootTemplates_Creature.HaveLootFor(cond->SourceGroup))
             {
                 TC_LOG_ERROR("sql.sql", "SourceGroup %u in `condition` table, does not exist in `creature_loot_template`, ignoring.", cond->SourceGroup);
-                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceGroup = %u AND SourceTypeOrReferenceId = %u", cond->SourceGroup, uint32(cond->SourceType));
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceGroup = %u AND SourceTypeOrReferenceId = %u", cond->SourceGroup, cond->SourceType);
                 return false;
             }
 
@@ -1648,7 +1648,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1665,7 +1665,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1682,7 +1682,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1692,7 +1692,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             if (!LootTemplates_Gameobject.HaveLootFor(cond->SourceGroup))
             {
                 TC_LOG_ERROR("sql.sql", "SourceGroup %u in `condition` table, does not exist in `gameobject_loot_template`, ignoring.", cond->SourceGroup);
-                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceGroup = %u AND SourceTypeOrReferenceId = %u", cond->SourceGroup, uint32(cond->SourceType));
+                WorldDatabase.PExecute("DELETE FROM `conditions` WHERE SourceGroup = %u AND SourceTypeOrReferenceId = %u", cond->SourceGroup, cond->SourceType);
                 return false;
             }
 
@@ -1700,7 +1700,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1717,7 +1717,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1734,7 +1734,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1751,7 +1751,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1768,7 +1768,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1785,7 +1785,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1802,7 +1802,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1819,7 +1819,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1836,7 +1836,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1853,7 +1853,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->SourceEntry);
             if (!pItemProto && !loot->isReference(cond->SourceEntry))
             {
-                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+                TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, does not exist in `item_template`, ignoring.", cond->SourceType, cond->SourceEntry);
                 return false;
             }
             break;
@@ -1996,7 +1996,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
         case CONDITION_SOURCE_TYPE_PHASE_DEFINITION:
             if (!PhaseMgr::IsConditionTypeSupported(cond->ConditionType))
             {
-                TC_LOG_ERROR("sql.sql", "Condition source type `CONDITION_SOURCE_TYPE_PHASE_DEFINITION` does not support condition type %u, ignoring.", uint32(cond->ConditionType));
+                TC_LOG_ERROR("sql.sql", "Condition source type `CONDITION_SOURCE_TYPE_PHASE_DEFINITION` does not support condition type %u, ignoring.", cond->ConditionType);
                 return false;
             }
             break;
@@ -2068,7 +2068,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
 
     if (cond->ConditionTarget >= cond->GetMaxAvailableConditionTargets())
     {
-        TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, has incorrect ConditionTarget set, ignoring.", uint32(cond->SourceType), cond->SourceEntry);
+        TC_LOG_ERROR("sql.sql", "SourceType %u, SourceEntry %u in `condition` table, has incorrect ConditionTarget set, ignoring.", cond->SourceType, cond->SourceEntry);
         return false;
     }
 

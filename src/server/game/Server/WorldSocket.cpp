@@ -536,9 +536,9 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
 void WorldSocket::LogOpcodeText(OpcodeClient opcode, std::unique_lock<std::mutex> const& guard) const
 {
     if (!guard)
-        TC_LOG_TRACE("network.opcode", "C->S: %s %s conn %u", GetOpcodeNameForLogging(opcode).c_str(), GetRemoteIpAddress().to_string().c_str(), uint32(GetConnectionType()));
+        TC_LOG_TRACE("network.opcode", "C->S: %s %s conn %i", GetOpcodeNameForLogging(opcode).c_str(), GetRemoteIpAddress().to_string().c_str(), GetConnectionType());
     else
-        TC_LOG_TRACE("network.opcode", "C->S: %s %s conn %u", GetOpcodeNameForLogging(opcode).c_str(), (_worldSession ? _worldSession->GetPlayerName() : GetRemoteIpAddress().to_string()).c_str(), uint32(GetConnectionType()));
+        TC_LOG_TRACE("network.opcode", "C->S: %s %s conn %i", GetOpcodeNameForLogging(opcode).c_str(), (_worldSession ? _worldSession->GetPlayerName() : GetRemoteIpAddress().to_string()).c_str(), GetConnectionType());
 }
 
 void WorldSocket::SendPacket(WorldPacket const& packet)
@@ -554,7 +554,7 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
     sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort(), GetConnectionType());
 
     if (SMSG_ON_MONSTER_MOVE != static_cast<OpcodeServer>(packet.GetOpcode()))
-        TC_LOG_TRACE("network.opcode", "S->C: %s Size %u %s connection %u, connectionType %u", GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode())).c_str(), packetSize, GetRemoteIpAddress().to_string().c_str(), uint32(packet.GetConnection()), uint32(GetConnectionType()));
+        TC_LOG_TRACE("network.opcode", "S->C: %s Size %u %s connection %i, connectionType %i", GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode())).c_str(), packetSize, GetRemoteIpAddress().to_string().c_str(), packet.GetConnection(), GetConnectionType());
 
     _bufferQueueLock.lock();
     _bufferQueue.emplace(EncryptablePacket(packet, _authCrypt.IsInitialized()));
@@ -851,7 +851,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<WorldPackets::Auth::
     if (allowedAccountType > SEC_PLAYER && account.Game.Security < allowedAccountType)
     {
         SendAuthResponseError(ERROR_SERVER_IS_PRIVATE);
-        TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Client %s allowedAccountType %u Security %u", address.c_str(), uint32(allowedAccountType), uint32(account.Game.Security));
+        TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Client %s allowedAccountType %u Security %u", address.c_str(), allowedAccountType, account.Game.Security);
         DelayedCloseSocket();
         return;
     }
