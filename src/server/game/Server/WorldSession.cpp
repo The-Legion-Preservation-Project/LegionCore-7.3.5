@@ -1165,7 +1165,7 @@ void WorldSession::InitializeSession()
     });
 }
 
-void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& realmHolder, CharacterDatabaseQueryHolder const& holder)
+void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& holder, CharacterDatabaseQueryHolder const& realmHolder)
 {
     LoadAccountData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
     LoadTutorialsData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
