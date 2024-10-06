@@ -26516,7 +26516,7 @@ void Player::_LoadPetStable(uint8 petStableSlots, PreparedQueryResult result)
             petInfo.Level = fields[3].GetUInt16();
             petInfo.Experience = fields[4].GetUInt32();
             petInfo.ReactState = ReactStates(fields[5].GetUInt8());
-            PetSaveMode slot = PetSaveMode(fields[6].GetUInt8());
+            PetSaveMode slot = PetSaveMode(fields[6].GetUInt16());
             petInfo.Name = fields[7].GetString();
             petInfo.WasRenamed = fields[8].GetBool();
             petInfo.Health = fields[9].GetUInt32();
