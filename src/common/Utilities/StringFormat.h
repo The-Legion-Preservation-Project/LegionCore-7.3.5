@@ -20,6 +20,7 @@
 #define TRINITYCORE_STRING_FORMAT_H
 
 #include "fmt/printf.h"
+#include <fmt/core.h>
 
 namespace Trinity
 {
@@ -38,6 +39,12 @@ namespace Trinity
 
     /// Returns true if the given std::string is empty.
     inline bool IsFormatEmptyOrNull(std::string const& fmt)
+    {
+        return fmt.empty();
+    }
+
+    /// Returns true if the given std::string_view is empty.
+    inline bool IsFormatEmptyOrNull(std::string_view const& fmt)
     {
         return fmt.empty();
     }

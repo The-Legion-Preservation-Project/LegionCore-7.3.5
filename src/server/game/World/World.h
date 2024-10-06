@@ -30,7 +30,7 @@
 #include "SharedDefines.h"
 #include "DatabaseEnvFwd.h"
 #include "Opcodes.h"
-#include "QueryCallbackProcessor.h"
+//#include "QueryCallbackProcessor.h"
 #include "WorldPacket.h"
 #include "Threading/LockedQueue.h"
 #include <safe_ptr.h>
