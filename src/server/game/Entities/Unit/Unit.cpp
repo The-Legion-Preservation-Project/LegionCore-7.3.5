@@ -19262,6 +19262,10 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
 
     petStable.SetCurrentActivePetIndex(std::distance(petStable.ActivePets.begin(), freeActiveSlotItr));
     pet->FillPetInfo(&freeActiveSlotItr->emplace());
+
+    // Send stable contents to display icons on Call Pet spells
+    player->GetSession()->SendStablePet(ObjectGuid::Empty);
+
     return true;
 }
 
