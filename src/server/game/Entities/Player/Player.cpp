@@ -21853,7 +21853,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     {
         f_guid, f_account, f_name, f_race, f_class, f_level, f_xp, f_money, f_skin, f_face, f_hairstyle, f_haircolor, f_facialhair, f_blindfold, f_gender, f_tattoo, f_horn, f_inventorySlots, f_bankslots, f_drunk, f_playerFlags,
         f_playerFlagsEx, f_position_x, f_position_y, f_position_z, f_map, f_orientation, f_taximask, f_cinematic, f_totaltime, f_leveltime, f_rest_bonus, f_logout_time, f_is_logout_resting,
-        f_trans_x, f_trans_y, f_trans_z, f_trans_o, f_transguid, f_extra_flags, f_stable_slots, f_at_login, f_zone, f_online, f_death_expire_time, f_taxi_path, f_dungeonDifficulty,
+        f_trans_x, f_trans_y, f_trans_z, f_trans_o, f_transguid, f_extra_flags, f_summonedPetNumber, f_at_login, f_zone, f_online, f_death_expire_time, f_taxi_path, f_dungeonDifficulty,
         f_totalKills, f_todayKills, f_yesterdayKills, f_chosenTitle, f_watchedFaction,
         f_health, f_mana, f_instance_id, f_activespec, f_specialization, f_lootspecialization, f_exploredZones, f_equipmentCache, f_knownTitles, f_actionBars,
         f_grantableLevels, f_lfgBonusFaction, f_raidDifficulty, f_legacyRaidDifficulty, f_created_time,
@@ -22329,8 +22329,10 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     m_taxi.LoadTaxiMask(fields[f_taximask].GetCString());            // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[f_extra_flags].GetUInt16();
+    uint32 summonedPetNumber = fields[f_summonedPetNumber].GetUInt32();
 
-    _LoadPetStable(fields[43].GetUInt8(), holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PET_SLOTS));
+    _LoadPetStable(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_PET_SLOTS));
+    m_temporaryUnsummonedPetNumber = summonedPetNumber;
 
     // Honor system
     // Update Honor kills data
@@ -23769,18 +23771,6 @@ void Player::_LoadMail()
     m_mailsLoaded = true;
 }
 
-void Player::LoadPet()
-{
-    //fixme: the pet should still be loaded if the player is not in world
-    // just not added to the map
-    if (m_petStable && IsInWorld())
-    {
-        Pet* pet = new Pet(this);
-        if (!pet->LoadPetFromDB(this, 0, 0, true))
-            delete pet;
-    }
-}
-
 void Player::_LoadQuestStatus(PreparedQueryResult result)
 {
     uint16 slot = 0;
@@ -24968,7 +24958,7 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt32(index++, uint32(time(nullptr)));
         stmt->setUInt8(index++,  (HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++,  m_petStable ? m_petStable->MaxStabledPets : 0);
+        stmt->setUInt32(index++, 0); // summonedPetNumber
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, m_zoneId ? m_zoneId : m_oldZoneId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -25095,7 +25085,10 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++,  (HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0));
 
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++, m_petStable ? m_petStable->MaxStabledPets : 0);
+        if (PetStable const* petStable = GetPetStable())
+            stmt->setUInt32(index++, petStable->CurrentPet && petStable->CurrentPet->Health > 0 ? petStable->CurrentPet->PetNumber : 0); // summonedPetNumber
+        else
+            stmt->setUInt32(index++, 0); // summonedPetNumber
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, m_zoneId ? m_zoneId : m_oldZoneId);
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -26490,18 +26483,13 @@ void Player::UpdateDuelFlag(uint32 diff)
         duel->countdownTimer -= diff;
 }
 
-void Player::_LoadPetStable(uint8 petStableSlots, PreparedQueryResult result)
+void Player::_LoadPetStable(PreparedQueryResult result)
 {
-    if (!petStableSlots && !result)
+    if (!result)
         return;
+
     m_petStable = std::make_unique<PetStable>();
-    m_petStable->MaxStabledPets = petStableSlots;
-    if (m_petStable->MaxStabledPets > MAX_PET_STABLES)
-    {
-        TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player (%s) can't have more stable slots than %u, but has %u in DB",
-            GetGUID().ToString().c_str(), MAX_PET_STABLES, m_petStable->MaxStabledPets);
-        m_petStable->MaxStabledPets = MAX_PET_STABLES;
-    }
+
     //         0      1        2      3    4           5     6     7        8          9       10      11        12              13       14              15
     // SELECT id, entry, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization FROM character_pet WHERE owner = ?
     if (result)

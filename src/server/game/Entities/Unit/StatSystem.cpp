@@ -117,7 +117,7 @@ void Player::UpdateStatsByMask()
     }
 
     if (m_operationsAfterDelayMask & OAD_LOAD_PET)
-        LoadPet();
+        ResummonPetTemporaryUnSummonedIfAny();
 
     if ((m_operationsAfterDelayMask & OAD_UPDATE_RUNES_REGEN) && getClass() == CLASS_DEATH_KNIGHT)
         UpdatePowerRegen(POWER_RUNES);

@@ -1893,7 +1893,6 @@ class Player : public Unit, public GridObject<Player>
         void RemoveItemDurations(Item* item);
         void SendItemDurations();
         void LoadCorpse();
-        void LoadPet();
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = nullptr, ObjectGuid guid = ObjectGuid::Empty );
 
@@ -3343,7 +3342,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadHonor(PreparedQueryResult result, PreparedQueryResult result2);
         void _LoadLootCooldown(PreparedQueryResult result);
-        void _LoadPetStable(uint8 petStableSlots, PreparedQueryResult result);
+        void _LoadPetStable(PreparedQueryResult result);
         void _LoadWorldQuestStatus(PreparedQueryResult result);
         void _LoadChallengeKey(PreparedQueryResult result);
         void _LoadAccountProgress(PreparedQueryResult result);
