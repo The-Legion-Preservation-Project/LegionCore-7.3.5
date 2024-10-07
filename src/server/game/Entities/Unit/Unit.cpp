@@ -11831,14 +11831,13 @@ void Unit::SetMinion(Minion *minion, bool apply)
                     break;
                 }
             }
-            //if (Guardian* oldPet = GetGuardianPet())
-            if (oldPet)
+            if (Guardian* oldPet = GetGuardianPet())
             {
                 if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()))
                 {
                     // remove existing minion pet
-                    if (oldPet->isPet())
-                        oldPet->ToPet()->Remove(PET_SAVE_AS_CURRENT);
+                    if (Pet* oldPetAsPet = oldPet->ToPet())
+                        oldPetAsPet->Remove(PET_SAVE_NOT_IN_SLOT);
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());

@@ -126,9 +126,11 @@ std::pair<PetStable::PetInfo const*, PetSaveMode> Pet::GetLoadPetInfo(const PetS
         if (slot == PET_SAVE_AS_CURRENT)
             if (stable.GetCurrentActivePetIndex() && stable.ActivePets[*stable.GetCurrentActivePetIndex()])
                 return { &stable.ActivePets[*stable.GetCurrentActivePetIndex()].value(), PetSaveMode(*stable.GetCurrentActivePetIndex()) };
+
         if (slot >= PET_SAVE_FIRST_ACTIVE_SLOT && slot < PET_SAVE_LAST_ACTIVE_SLOT)
             if (stable.ActivePets[*slot])
                 return { &stable.ActivePets[*slot].value(), *slot };
+
         if (slot >= PET_SAVE_FIRST_STABLE_SLOT && slot < PET_SAVE_LAST_STABLE_SLOT)
             if (stable.StabledPets[*slot])
                 return { &stable.StabledPets[*slot].value(), *slot };
@@ -238,6 +240,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
         owner->SetTemporaryUnsummonedPetNumber(petInfo->PetNumber);
         return false;
     }
+
+    owner->SetTemporaryUnsummonedPetNumber(0);
 
     Map* map = owner->GetMap();
     ObjectGuid::LowType guid = sObjectMgr->GetGenerator<HighGuid::Pet>()->Generate();
@@ -376,10 +380,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
         {
             return pet && pet->PetNumber == petInfo->PetNumber;
         });
-        ASSERT(!petStable->CurrentPetIndex);
         ASSERT(activePetItr != petStable->ActivePets.end());
 
-        petStable->SetCurrentActivePetIndex(std::distance(petStable->ActivePets.begin(), activePetItr));
+        uint32 newPetIndex = std::distance(petStable->ActivePets.begin(), activePetItr);
+
+        petStable->SetCurrentActivePetIndex(newPetIndex);
     }
 
     owner->SetMinion(this, true);
