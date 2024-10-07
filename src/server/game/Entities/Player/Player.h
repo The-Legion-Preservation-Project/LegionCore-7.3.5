@@ -383,7 +383,8 @@ struct PlayerInfo
     float positionZ;
     float orientation;
     PlayerCreateInfoItems item;
-    PlayerCreateInfoSpells spell;
+    PlayerCreateInfoSpells customSpells;
+    PlayerCreateInfoSpells castSpells;
     PlayerCreateInfoActions action;
     PlayerCreateInfoSkills skills;
     PlayerCreateInfoQuests quests;
@@ -2179,7 +2180,7 @@ class Player : public Unit, public GridObject<Player>
         void RemoveSpecializationSpells();
         void UpdateSkillsForLevel();
         void LearnDefaultSkills();
-        void LearnDefaultSpells();
+        void LearnCustomSpells();
         void LearnDefaultSkill(SkillRaceClassInfoEntry const* rcInfo);
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);

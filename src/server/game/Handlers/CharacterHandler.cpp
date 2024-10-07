@@ -975,9 +975,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
             pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
 
             PlayerInfo const* info = sObjectMgr->GetPlayerInfo(pCurrChar->getRace(), pCurrChar->getClass());
-            // TODO: default pets should come from cast spells
-//            for (uint32 spellId : info->castSpells)
-//                pCurrChar->CastSpell(pCurrChar, spellId, true);
+            for (uint32 spellId : info->castSpells)
+                pCurrChar->CastSpell(pCurrChar, spellId, true);
         }
 
         // show time before shutdown if shutdown planned.

@@ -825,8 +825,8 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
 
     // original spells
     LearnDefaultSkills();
-    
-    LearnDefaultSpells();
+
+    LearnCustomSpells();
 
     // enable basic auras. ToDo: find the way to do it not by hack.
     switch(getClass())
@@ -3882,7 +3882,7 @@ void Player::GiveLevel(uint8 level)
     
     UpdateSkillsForLevel();
     LearnDefaultSkills();
-    LearnDefaultSpells();
+    LearnCustomSpells();
 
     // save base values (bonuses already included in stored stats
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
@@ -22422,7 +22422,7 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     // after spell and quest load
     InitTalentForLevel();
     LearnDefaultSkills();
-    LearnDefaultSpells();
+    LearnCustomSpells();
 
     // must be before inventory (some items required reputation check)
     m_reputationMgr.LoadFromDB(holder.GetPreparedResult(PLAYER_LOGIN_QUERY_LOADREPUTATION));
@@ -30278,7 +30278,7 @@ void Player::resetSpells()
     }
 
     LearnDefaultSkills();
-    LearnDefaultSpells();
+    LearnCustomSpells();
     learnQuestRewardedSpells();
     UpdateSkillsForLevel();
 }
@@ -30350,10 +30350,10 @@ void Player::LearnDefaultSkills()
     }
 }
 
-void Player::LearnDefaultSpells()
+void Player::LearnCustomSpells()
 {
     PlayerInfo const* info = sObjectMgr->GetPlayerInfo(getRace(), getClass());
-    for (PlayerCreateInfoSpells::const_iterator itr = info->spell.begin(); itr != info->spell.end(); ++itr)
+    for (PlayerCreateInfoSpells::const_iterator itr = info->customSpells.begin(); itr != info->customSpells.end(); ++itr)
     {
         if (HasSpell(*itr))
             continue;
@@ -30362,7 +30362,7 @@ void Player::LearnDefaultSpells()
     }
     if (PlayerInfo const* allInfo = sObjectMgr->GetPlayerInfo(RACE_NONE, CLASS_NONE))
     {
-        for (PlayerCreateInfoSpells::const_iterator itr = allInfo->spell.begin(); itr != allInfo->spell.end(); ++itr)
+        for (PlayerCreateInfoSpells::const_iterator itr = allInfo->customSpells.begin(); itr != allInfo->customSpells.end(); ++itr)
         {
             if (HasSpell(*itr))
                 continue;
