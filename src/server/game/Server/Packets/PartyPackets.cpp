@@ -166,7 +166,7 @@ void WorldPackets::Party::PartyMemberStatseUpdate::Initialize(Player* player)
         if (player->IsPvP())
             memberStatus |= MEMBER_STATUS_PVP;
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             if (player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
                 memberStatus |= MEMBER_STATUS_GHOST;
@@ -742,7 +742,7 @@ void WorldPackets::Party::PartyMemberStats::Initialize(Player* player)
     if (player->IsPvP())
         MemberStats.Status |= MEMBER_STATUS_PVP;
 
-    if (!player->isAlive())
+    if (!player->IsAlive())
     {
         if (player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
             MemberStats.Status |= MEMBER_STATUS_GHOST;

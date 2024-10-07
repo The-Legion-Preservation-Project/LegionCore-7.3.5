@@ -61,7 +61,7 @@ void WorldSession::HandlePetAction(WorldPackets::PetPackets::PetAction& packet)
         return;
     }
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
     {
         SpellInfo const* spell = (flag == ACT_ENABLED || flag == ACT_PASSIVE) ? sSpellMgr->GetSpellInfo(spellID) : nullptr;
         if (!spell)
@@ -89,7 +89,8 @@ void WorldSession::HandlePetAction(WorldPackets::PetPackets::PetAction& packet)
             Unit* unit = ObjectAccessor::GetUnit(*GetPlayer(), guid);
             if (!unit)
                 continue;
-            if ((unit->GetEntry() == pet->GetEntry() || unit->ToCreature() && unit->ToCreature()->m_isHati) && unit->isAlive())
+            if ((unit->GetEntry() == pet->GetEntry() || unit->ToCreature() && unit->ToCreature()->m_isHati) &&
+                    unit->IsAlive())
             {
                 if (unit->ToCreature())
                 {
@@ -119,7 +120,7 @@ void WorldSession::HandleStopAttack(WorldPackets::PetPackets::StopAttack& packet
     if (pet != player->GetPet() && pet != player->GetCharm())
         return;
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
         return;
 
     pet->AttackStop();
@@ -240,7 +241,7 @@ void WorldSession::HandlePetRename(WorldPackets::PetPackets::PetRename& packet)
     if (!pet || !pet->isPet() || pet->getPetType() != HUNTER_PET ||
         !pet->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, UNIT_CAN_BE_RENAMED) ||
         pet->GetOwnerGUID() != _player->GetGUID() || !pet->GetCharmInfo() ||
-        !petStable || !petStable->CurrentPet || petStable->CurrentPet->PetNumber != pet->GetCharmInfo()->GetPetNumber())
+        !petStable || !petStable->GetCurrentPet() || petStable->GetCurrentPet()->PetNumber != pet->GetCharmInfo()->GetPetNumber())
         return;
 
     PetNameInvalidReason res = sCharacterDataStore->CheckPetName(packet.RenameData.NewName);
@@ -262,8 +263,8 @@ void WorldSession::HandlePetRename(WorldPackets::PetPackets::PetRename& packet)
 
     pet->RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, UNIT_CAN_BE_RENAMED);
 
-    petStable->CurrentPet->Name = name;
-    petStable->CurrentPet->WasRenamed = true;
+    petStable->GetCurrentPet()->Name = name;
+    petStable->GetCurrentPet()->WasRenamed = true;
 
     if (declinedname && sWorld->getBoolConfig(CONFIG_DECLINED_NAMES_USED))
     {
@@ -808,53 +809,36 @@ void WorldSession::SendStablePet(ObjectGuid const& guid /*= ObjectGuid::Empty*/)
         return;
     }
 
-    int32 petSlot = 0;
-
-    if (petStable->CurrentPet)
+    for (uint32 petSlot = 0; petSlot < petStable->ActivePets.size(); ++petSlot)
     {
-        PetStable::PetInfo const& pet = *petStable->CurrentPet;
+        if (!petStable->ActivePets[petSlot])
+            continue;
+
+        PetStable::PetInfo const& pet = *petStable->ActivePets[petSlot];
         WorldPackets::PetPackets::StableInfo& stableEntry = packet.Stables.emplace_back();
-        stableEntry.PetSlot = petSlot;
+        stableEntry.PetSlot = petSlot + PET_SAVE_FIRST_ACTIVE_SLOT;
         stableEntry.PetNumber = pet.PetNumber;
         stableEntry.CreatureID = pet.CreatureId;
         stableEntry.DisplayID = pet.DisplayId;
         stableEntry.ExperienceLevel = pet.Level;
         stableEntry.PetFlags = PET_STABLE_ACTIVE;
         stableEntry.PetName = pet.Name;
-        ++petSlot;
-    }
-    else
-    {
-        if (PetStable::PetInfo const* pet = petStable->GetUnslottedHunterPet())
-        {
-            WorldPackets::PetPackets::StableInfo& stableEntry = packet.Stables.emplace_back();
-
-            stableEntry.PetSlot = petSlot;
-            stableEntry.PetNumber = pet->PetNumber;
-            stableEntry.CreatureID = pet->CreatureId;
-            stableEntry.DisplayID = pet->DisplayId;
-            stableEntry.ExperienceLevel = pet->Level;
-            stableEntry.PetFlags = PET_STABLE_ACTIVE;
-            stableEntry.PetName = pet->Name;
-            ++petSlot;
-        }
     }
 
-    for (Optional<PetStable::PetInfo> const& stabledSlot : petStable->StabledPets)
+    for (uint32 petSlot = 0; petSlot < petStable->StabledPets.size(); ++petSlot)
     {
-        if (stabledSlot)
-        {
-            PetStable::PetInfo const& pet = *stabledSlot;
-            WorldPackets::PetPackets::StableInfo& stableEntry = packet.Stables.emplace_back();
-            stableEntry.PetSlot = petSlot;
-            stableEntry.PetNumber = pet.PetNumber;
-            stableEntry.CreatureID = pet.CreatureId;
-            stableEntry.DisplayID = pet.DisplayId;
-            stableEntry.ExperienceLevel = pet.Level;
-            stableEntry.PetFlags = PET_STABLE_INACTIVE;
-            stableEntry.PetName = pet.Name;
-            ++petSlot;
-        }
+        if (!petStable->StabledPets[petSlot])
+            continue;
+
+        PetStable::PetInfo const& pet = *petStable->StabledPets[petSlot];
+        WorldPackets::PetPackets::StableInfo& stableEntry = packet.Stables.emplace_back();
+        stableEntry.PetSlot = petSlot + PET_SAVE_FIRST_STABLE_SLOT;
+        stableEntry.PetNumber = pet.PetNumber;
+        stableEntry.CreatureID = pet.CreatureId;
+        stableEntry.DisplayID = pet.DisplayId;
+        stableEntry.ExperienceLevel = pet.Level;
+        stableEntry.PetFlags = PET_STABLE_INACTIVE;
+        stableEntry.PetName = pet.Name;
     }
 
     SendPacket(packet.Write());

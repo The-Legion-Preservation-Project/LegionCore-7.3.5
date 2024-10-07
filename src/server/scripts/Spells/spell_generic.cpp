@@ -6081,7 +6081,7 @@ class spell_failure_detection_pylon : public SpellScript
     {
         targets.remove_if([](WorldObject* target)
         {
-            return target->ToPlayer()->isAlive();
+            return target->ToPlayer()->IsAlive();
         });
     }
 
@@ -6402,7 +6402,7 @@ class spell_mothers_skinning_knife : public SpellScript
         {
             if (auto cre = Unit::GetCreature(*caster, selected))
             {
-                if (cre->isAlive())
+                if (cre->IsAlive())
                     return SPELL_FAILED_BAD_TARGETS;
                 else if (cre->GetCreatureType() != CREATURE_TYPE_BEAST)
                     return SPELL_FAILED_BAD_TARGETS;

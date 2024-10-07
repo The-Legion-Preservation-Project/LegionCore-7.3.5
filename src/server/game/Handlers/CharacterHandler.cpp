@@ -806,6 +806,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
         pCurrChar->SetGuildLevel(0);
     }
 
+    // Send stable contents to display icons on Call Pet spells
+    if (pCurrChar->HasSpell(CALL_PET_SPELL_ID))
+        SendStablePet(ObjectGuid::Empty);
+
     WorldPackets::Battleground::PVPSeason season;
     season.PreviousSeason = sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID) - 1;
     if (sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS))

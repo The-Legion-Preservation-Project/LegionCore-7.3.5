@@ -105,7 +105,7 @@ class Guardian : public Minion
     public:
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         void InitStats(uint32 duration) override;
-        bool InitStatsForLevel(uint8 level, bool initSpells = true);
+        bool InitStatsForLevel(uint8 level);
         void InitSummon() override;
 
         bool UpdateStats(Stats stat) override;

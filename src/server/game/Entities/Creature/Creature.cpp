@@ -560,7 +560,7 @@ void Creature::DisappearAndDie()
     DestroyForNearbyPlayers();
     //SetVisibility(VISIBILITY_OFF);
     //ObjectAccessor::UpdateObjectVisibility(this);
-    if (isAlive())
+    if (IsAlive())
         setDeathState(JUST_DIED);
     RemoveCorpse(false);
 }
@@ -1069,7 +1069,7 @@ void Creature::Update(uint32 diff)
 
             // creature can be dead after Unit::Update call
             // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if (!isAlive())
+            if (!IsAlive())
                 break;
 
             //Check current difficulty map for change stats
@@ -1113,7 +1113,7 @@ void Creature::Update(uint32 diff)
             break;
     }
 
-    if (!isAlive())
+    if (!IsAlive())
         if (GetMap()->Instanceable() && !isPet())
             if(GetMap()->GetSpawnMode() != GetSpawnMode() || GetMap()->IsNeedRespawn(m_respawnChallenge))
             {
@@ -1211,7 +1211,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     delete oldAI;
     IsAIEnabled = true;
 
-    if (i_AI && isAlive())
+    if (i_AI && IsAlive())
         i_AI->InitializeAI();
     
     // Initialize vehicle
@@ -2361,7 +2361,7 @@ bool Creature::IsInvisibleDueToDespawn() const
     if (Unit::IsInvisibleDueToDespawn())
         return true;
 
-    if (isAlive() || isDying() || m_corpseRemoveTime > time(nullptr))
+    if (IsAlive() || isDying() || m_corpseRemoveTime > time(nullptr))
         return false;
 
     return true;
@@ -2570,7 +2570,7 @@ void Creature::Respawn(bool force, uint32 timer /*= 3*/)
 
     if (force)
     {
-        if (isAlive())
+        if (IsAlive())
             setDeathState(JUST_DIED);
         else if (getDeathState() != CORPSE)
             setDeathState(CORPSE);
@@ -2658,7 +2658,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn /*= 0*/, Seconds const& forc
 
     if (forceRespawnTimer > Seconds::zero())
     {
-        if (isAlive())
+        if (IsAlive())
         {
             auto respawnDelay = m_respawnDelay;
             auto corpseDelay = m_corpseDelay;
@@ -2674,7 +2674,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn /*= 0*/, Seconds const& forc
             m_respawnTime = time(nullptr) + forceRespawnTimer.count();
         }
     }
-    else if (isAlive())
+    else if (IsAlive())
         setDeathState(JUST_DIED);
 
     RemoveCorpse(false);
@@ -3031,7 +3031,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
         return false;
 
     // we don't need help from zombies :)
-    if (!isAlive())
+    if (!IsAlive())
         return false;
 
     // we don't need help from non-combatant ;)
@@ -3211,7 +3211,7 @@ bool Creature::LoadCreaturesAddon(bool /*reload*/)
         //! Suspected correlation between UNIT_FIELD_BYTES_1, offset 3, value 0x2:
         //! If no inhabittype_fly (if no MovementFlag_DisableGravity flag found in sniffs)
         //! Set MovementFlag_Hover. Otherwise do nothing.
-        if ((GetMiscStandValue() & UNIT_BYTE1_FLAG_HOVER) && isAlive())
+        if ((GetMiscStandValue() & UNIT_BYTE1_FLAG_HOVER) && IsAlive())
             SetHover(true);
     }
 
@@ -3294,7 +3294,7 @@ void Creature::SetInCombatWithZone()
 
     map->ApplyOnEveryPlayer([&](Player* player)
     {
-        if (!player->isGameMaster() && player->isAlive() && (!player->getHostileRefManager().HasTarget(this) || !player->isInCombat()))
+        if (!player->isGameMaster() && player->IsAlive() && (!player->getHostileRefManager().HasTarget(this) || !player->isInCombat()))
         {
             this->SetInCombatWith(player);
             player->SetInCombatWith(this);

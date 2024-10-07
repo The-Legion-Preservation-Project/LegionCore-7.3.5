@@ -36,7 +36,7 @@
 
 void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet*/)
 {
-    if (GetPlayer()->isAlive() || GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->IsAlive() || GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     if (GetPlayer()->HasAuraType(SPELL_AURA_PREVENT_RESURRECTION))
@@ -124,7 +124,7 @@ void WorldSession::HandleSetPvP(WorldPackets::Misc::SetPvP& packet)
 
 void WorldSession::HandlePortGraveyard(WorldPackets::Misc::PortGraveyard& /*packet*/)
 {
-    if (GetPlayer()->isAlive() || !GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->IsAlive() || !GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     GetPlayer()->RepopAtGraveyard();
@@ -146,7 +146,7 @@ void WorldSession::HandleReclaimCorpse(WorldPackets::Misc::ReclaimCorpse& /*pack
     if (!player)
         return;
 
-    if (player->isAlive() || player->InArena() || !player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (player->IsAlive() || player->InArena() || !player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     Corpse* corpse = player->GetCorpse();
@@ -169,7 +169,7 @@ void WorldSession::HandleResurrectResponse(WorldPackets::Misc::ResurrectResponse
     if (!player)
         return;
 
-    if (player->isAlive())
+    if (player->IsAlive())
         return;
 
     if (packet.Response != 0)
@@ -218,7 +218,7 @@ void WorldSession::HandleAreaTrigger(WorldPackets::Misc::AreaTrigger& packet)
     if (sScriptMgr->OnAreaTrigger(player, atEntry, packet.Entered))
         return;
 
-    if (player->isAlive())
+    if (player->IsAlive())
     {
         if (std::unordered_set<uint32> const* quests = sAreaTriggerDataStore->GetQuestsForAreaTrigger(packet.AreaTriggerID))
         {
@@ -617,7 +617,7 @@ void WorldSession::HandleSummonResponse(WorldPackets::Movement::SummonResponse& 
     if (!player)
         return;
 
-    if (!player->isAlive() || player->isInCombat())
+    if (!player->IsAlive() || player->isInCombat())
         return;
 
     player->SummonIfPossible(packet.Accept);

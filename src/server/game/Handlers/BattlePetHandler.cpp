@@ -270,7 +270,7 @@ void WorldSession::HandlePetBattleRequestWild(WorldPackets::BattlePet::RequestWi
         if (wildsPetCount >= MAX_PETBATTLE_SLOTS)
             break;
 
-        if (!current->isAlive() || current->GetGUID() == wildBattlePet->GetGUID() || !sWildBattlePetMgr->IsWildPet(current))
+        if (!current->IsAlive() || current->GetGUID() == wildBattlePet->GetGUID() || !sWildBattlePetMgr->IsWildPet(current))
             continue;
 
         if (sWildBattlePetMgr->GetWildBattlePet(current) != nullptr && roll_chance_i(80))

@@ -163,13 +163,13 @@ void InstanceScript::UpdateMinionState(Creature* minion, EncounterState state)
     switch (state)
     {
         case NOT_STARTED:
-            if (!minion->isAlive())
+            if (!minion->IsAlive())
                 minion->Respawn();
             else if (minion->isInCombat())
                 minion->AI()->EnterEvadeMode();
             break;
         case IN_PROGRESS:
-            if (!minion->isAlive())
+            if (!minion->IsAlive())
                 minion->Respawn();
             else if (!minion->getVictim())
                 minion->AI()->DoZoneInCombat();
@@ -297,7 +297,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
                 DoRemovePlayeresCooldownAndDebuff(false);
 
                 for (auto i : bossInfo->minion)
-                    if (i->isWorldBoss() && i->isAlive())
+                    if (i->isWorldBoss() && i->IsAlive())
                         return false;
 
                 for (auto const& s : instance->GetPlayers())
@@ -704,7 +704,7 @@ void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= nullptr*/, ui
                 end.EncounterID = encounterId;
                 end.DifficultyID = unit->GetSpawnMode();
                 end.GroupSize = instance->GetPlayersCountExceptGMs();
-                end.Success = param1 ? param1 : !unit->isAlive();
+                end.Success = param1 ? param1 : !unit->IsAlive();
                 instance->SendToPlayers(end.Write());
 
                 if (param2)
@@ -797,7 +797,7 @@ bool InstanceScript::IsWipe() const
         if (!player)
             continue;
 
-        if (player->isAlive() && !player->isGameMaster())
+        if (player->IsAlive() && !player->isGameMaster())
             return false;
     }
 
@@ -1041,7 +1041,7 @@ void InstanceScript::AddChallengeModeOrb(ObjectGuid orbGuid)
 
 void InstanceScript::AddToDamageManager(Creature* creature, uint8 pullNum)
 {
-    if (!creature || !creature->isAlive())
+    if (!creature || !creature->IsAlive())
         return;
 
     SetPullDamageManager(creature->GetGUID(), pullNum);
@@ -1082,7 +1082,7 @@ void InstanceScript::UpdateDamageManager(ObjectGuid caller, int32 damage, bool h
         // Creature* pull = itr->creature; // If crashed comment this
         if (Creature* pull = instance->GetCreature(itr2.guid)) // If crashed uncomment this
         {
-            if (!pull->isAlive() || itr2.guid == caller)
+            if (!pull->IsAlive() || itr2.guid == caller)
                 continue;
 
             if (!heal && damage >= pull->GetHealth())

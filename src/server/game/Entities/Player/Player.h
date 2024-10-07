@@ -1612,7 +1612,7 @@ class Player : public Unit, public GridObject<Player>
         PetStable const* GetPetStable() const { return m_petStable.get(); }
 
         Pet* GetPet() const;
-        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, uint32 spellId = 0);
+        Pet* SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 despwtime, bool* isNew = nullptr);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
@@ -2960,7 +2960,7 @@ class Player : public Unit, public GridObject<Player>
         void SetTemporaryUnsummonedPetNumber(uint32 petnumber) { m_temporaryUnsummonedPetNumber = petnumber; }
         void UnsummonPetTemporaryIfAny();
         void ResummonPetTemporaryUnSummonedIfAny();
-        bool IsPetNeedBeTemporaryUnsummoned() const { return !IsInWorld() || !isAlive() || IsMounted() /*+in flight*/; }
+        bool IsPetNeedBeTemporaryUnsummoned() const { return !IsInWorld() || !IsAlive() || IsMounted() /*+in flight*/; }
 
         void SendCinematicStart(uint32 CinematicSequenceId);
         void SendMovieStart(uint32 MovieId);
@@ -3342,7 +3342,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadCUFProfiles(PreparedQueryResult result);
         void _LoadHonor(PreparedQueryResult result, PreparedQueryResult result2);
         void _LoadLootCooldown(PreparedQueryResult result);
-        void _LoadPetStable(PreparedQueryResult result);
+        void _LoadPetStable(uint32 summonedPetNumber, PreparedQueryResult result);
         void _LoadWorldQuestStatus(PreparedQueryResult result);
         void _LoadChallengeKey(PreparedQueryResult result);
         void _LoadAccountProgress(PreparedQueryResult result);

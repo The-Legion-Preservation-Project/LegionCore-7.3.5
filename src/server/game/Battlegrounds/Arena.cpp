@@ -103,7 +103,7 @@ void Arena::AddPlayer(Player* player)
 
     if (Pet* pet = player->GetPet())
     {
-        if (!pet->isAlive())
+        if (!pet->IsAlive())
             pet->setDeathState(ALIVE);
 
         pet->SetHealth(pet->GetMaxHealth());

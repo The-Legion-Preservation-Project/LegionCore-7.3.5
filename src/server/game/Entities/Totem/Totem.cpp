@@ -36,7 +36,7 @@ void Totem::Update(uint32 time)
 
     m_isUpdate = true;
 
-    if (!m_owner->isAlive() || !isAlive())
+    if (!m_owner->IsAlive() || !IsAlive())
     {
         UnSummon();                                         // remove self
         m_isUpdate = false;

@@ -696,7 +696,7 @@ void Battleground::EndBattleground(uint32 winner)
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             player->ResurrectPlayer(1.0f);
             player->SpawnCorpseBones();
@@ -1225,7 +1225,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
         player->RemoveAurasByType(SPELL_AURA_SWITCH_TEAM);
         player->RemoveAurasByType(SPELL_AURA_MOD_FACTION);
 
-        if (!player->isAlive())
+        if (!player->IsAlive())
         {
             player->ResurrectPlayer(1.0f);
             player->SpawnCorpseBones();
@@ -2239,7 +2239,7 @@ uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
     for (auto const& itr : GetPlayers())
         if (itr.second.Team == Team)
             if (Player* player = ObjectAccessor::FindPlayer(itr.first))
-                if (player->isAlive() && player->GetShapeshiftForm() != FORM_SPIRITOFREDEMPTION && (player->InArena() || (IsBrawl() && player->InBattleground())))
+                if (player->IsAlive() && player->GetShapeshiftForm() != FORM_SPIRITOFREDEMPTION && (player->InArena() || (IsBrawl() && player->InBattleground())))
                     ++count;
 
     return count;

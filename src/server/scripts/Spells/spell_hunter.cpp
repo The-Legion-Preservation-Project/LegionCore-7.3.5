@@ -519,6 +519,15 @@ class spell_hun_tame_beast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_tame_beast_SpellScript);
 
+            static constexpr uint32 CallPetSpellIds[MAX_ACTIVE_PETS] =
+            {
+                883,
+                83242,
+                83243,
+                83244,
+                83245,
+            };
+
             SpellCastResult CheckCast()
             {
                 Player* caster = GetCaster()->ToPlayer();
@@ -536,20 +545,32 @@ class spell_hun_tame_beast : public SpellScriptLoader
                     if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()))
                         return SPELL_FAILED_BAD_TARGETS;
 
-                    PetStable const* petStable = caster->GetPetStable();
-                    if (petStable)
+                    if (PetStable const* petStable = caster->GetPetStable())
                     {
-                        if (petStable->CurrentPet)
+                        if (petStable->CurrentPetIndex)
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
-                        if (petStable->GetUnslottedHunterPet())
+                        auto freeSlotItr = std::find_if(petStable->ActivePets.begin(), petStable->ActivePets.end(), [](Optional<PetStable::PetInfo> const& petInfo)
                         {
-                            caster->SendPetTameResult(PetTameResult::PET_TAME_ERROR_TOO_MANY_PETS);
+                            return !petInfo.has_value();
+                        });
+
+                        if (freeSlotItr == petStable->ActivePets.end())
+                        {
+                            caster->SendPetTameResult(PetTameResult::TooMany);
+                            return SPELL_FAILED_DONT_REPORT;
+                        }
+
+                        // Check for known Call Pet X spells
+                        std::size_t freeSlotIndex = std::distance(petStable->ActivePets.begin(), freeSlotItr);
+                        if (!caster->HasSpell(CallPetSpellIds[freeSlotIndex]))
+                        {
+                            caster->SendPetTameResult(PetTameResult::TooMany);
                             return SPELL_FAILED_DONT_REPORT;
                         }
                     }
 
-                    if (caster->GetCharmGUID())
+                    if (!caster->GetCharmGUID().IsEmpty())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
                 }
                 else
@@ -1533,7 +1554,7 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                 {
                     update = 0;
                     Unit* caster = GetCaster();
-                    if (!caster || !caster->isAlive())
+                    if (!caster || !caster->IsAlive())
                         return;
 
                     bool findHati = false;
@@ -1552,7 +1573,7 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                                 case 106550:
                                 case 106551:
                                     findHati = true;
-									if (creature->isAlive())
+									if (creature->IsAlive())
 									{
 										hati = creature;
 										if (Player* player = caster->ToPlayer())
@@ -1609,7 +1630,7 @@ class spell_hun_broken_bond : public SpellScriptLoader
                     return;
 
                 Unit* caster = GetCaster();
-                if (!caster || !caster->isAlive())
+                if (!caster || !caster->IsAlive())
                     return;
 
                 for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
@@ -1623,7 +1644,7 @@ class spell_hun_broken_bond : public SpellScriptLoader
                             case 106549:
                             case 106550:
                             case 106551:
-                                if (creature->isAlive())
+                                if (creature->IsAlive())
                                     return;
                                 else
                                     creature->DespawnOrUnsummon(1000);

@@ -450,7 +450,7 @@ void WorldSession::HandleBinderActivate(WorldPackets::NPC::Hello& packet)
     if (!player)
         return;
 
-    if (!player->IsInWorld() || !player->isAlive())
+    if (!player->IsInWorld() || !player->IsAlive())
         return;
 
     Creature* unit = player->GetNPCIfCanInteractWith(packet.Unit, UNIT_NPC_FLAG_INNKEEPER);
@@ -496,7 +496,7 @@ void WorldSession::SendBindPoint(Creature* npc)
 
 void WorldSession::HandleListInventory(WorldPackets::NPC::Hello& packet)
 {
-    if (GetPlayer()->isAlive())
+    if (GetPlayer()->IsAlive())
         SendListInventory(packet.Unit);
 }
 

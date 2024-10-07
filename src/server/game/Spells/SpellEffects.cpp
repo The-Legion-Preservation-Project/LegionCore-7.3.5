@@ -24,6 +24,7 @@
 #include "BattlegroundTwinPeaks.h"
 #include "BattlegroundWarsongGulch.h"
 #include "CellImpl.h"
+#include "CharmInfo.h"
 #include "CollectionMgr.h"
 #include "CombatLogPackets.h"
 #include "Common.h"
@@ -354,7 +355,7 @@ void Spell::EffectResurrectNew(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || unitTarget->isAlive())
+    if (!unitTarget || unitTarget->IsAlive())
         return;
 
     if (!unitTarget->IsPlayer())
@@ -382,7 +383,7 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
 
     if (m_spellInfo->Id == 108503)
     {
-        if (!unitTarget->GetHealth() || !unitTarget->isAlive())
+        if (!unitTarget->GetHealth() || !unitTarget->IsAlive())
         {
             unitTarget->ToPet()->Remove(PET_SAVE_NOT_IN_SLOT, false);
             return;
@@ -420,7 +421,7 @@ void Spell::EffectEnvironmentalDMG(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive())
         return;
 
     uint32 absorb = 0;
@@ -440,7 +441,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
 
     TC_LOG_DEBUG("spells", "EffectSchoolDMG %i, m_diffMode %i, effIndex %i, spellId %u, damage %f", m_damage, m_diffMode, effIndex, m_spellInfo->Id, damage);
 
-    if (unitTarget && unitTarget->isAlive())
+    if (unitTarget && unitTarget->IsAlive())
     {
         switch (m_spellInfo->ClassOptions.SpellClassSet)
         {
@@ -1237,7 +1238,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 }
                 case 6203:  // Soulstone
                 {
-                    if (unitTarget->isAlive())
+                    if (unitTarget->IsAlive())
                         unitTarget->CastSpell(unitTarget, 3026, true); // Self resurrect
                     else
                         m_caster->CastSpell(unitTarget, 95750, true);
@@ -2321,7 +2322,7 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
 
     auto powerType = Powers(m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue);
 
-    if (!unitTarget || !unitTarget->isAlive() || unitTarget->getPowerType() != powerType || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() || unitTarget->getPowerType() != powerType || damage < 0)
         return;
 
     // add spell damage bonus
@@ -2399,7 +2400,7 @@ void Spell::EffectPowerBurn(SpellEffIndex effIndex)
 
     auto powerType = Powers(m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue);
 
-    if (!unitTarget || !unitTarget->isAlive() /*|| unitTarget->getPowerType() != powerType */ || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() /*|| unitTarget->getPowerType() != powerType */ || damage < 0)
         return;
 
     int32 newDamage = -(unitTarget->ModifyPower(powerType, -damage, true));
@@ -2420,7 +2421,7 @@ void Spell::EffectHeal(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
 
-    if (unitTarget && unitTarget->isAlive() && damage >= 0)
+    if (unitTarget && unitTarget->IsAlive() && damage >= 0)
     {
         // Try to get original caster
         Unit* caster = m_originalCasterGUID ? m_originalCaster : m_caster;
@@ -2720,7 +2721,7 @@ void Spell::EffectHealPct(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive() || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
         return;
 
     // Skip if m_originalCaster not available
@@ -2793,7 +2794,7 @@ void Spell::EffectHealMechanical(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive() || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
         return;
 
     // Skip if m_originalCaster not available
@@ -2811,7 +2812,7 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive() || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() || damage < 0)
         return;
 
     std::vector<uint32> ExcludeAuraList;
@@ -2848,7 +2849,7 @@ void Spell::EffectHealthLeech(SpellEffIndex effIndex)
     TC_LOG_DEBUG("spells", "HealthLeech damage %f bonus %u variance %f", damage, bonus, variance);
 
     m_damage += damage;
-    if (m_caster->isAlive())
+    if (m_caster->IsAlive())
     {
         float healMultiplier = m_spellInfo->GetEffect(effIndex, m_diffMode)->CalcValueMultiplier(m_originalCaster, this);
 
@@ -3145,7 +3146,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
 
     if (!unitTarget)
         return;
-    if (!unitTarget->isAlive())
+    if (!unitTarget->IsAlive())
         return;
 
     if (m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue < 0 || m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue >= int8(MAX_POWERS))
@@ -3361,7 +3362,7 @@ void Spell::EffectEnergizePct(SpellEffIndex effIndex)
     else if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive())
         return;
 
     if (m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue < 0 || m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue >= int8(MAX_POWERS))
@@ -4207,7 +4208,7 @@ void Spell::EffectPickPocket(SpellEffIndex /*effIndex*/)
         return;
 
     // victim have to be alive and humanoid or undead
-    if (unitTarget->isAlive() && (unitTarget->GetCreatureTypeMask() &CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) != 0)
+    if (unitTarget->IsAlive() && (unitTarget->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) != 0)
         m_caster->ToPlayer()->SendLoot(unitTarget->GetGUID(), LOOT_PICKPOCKETING);
 }
 
@@ -4686,27 +4687,34 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
             return;
     }
 
+    Optional<PetSaveMode> petSlot;
+    if (!petentry)
+        petSlot = PetSaveMode(damage);
+
     Position pos;
     if (canHitTargetInLOS && owner->ToCreature())
         owner->GetNearPoint2D(pos, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
     else
         owner->GetFirstCollisionPosition(pos, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-    Pet* pet = owner->SummonPet(petentry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetOrientation(), SUMMON_PET, 0, m_spellInfo->Id);
+    bool isNew = false;
+    Pet* pet = owner->SummonPet(petentry, petSlot, pos.m_positionX, pos.m_positionY, pos.m_positionZ, owner->GetOrientation(), 0, &isNew);
     if (!pet)
         return;
 
-    if (m_caster->IsCreature())
+    if (isNew)
     {
-        if (m_caster->ToCreature()->isTotem())
-            pet->SetReactState(REACT_AGGRESSIVE);
-        else
-            pet->SetReactState(REACT_DEFENSIVE);
-    }
+        if (m_caster->GetTypeId() == TYPEID_UNIT)
+        {
+            if (m_caster->ToCreature()->isTotem())
+                pet->SetReactState(REACT_AGGRESSIVE);
+            else
+                pet->SetReactState(REACT_DEFENSIVE);
+        }
 
-    // generate new name for summon pet
-    if (petentry)
-    {
+        pet->SetCreatedBySpell(m_spellInfo->Id);
+
+        // generate new name for summon pet
         std::string new_name = sObjectMgr->GeneratePetName(petentry);
         if (!new_name.empty())
             pet->SetName(new_name);
@@ -4781,7 +4789,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive())
         return;
 
     Unit* _caster = m_caster;
@@ -5038,7 +5046,7 @@ void Spell::EffectThreat(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive() || !m_caster->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive() || !m_caster->IsAlive())
         return;
 
     if (!unitTarget->CanHaveThreatList())
@@ -5052,7 +5060,7 @@ void Spell::EffectHealMaxHealth(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive())
         return;
 
     int32 addhealth = 0;
@@ -5074,7 +5082,7 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsAlive())
         return;
 
     TC_LOG_DEBUG("spells", "EffectInterruptCast Id %u", m_spellInfo->Id);
@@ -5405,7 +5413,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 22984:
                 case 22985:
                 {
-                    if (!unitTarget || !unitTarget->isAlive())
+                    if (!unitTarget || !unitTarget->IsAlive())
                         return;
 
                     // Onyxia Scale Cloak
@@ -6374,7 +6382,7 @@ void Spell::EffectFeedPet(SpellEffIndex effIndex)
     if (!pet)
         return;
 
-    if (!pet->isAlive())
+    if (!pet->IsAlive())
         return;
 
     ExecuteLogEffectDestroyItem(effIndex, foodItem->GetEntry());
@@ -6546,7 +6554,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
     if (!unitTarget->IsPlayer())
         return;
 
-    if (unitTarget->isAlive())
+    if (unitTarget->IsAlive())
         return;
     if (!unitTarget->IsInWorld())
         return;
@@ -6607,7 +6615,7 @@ void Spell::EffectAddExtraAttacks(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || !unitTarget->isAlive() || !unitTarget->getVictim())
+    if (!unitTarget || !unitTarget->IsAlive() || !unitTarget->getVictim())
         return;
 
     if (unitTarget->m_extraAttacks)
@@ -6742,7 +6750,7 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    if (!m_caster || m_caster->isAlive())
+    if (!m_caster || m_caster->IsAlive())
         return;
     if (!m_caster->IsPlayer())
         return;
@@ -7122,24 +7130,46 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
+    if (damage < 0)
+        return;
+
     Player* player = m_caster->ToPlayer();
     if (!player)
         return;
 
-    Pet* pet = player->GetPet();
-    if (!pet)
+    // Maybe player dismissed dead pet or pet despawned?
+    bool hadPet = true;
+
+    if (!player->GetPet())
+    {
+        PetStable const* petStable = player->GetPetStable();
+        auto deadPetItr = std::find_if(petStable->ActivePets.begin(), petStable->ActivePets.end(), [](Optional<PetStable::PetInfo> const& petInfo)
+        {
+            return petInfo && !petInfo->Health;
+        });
+        PetSaveMode slot = PetSaveMode(std::distance(petStable->ActivePets.begin(), deadPetItr));
+
+        // Position passed to SummonPet is irrelevant with current implementation,
+        // pet will be relocated without using these coords in Pet::LoadPetFromDB
+        player->SummonPet(0, slot, 0.0f, 0.0f, 0.0f, 0.0f, 0);
+        hadPet = false;
+    }
+
+    // TODO: Better to fail Hunter's "Revive Pet" at cast instead of here when casting ends
+    Pet* pet = player->GetPet(); // Attempt to get current pet
+    if (!pet || pet->IsAlive())
         return;
 
-    if (pet->isAlive())
-        return;
-
-    if (damage < 0)
-        return;
-
-    float x, y, z;
-    player->GetPosition(x, y, z);
-
-    player->GetMap()->CreatureRelocation(pet, x, y, z, player->GetOrientation());
+    // If player did have a pet before reviving, teleport it
+    if (hadPet)
+    {
+        // Reposition the pet's corpse before reviving so as not to grab aggro
+        // We can use a different, more accurate version of GetClosePoint() since we have a pet
+        float x, y, z; // Will be used later to reposition the pet if we have one
+        player->GetClosePoint(x, y, z, pet->GetCombatReach(), PET_FOLLOW_DIST, pet->GetFollowAngle());
+        pet->NearTeleportTo(x, y, z, player->GetOrientation());
+        pet->Relocate(x, y, z, player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
+    }
 
     pet->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
     pet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
@@ -7147,8 +7177,20 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
     pet->ClearUnitState(uint32(UNIT_STATE_ALL_STATE));
     pet->SetHealth(pet->CountPctFromMaxHealth(damage));
 
-    //pet->AIM_Initialize();
-    //player->PetSpellInitialize();
+    // Reset things for when the AI to takes over
+    CharmInfo* ci = pet->GetCharmInfo();
+    if (ci)
+    {
+        // In case the pet was at stay, we don't want it running back
+        ci->SaveStayPosition();
+        ci->SetIsAtStay(ci->HasCommandState(COMMAND_STAY));
+
+        ci->SetIsFollowing(false);
+        ci->SetIsCommandAttack(false);
+        //ci->SetIsCommandFollow(false);
+        ci->SetIsReturning(false);
+    }
+
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
 }
 
@@ -7465,7 +7507,7 @@ void Spell::EffectSkinPlayerCorpse(SpellEffIndex /*effIndex*/)
         return;
 
     TC_LOG_DEBUG("spells", "Effect: SkinPlayerCorpse");
-    if ((!m_caster->IsPlayer()) || (!unitTarget->IsPlayer()) || (unitTarget->isAlive()))
+    if ((!m_caster->IsPlayer()) || (!unitTarget->IsPlayer()) || (unitTarget->IsAlive()))
         return;
 
     unitTarget->ToPlayer()->RemovedInsignia(m_caster->ToPlayer());
@@ -8258,7 +8300,7 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     if (!target)
         return;
 
-    if (unitTarget->isAlive())
+    if (unitTarget->IsAlive())
         return;
 
     if (target->IsRessurectRequested())       // already have one active request

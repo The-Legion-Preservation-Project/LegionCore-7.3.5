@@ -196,7 +196,7 @@ void AggressorAI::DoActionAI(uint32 diff, CreatureActionType type)
 
     if (m_checkTimer <= diff)
     {
-        if (me->HasUnitState(UNIT_STATE_CASTING) || !me->isAlive())
+        if (me->HasUnitState(UNIT_STATE_CASTING) || !me->IsAlive())
         {
             m_checkTimer = 10000;
             return;
@@ -218,7 +218,7 @@ void AggressorAI::DoActionAI(uint32 diff, CreatureActionType type)
                 if (!itr.type)
                 {
                     if (Creature* target = me->FindNearestCreature(itr.target, 11.0f))
-                        if (target->isAlive())
+                        if (target->IsAlive())
                             me->CastSpell(target, itr.spellId, false);
                 }
                 else
@@ -653,7 +653,7 @@ void AnyPetAI::InitializeAI()
 
 void AnyPetAI::UpdateAI(uint32 diff)
 {
-    if (!me->isAlive())
+    if (!me->IsAlive())
         return;
 
     if (m_updateAlliesTimer <= diff)
@@ -908,7 +908,7 @@ void BattlePetAI::InitializeAI()
 
 void BattlePetAI::UpdateAI(uint32 diff)
 {
-    if (!me->IsInWorld() || !me->isAlive())
+    if (!me->IsInWorld() || !me->IsAlive())
         return;
 
     Unit* owner = me->GetCharmerOrOwner();

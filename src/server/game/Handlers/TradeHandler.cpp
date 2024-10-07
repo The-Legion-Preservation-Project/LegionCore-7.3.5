@@ -599,7 +599,7 @@ void WorldSession::HandleInitiateTrade(WorldPackets::Trade::InitiateTrade& packe
 
     WorldPackets::Trade::TradeStatus info;
 
-    if (!player->isAlive())
+    if (!player->IsAlive())
     {
         info.Status = TRADE_STATUS_DEAD;
         SendTradeStatus(info);
@@ -649,7 +649,7 @@ void WorldSession::HandleInitiateTrade(WorldPackets::Trade::InitiateTrade& packe
         return;
     }
 
-    if (!pOther->isAlive())
+    if (!pOther->IsAlive())
     {
         info.Status = TRADE_STATUS_TARGET_DEAD;
         SendTradeStatus(info);

@@ -490,7 +490,7 @@ void AreaTrigger::UpdateAffectedList(uint32 /*p_time*/, AreaTriggerActionMoment 
             ++next;
 
             Unit* unit = ObjectAccessor::GetUnit(*this, *itr);
-            if (!unit || !unit->isAlive())
+            if (!unit || !unit->IsAlive())
             {
                 AffectUnitLeave(AT_ACTION_MOMENT_LEAVE);
 
@@ -555,7 +555,7 @@ void AreaTrigger::UpdateAffectedList(uint32 /*p_time*/, AreaTriggerActionMoment 
             if (unit && actionM == AT_ACTION_MOMENT_REMOVE)
                 _ai->BeforeRemove(unit);
 
-            if (!unit || !unit->isAlive())
+            if (!unit || !unit->IsAlive())
             {
                 AffectUnitLeave(AT_ACTION_MOMENT_LEAVE);
                 affectedPlayers.erase(itr);

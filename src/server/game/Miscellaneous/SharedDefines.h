@@ -1411,24 +1411,6 @@ enum SpellEffects
     TOTAL_SPELL_EFFECTS
 };
 
-enum PetTameResult
-{
-    PET_TAME_ERROR_UNKNOWN_ERROR            = 0,    // checked
-    PET_TAME_ERROR_INVALID_CREATURE         = 1,    // checked
-    PET_TAME_ERROR_TOO_MANY_PETS            = 2,    // checked
-    PET_TAME_ERROR_CREATURE_ALREADY_OWNED   = 3,    // checked
-    PET_TAME_ERROR_NOT_TAMEABLE             = 4,    // checked
-    PET_TAME_ERROR_ANOTHER_SUMMON_ACTIVE    = 5,    // checked
-    PET_TAME_ERROR_YOU_CANT_TAME            = 6,    // checked
-    PET_TAME_ERROR_NO_PET_AVAILABLE         = 7,    // checked
-    PET_TAME_ERROR_INTERNAL_ERROR           = 8,    // checked
-    PET_TAME_ERROR_TOO_HIGH_LEVEL           = 9,    // checked
-    PET_TAME_ERROR_DEAD                     = 10,   // checked
-    PET_TAME_ERROR_NOT_DEAD                 = 11,   // checked
-    PET_TAME_ERROR_CANT_CONTROL_EXOTIC      = 12,   // checked
-    PET_TAME_ERROR_INVALID_SLOT             = 13    // checked
-};
-
 enum SpellCastResult
 {
     SPELL_FAILED_SUCCESS                                        = 0,
