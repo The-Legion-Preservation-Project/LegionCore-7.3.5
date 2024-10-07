@@ -7578,11 +7578,11 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_SUMMON_PET:
             {
-                if (m_caster->GetPetGUID())                  //let warlock do a replacement summon
+                if (!m_caster->GetPetGUID().IsEmpty()) // let warlock do a replacement summon
                 {
                     if (m_caster->IsPlayer() && m_caster->getClass() == CLASS_WARLOCK)
                     {
-                        if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
+                        if (strict) // starting cast, trigger pet stun (cast by pet so it doesn't attack player)
                             if (Pet* pet = m_caster->ToPlayer()->GetPet())
                             {
                                 pet->CastSpell(pet, 32752, true, nullptr, nullptr, pet->GetGUID());
@@ -7599,7 +7599,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (playerCaster && playerCaster->GetPetStable())
                 {
                     Optional<PetSaveMode> petSlot;
-                    if (!m_spellInfo->GetEffect(i, m_diffMode)->MiscValueB)
+                    if (!m_spellInfo->GetEffect(i, m_diffMode)->MiscValue)
                     {
                         petSlot = PetSaveMode(m_spellInfo->GetEffect(i, m_diffMode)->CalcValue());
 
@@ -7614,7 +7614,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         }
                     }
 
-                    std::pair<PetStable::PetInfo const*, PetSaveMode> info = Pet::GetLoadPetInfo(*playerCaster->GetPetStable(), m_spellInfo->GetEffect(i, m_diffMode)->MiscValueB, 0, petSlot);
+                    std::pair<PetStable::PetInfo const*, PetSaveMode> info = Pet::GetLoadPetInfo(*playerCaster->GetPetStable(), m_spellInfo->GetEffect(i, m_diffMode)->MiscValue, 0, petSlot);
                     if (info.first)
                     {
                         if (info.first->Type == HUNTER_PET)
@@ -7631,7 +7631,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                             }
                         }
                     }
-                    else if (!m_spellInfo->GetEffect(i, m_diffMode)->MiscValueB) // when miscvalue is present it is allowed to create new
+                    else if (!m_spellInfo->GetEffect(i, m_diffMode)->MiscValue) // when miscvalue is present it is allowed to create new
                     {
                         playerCaster->SendPetTameResult(PetTameResult::NoPetAvailable);
                         return SPELL_FAILED_DONT_REPORT;
