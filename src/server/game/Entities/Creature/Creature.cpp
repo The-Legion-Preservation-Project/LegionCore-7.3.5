@@ -3691,7 +3691,10 @@ void Creature::CalculateMoney(uint32& mingold, uint32& maxgold)
 
 uint8 Creature::GetLevelForTarget(WorldObject const* target) const
 {
-    if (Unit const* unitTarget = target->ToUnit())
+    if (!target)
+        return Unit::GetLevelForTarget(target);
+
+    if (Unit const *unitTarget = target->ToUnit())
     {
         if (isWorldBoss())
         {

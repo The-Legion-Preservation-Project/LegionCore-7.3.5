@@ -568,7 +568,6 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
     {
         if (caster)
         {
-//            auto level = int32(caster->getLevel());
             auto level = int32(caster->GetLevelForTarget(target));
             if (level > int32(_spellInfo->MaxLevel) && _spellInfo->MaxLevel > 0)
                 level = int32(_spellInfo->MaxLevel);
@@ -576,8 +575,6 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
                 level = int32(_spellInfo->BaseLevel);
             if (!_spellInfo->IsPassive())
                 level -= int32(_spellInfo->SpellLevel);
-//            if (level < 0)
-//                level = 0;
             basePoints += level * basePointsPerLevel;
         }
 
