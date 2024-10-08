@@ -1,3 +1,25 @@
+-- dungeon scenarios (for completion quest)
+DELETE FROM scenario_data WHERE MapID IN (389, 349, 429, 329, 209, 230);
+INSERT INTO scenario_data (ScenarioID, MapID, DifficultyID, Team, Class, LfgDungeonID) VALUES
+    (511, 389, 0, 0, 0, 0),   -- Ragefire Chasm
+
+    (661, 349, 0, 0, 0, 272), -- Maraudon - The Wicked Grotto
+    (662, 349, 0, 0, 0, 26),  -- Maraudon - Foulspore Cavern
+    (663, 349, 0, 0, 0, 273), -- Maraudon - Earth Song Falls
+
+    (666, 429, 0, 0, 0, 36),  -- Dire Maul - Capital Gardens
+    (667, 429, 0, 0, 0, 38),  -- Dire Maul - Gordok Commons
+    (665, 429, 0, 0, 0, 34),  -- Dire Maul - Warpwood Quarter
+
+    (636, 329, 0, 0, 0, 40),  -- Stratholme - Main Gate
+    (637, 329, 0, 0, 0, 274), -- Stratholme - Service Entrance
+
+    (644, 209, 0, 0, 0, 0),   -- Zul'Farrak
+
+    (670, 230, 0, 0, 0, 276), -- Blackrock Depths - Upper City
+    (669, 230, 0, 0, 0, 30)   -- Blackrock Depths - Detention Block
+;
+
 -- the deadmines
 UPDATE creature_template SET minlevel = 16, maxlevel = 16, ScaleLevelMin = 15, ScaleLevelMax = 60, ScaleLevelDelta = 1 WHERE entry = 1732;
 UPDATE creature_template SET minlevel = 16, maxlevel = 16, ScaleLevelMin = 15, ScaleLevelMax = 60, ScaleLevelDelta = 1 WHERE entry = 43778;
