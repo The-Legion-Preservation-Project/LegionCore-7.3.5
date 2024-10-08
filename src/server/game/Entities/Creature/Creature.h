@@ -588,6 +588,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         bool IsPersonalForQuest(Player const* player) const;
         void CalculateMoney(uint32& mingold, uint32& maxgold);
 
+        bool HasScalableLevels() const;
+        uint8 GetLevelForTarget(WorldObject const* target) const override;
+
         bool IsInEvadeMode() const { return HasUnitState(UNIT_STATE_EVADE); }
 
         bool AIM_Initialize(CreatureAI* ai = nullptr);
