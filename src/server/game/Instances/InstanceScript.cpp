@@ -44,10 +44,6 @@ DungeonEncounterEntry const* BossInfo::GetDungeonEncounterForDifficulty(Difficul
     return itr != DungeonEncounters.end() ? *itr : nullptr;
 }
 
-DoorInfo::DoorInfo(BossInfo* _bossInfo, DoorType _type, BoundaryType _boundary): bossInfo(_bossInfo), type(_type), boundary(_boundary)
-{
-}
-
 InstanceScript::InstanceScript(Map* map) : initDamageManager(false), _maxInCombatResCount(0), _combatResChargeTime(0), _nextCombatResChargeTime(0)
 {
     SetType(ZONE_TYPE_INSTANCE);

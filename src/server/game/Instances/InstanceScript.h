@@ -74,6 +74,21 @@ enum EncounterState
     TO_BE_DECIDED = 5,
 };
 
+enum DoorType
+{
+    DOOR_TYPE_ROOM          = 0,    // Door can open if encounter is not in progress
+    DOOR_TYPE_PASSAGE       = 1,    // Door can open if encounter is done
+    DOOR_TYPE_SPAWN_HOLE    = 2,    // Door can open if encounter is in progress, typically used for spawning places
+    MAX_DOOR_TYPES
+};
+
+struct DoorData
+{
+    uint32 entry, bossId;
+    DoorType type;
+    uint32 boundary;
+};
+
 static constexpr uint32 MAX_DUNGEON_ENCOUNTERS_PER_BOSS = 4;
 
 struct DungeonEncounterData
@@ -85,6 +100,19 @@ struct DungeonEncounterData
 struct MinionData
 {
     uint32 entry, bossId;
+};
+
+struct DamageManager
+{
+    uint32 entry;
+    Creature* creature;
+    ObjectGuid guid;
+};
+
+struct ObjectData
+{
+    uint32 entry;
+    uint32 type;
 };
 
 struct BossInfo
@@ -102,7 +130,8 @@ struct BossInfo
 
 struct DoorInfo
 {
-    explicit DoorInfo(BossInfo* _bossInfo, DoorType _type, BoundaryType _boundary);
+    explicit DoorInfo(BossInfo* _bossInfo, DoorType _type, BoundaryType _boundary)
+            : bossInfo(_bossInfo), type(_type), boundary(_boundary) { }
     BossInfo* bossInfo;
     DoorType type;
     BoundaryType boundary;
@@ -110,21 +139,8 @@ struct DoorInfo
 
 struct MinionInfo
 {
-    explicit MinionInfo(BossInfo* _bossInfo) : bossInfo(_bossInfo) {}
+    explicit MinionInfo(BossInfo* _bossInfo) : bossInfo(_bossInfo) { }
     BossInfo* bossInfo;
-};
-
-struct DamageManager
-{
-    uint32 entry;
-    Creature* creature;
-    ObjectGuid guid;
-};
-
-struct ObjectData
-{
-    uint32 entry;
-    uint32 type;
 };
 
 typedef std::multimap<uint32 /*entry*/, DoorInfo> DoorInfoMap;
@@ -149,7 +165,7 @@ class InstanceScript : public ZoneScript
         Map* instance;
 
         //On creation, NOT load.
-        virtual void Initialize() {}
+        virtual void Initialize() { }
 
         //On delete InstanceScript
         static void DestroyInstance();
