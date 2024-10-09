@@ -76,6 +76,7 @@ public:
     {
         instance_dark_portal_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
         }
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];

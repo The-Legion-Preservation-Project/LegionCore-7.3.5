@@ -34,6 +34,7 @@ class instance_ramparts : public InstanceMapScript
         {
             instance_ramparts_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
             }
 

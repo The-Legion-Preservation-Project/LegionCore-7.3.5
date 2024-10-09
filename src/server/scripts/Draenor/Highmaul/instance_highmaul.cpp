@@ -64,6 +64,8 @@ public:
     {
         instance_highmaul_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
+
             m_ArenaElevatorActivated = false;
             m_BrackensporeAchievement = false;
             m_DrunkenBileslingerCount = 0;

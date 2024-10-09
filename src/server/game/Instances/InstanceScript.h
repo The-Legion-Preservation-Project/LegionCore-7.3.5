@@ -164,17 +164,19 @@ class InstanceScript : public ZoneScript
 
         InstanceMap* instance;
 
-        //On creation, NOT load.
+        // On creation, NOT load.
+        // PLEASE INITIALIZE FIELDS IN THE CONSTRUCTOR INSTEAD !!!
+        // KEEPING THIS METHOD ONLY FOR BACKWARD COMPATIBILITY !!!
         virtual void Initialize() { }
 
-        //On delete InstanceScript
+        // On delete InstanceScript
         static void DestroyInstance();
         void CreateInstance();
 
-        //On load
+        // On load
         virtual void Load(char const* data);
 
-        //When save is needed, this function generates the data
+        // When save is needed, this function generates the data
         virtual std::string GetSaveData();
 
         void SaveToDB();
@@ -190,11 +192,11 @@ class InstanceScript : public ZoneScript
         Creature* GetCreatureByEntry(uint32 entry);
         GameObject* GetGameObjectByEntry(uint32 entry);
 
-        //Used by the map's CanEnter function.
-        //This is to prevent players from entering during boss encounters.
+        // Used by the map's CanEnter function.
+        // This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
 
-        //Called when a player successfully enters the instance.
+        // Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player* /*player*/) {}
         virtual void OnPlayerLeave(Player* /*player*/) {}
         virtual void OnPlayerDies(Player* /*player*/) {}
@@ -227,16 +229,16 @@ class InstanceScript : public ZoneScript
         void OnUnitCharmed(Unit* unit, Unit* charmer) override;
         void OnUnitRemoveCharmed(Unit* unit, Unit* charmer) override;
 
-        //Handle open / close objects
+        // Handle open / close objects
         void HandleGameObject(ObjectGuid guid, bool open, GameObject* go = nullptr);
 
-        //change active state of doors or buttons
+        // change active state of doors or buttons
         void DoUseDoorOrButton(ObjectGuid guid, uint32 withRestoreTime = 0, bool useAlternativeState = false);
 
-        //Respawns a GO having negative spawntimesecs in gameobject-table
+        // Respawns a GO having negative spawntimesecs in gameobject-table
         void DoRespawnGameObject(ObjectGuid guid, uint32 timeToDespawn = MINUTE);
 
-        //sends world state update to all players in instance
+        // sends world state update to all players in instance
         void DoUpdateWorldState(WorldStates variableID, uint32 value);
 
         // Send Notify to all players in instance
@@ -350,6 +352,7 @@ class InstanceScript : public ZoneScript
         void SetDisabledBosses(uint32 p_DisableMask);
         BossInfo* GetBossInfo(uint32 id);
     protected:
+        void SetHeaders(std::string const& dataHeaders);
         static void LoadObjectData(ObjectData const* creatureData, ObjectInfoMap& objectInfo);
         void LoadObjectData(ObjectData const* creatureData, ObjectData const* gameObjectData);
         template<typename T>
@@ -371,12 +374,18 @@ class InstanceScript : public ZoneScript
         void UpdateDoorState(GameObject* door);
         static void UpdateMinionState(Creature* minion, EncounterState state);
 
-        std::string LoadBossState(char const* data);
-        std::string GetBossSaveData();
+        // Instance Load and Save
+        bool ReadSaveDataHeaders(std::istringstream& data);
+        void ReadSaveDataBossStates(std::istringstream& data);
+        virtual void ReadSaveDataMore(std::istringstream& /*data*/) { }
+        void WriteSaveDataHeaders(std::ostringstream& data);
+        void WriteSaveDataBossStates(std::ostringstream& data);
+        virtual void WriteSaveDataMore(std::ostringstream& /*data*/) { }
 
     private:
         void LoadDungeonEncounterData(uint32 bossId, std::array<uint32, MAX_DUNGEON_ENCOUNTERS_PER_BOSS> const& dungeonEncounterIds);
 
+        std::vector<char> headers;
         Challenge* _challenge;
         std::vector<BossInfo> bosses;
         DoorInfoMap doors;

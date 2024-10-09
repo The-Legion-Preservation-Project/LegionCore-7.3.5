@@ -54,6 +54,7 @@ class instance_magtheridons_lair : public InstanceMapScript
         {
             instance_magtheridons_lair_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
             }
 
             uint32 m_auiEncounter[MAX_ENCOUNTER];

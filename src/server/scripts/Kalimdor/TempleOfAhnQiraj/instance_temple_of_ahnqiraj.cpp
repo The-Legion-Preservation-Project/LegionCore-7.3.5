@@ -64,6 +64,8 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
+
             IsBossDied[0] = false;
             IsBossDied[1] = false;
             IsBossDied[2] = false;

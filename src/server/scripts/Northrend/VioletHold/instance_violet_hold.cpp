@@ -165,6 +165,8 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
+
             uiMoragg.Clear();
             uiErekem.Clear();
             uiIchoron.Clear();

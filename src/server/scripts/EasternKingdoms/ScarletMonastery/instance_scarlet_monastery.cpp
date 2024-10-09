@@ -56,6 +56,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             LoadDoorData(doorData);
             memset(&encounter, 0, sizeof(encounter));
 

@@ -27,6 +27,7 @@ public:
     {
         instance_shadowmoon_burial_grounds_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

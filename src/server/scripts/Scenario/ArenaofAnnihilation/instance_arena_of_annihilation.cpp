@@ -34,6 +34,7 @@ public:
     {
         instance_arena_of_annihilation_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

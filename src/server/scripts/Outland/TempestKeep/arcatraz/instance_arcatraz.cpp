@@ -20,7 +20,7 @@ public:
     {
         instance_arcatraz_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
-            //SetHeaders(DataHeader);
+            SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
             LoadDoorData(doorData);
 

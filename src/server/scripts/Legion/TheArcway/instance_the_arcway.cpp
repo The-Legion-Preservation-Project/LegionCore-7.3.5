@@ -31,6 +31,7 @@ public:
     {
         instance_the_arcway_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

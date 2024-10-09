@@ -46,6 +46,7 @@ public:
     {
         instance_eye_of_azshara_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

@@ -68,6 +68,7 @@ class instance_terrace_of_endless_spring : public InstanceMapScript
 
             void Initialize()
             {
+                SetHeaders(DataHeader);
                 SetBossNumber(DATA_MAX_BOSS_DATA);
 
                 ritualOfPurification        = true;

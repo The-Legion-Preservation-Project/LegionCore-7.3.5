@@ -52,6 +52,7 @@ public:
     {
         instance_sunwell_plateau_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

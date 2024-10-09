@@ -36,6 +36,7 @@ class instance_shadow_labyrinth : public InstanceMapScript
         {
             instance_shadow_labyrinth_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
 

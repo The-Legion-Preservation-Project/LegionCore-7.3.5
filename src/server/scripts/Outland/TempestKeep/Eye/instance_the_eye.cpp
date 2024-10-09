@@ -56,6 +56,7 @@ class instance_the_eye : public InstanceMapScript
         {
             instance_the_eye_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
                 LoadObjectData(nullptr, gameObjectData);

@@ -23,6 +23,7 @@ public:
     {
         instance_cathedral_of_eternal_night_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
         

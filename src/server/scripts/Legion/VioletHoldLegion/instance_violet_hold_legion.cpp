@@ -19,6 +19,7 @@ public:
     {
         instance_violet_hold_legion_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

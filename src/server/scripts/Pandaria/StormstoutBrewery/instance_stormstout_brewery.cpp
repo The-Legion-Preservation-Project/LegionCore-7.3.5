@@ -28,6 +28,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             SetBossNumber(3);
             ookookGuid.Clear();
             hoptallusGuid.Clear();

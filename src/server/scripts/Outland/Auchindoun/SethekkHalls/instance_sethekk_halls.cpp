@@ -52,6 +52,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             AnzuEncounter = NOT_STARTED;
             m_uiIkissDoorGUID.Clear();
         }

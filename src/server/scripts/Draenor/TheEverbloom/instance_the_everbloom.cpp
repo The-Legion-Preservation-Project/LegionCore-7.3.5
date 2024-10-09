@@ -25,6 +25,7 @@ public:
     {
         instance_the_everbloom_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

@@ -72,6 +72,7 @@ public:
     {
         instance_blackwing_lair_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
         }
 

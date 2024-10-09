@@ -26,6 +26,7 @@ public:
     {
         instance_court_of_stars_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

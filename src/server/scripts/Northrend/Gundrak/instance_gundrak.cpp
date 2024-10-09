@@ -88,6 +88,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             spawnSupport = false;
 
             timer = 0;

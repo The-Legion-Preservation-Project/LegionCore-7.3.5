@@ -48,6 +48,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             WardKeeperDeath = 0;
             DoorWardGUID.Clear();
         }

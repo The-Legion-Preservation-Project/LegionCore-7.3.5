@@ -71,6 +71,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             SetBossNumber(5);
             //Creature
             chillheartGuid.Clear();

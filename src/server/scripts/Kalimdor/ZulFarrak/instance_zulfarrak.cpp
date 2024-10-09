@@ -118,6 +118,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             GahzRillaEncounter = NOT_STARTED;
             ZumrahGUID.Clear();
             BlyGUID.Clear();

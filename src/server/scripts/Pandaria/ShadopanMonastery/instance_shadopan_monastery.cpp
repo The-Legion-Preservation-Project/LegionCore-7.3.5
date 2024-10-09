@@ -59,6 +59,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);
 
             aliveNoviceCount            = MAX_NOVICE;

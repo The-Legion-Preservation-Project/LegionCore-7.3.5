@@ -31,6 +31,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
             crushtoEvent = 0;
             gogduhEvent = 0;

@@ -35,6 +35,7 @@ public:
     {
         instance_gnomeregan_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
         }
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];

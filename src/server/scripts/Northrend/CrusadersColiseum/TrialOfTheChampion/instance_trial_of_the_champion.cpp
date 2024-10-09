@@ -63,6 +63,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             uiAnnouncerGUID.Clear();
             uiTirionGUID.Clear();
             uiThrallGUID.Clear();

@@ -11,7 +11,8 @@ public:
     struct instance_the_slave_pens_InstanceMapScript : public InstanceScript
     {
         instance_the_slave_pens_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
-        { 
+        {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

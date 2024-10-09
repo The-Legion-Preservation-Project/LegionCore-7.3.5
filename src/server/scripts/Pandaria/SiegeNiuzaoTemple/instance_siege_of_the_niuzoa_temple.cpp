@@ -24,6 +24,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             jinbakGuid.Clear();
             vojakGuid.Clear();
             pavalakGuid.Clear();

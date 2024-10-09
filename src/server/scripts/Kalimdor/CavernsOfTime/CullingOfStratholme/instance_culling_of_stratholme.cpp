@@ -47,6 +47,7 @@ class instance_culling_of_stratholme : public InstanceMapScript
         {
             instance_culling_of_stratholme_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
                 _arthasGUID.Clear();
                 _meathookGUID.Clear();
                 _salrammGUID.Clear();

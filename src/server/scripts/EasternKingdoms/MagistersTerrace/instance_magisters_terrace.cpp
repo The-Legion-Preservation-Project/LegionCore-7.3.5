@@ -89,6 +89,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             memset(&Encounter, 0, sizeof(Encounter));
 
             FelCrystals.clear();

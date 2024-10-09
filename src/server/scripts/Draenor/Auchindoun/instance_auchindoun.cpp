@@ -20,6 +20,7 @@ public:
     {
         instance_auchindoun_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             m_KaatharDied = false;
             m_TuulaniSummoned = true;
         }

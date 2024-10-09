@@ -30,6 +30,7 @@ public:
     {
         instance_maw_of_souls_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

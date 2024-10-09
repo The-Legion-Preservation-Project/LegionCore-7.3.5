@@ -32,6 +32,7 @@ public:
     {
         instance_vault_of_the_wardens_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

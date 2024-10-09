@@ -66,6 +66,7 @@ class instance_stratholme : public InstanceMapScript
         {
             instance_stratholme_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
+                SetHeaders(DataHeader);
             }
 
             uint32 EncounterState[MAX_ENCOUNTER];

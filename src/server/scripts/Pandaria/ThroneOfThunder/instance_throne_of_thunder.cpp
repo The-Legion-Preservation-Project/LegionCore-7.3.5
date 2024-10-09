@@ -130,6 +130,7 @@ public:
         
         void Initialize()
         {
+            SetHeaders(DataHeader);
             SetBossNumber(16);
             LoadDoorData(doorData);
 
@@ -1565,21 +1566,6 @@ public:
             nestnum++;
             if (nestnum >= nestmaxcount)
                 nestnum = 0;
-        }
-
-        std::string GetSaveData()
-        {
-            std::ostringstream saveStream;
-            saveStream << GetBossSaveData() << " ";
-            return saveStream.str();
-        }
-
-        void Load(const char* data)
-        {
-            std::istringstream loadStream(LoadBossState(data));
-            uint32 buff;
-            for (uint32 i = 0; i < 16; ++i)
-                loadStream >> buff;
         }
     };
 

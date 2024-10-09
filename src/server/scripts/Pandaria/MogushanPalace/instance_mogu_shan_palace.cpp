@@ -50,6 +50,8 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
+
             xin_guid.Clear();
             kuai_guid.Clear();
             ming_guid.Clear();

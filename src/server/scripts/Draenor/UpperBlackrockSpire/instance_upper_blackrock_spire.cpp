@@ -34,6 +34,7 @@ public:
     {
         instance_upper_blackrock_spire_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

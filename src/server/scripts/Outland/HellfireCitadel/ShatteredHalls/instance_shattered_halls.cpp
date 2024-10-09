@@ -48,6 +48,7 @@ class instance_shattered_halls : public InstanceMapScript
 
             void Initialize()
             {
+                SetHeaders(DataHeader);
                 memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
                 nethekurseGUID.Clear();

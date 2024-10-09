@@ -81,6 +81,7 @@ public:
 
         void Initialize()
         {
+            SetHeaders(DataHeader);
             memset(&encounter, 0, sizeof(encounter));
 
             twilightLordKelrisGUID.Clear();

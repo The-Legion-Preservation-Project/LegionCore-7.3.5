@@ -67,6 +67,8 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
+
             uiMaidenOfGrief.Clear();
             uiKrystallus.Clear();
             uiSjonnir.Clear();

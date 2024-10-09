@@ -13,6 +13,7 @@ public:
 
         void Initialize() override
         {
+            SetHeaders(DataHeader);
             SetBossNumber(MaxBossData);
         }
 
