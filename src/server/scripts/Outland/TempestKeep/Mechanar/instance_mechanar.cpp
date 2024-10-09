@@ -37,7 +37,7 @@ class instance_mechanar : public InstanceMapScript
         {
             ObjectGuid chahcelegionGUID;
             
-            instance_mechanar_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_mechanar_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);

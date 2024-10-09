@@ -38,7 +38,7 @@ class instance_blood_furnace : public InstanceMapScript
 
         struct instance_blood_furnace_InstanceMapScript : public InstanceScript
         {
-            instance_blood_furnace_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_blood_furnace_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);

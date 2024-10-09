@@ -79,7 +79,7 @@ public:
 
     struct instance_antorus_InstanceMapScript : InstanceScript
     {
-        explicit instance_antorus_InstanceMapScript(Map* map) : InstanceScript(map)
+        explicit instance_antorus_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

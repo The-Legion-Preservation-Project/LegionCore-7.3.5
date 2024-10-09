@@ -146,7 +146,7 @@ public:
 
     struct instance_naxxramas_InstanceMapScript : public InstanceScript
     {
-        instance_naxxramas_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_naxxramas_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);

@@ -24,7 +24,7 @@ public:
 
     struct instance_seat_of_the_triumvirate_InstanceMapScript : public InstanceScript
     {
-        instance_seat_of_the_triumvirate_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_seat_of_the_triumvirate_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

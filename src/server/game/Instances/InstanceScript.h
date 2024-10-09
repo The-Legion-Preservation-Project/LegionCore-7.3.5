@@ -39,7 +39,7 @@ namespace WorldPackets
 #define OUT_LOAD_INST_DATA_COMPLETE    TC_LOG_DEBUG("scripts", "Instance Data Load for Instance %s (Map %d, Instance Id: %d) is complete.", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 #define OUT_LOAD_INST_DATA_FAIL        TC_LOG_ERROR("scripts", "Unable to load Instance Data for Instance %s (Map %d, Instance Id: %d).", instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 
-class Map;
+class InstanceMap;
 class Unit;
 class Player;
 class GameObject;
@@ -158,11 +158,11 @@ static uint32 const ChallengeModeDoor = 239323;
 class InstanceScript : public ZoneScript
 {
     public:
-        explicit InstanceScript(Map* map);
+        explicit InstanceScript(InstanceMap* map);
 
         ~InstanceScript() override;
 
-        Map* instance;
+        InstanceMap* instance;
 
         //On creation, NOT load.
         virtual void Initialize() { }

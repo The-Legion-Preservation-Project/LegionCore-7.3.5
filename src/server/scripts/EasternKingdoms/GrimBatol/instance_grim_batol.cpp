@@ -12,7 +12,7 @@ public:
 
     struct instance_grim_batol_InstanceMapScript : public InstanceScript
     {
-        instance_grim_batol_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_grim_batol_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
         
         ObjectGuid uiGeneralUmbrissGUID;
         ObjectGuid uiForgemasterThrongusGUID;

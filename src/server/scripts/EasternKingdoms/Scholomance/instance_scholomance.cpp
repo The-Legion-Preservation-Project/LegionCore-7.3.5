@@ -50,7 +50,7 @@ public:
 
     struct instance_scholomance_InstanceMapScript : public InstanceScript
     {
-        instance_scholomance_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_scholomance_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         //Creature
         ObjectGuid chillheartGuid;

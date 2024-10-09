@@ -74,7 +74,7 @@ public:
 
     struct instance_dark_portal_InstanceMapScript : public InstanceScript
     {
-        instance_dark_portal_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_dark_portal_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
         }
 

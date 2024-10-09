@@ -25,7 +25,7 @@ class instance_zulgurub : public InstanceMapScript
 
         struct instance_zulgurub_InstanceMapScript : public InstanceScript
         {
-            instance_zulgurub_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_zulgurub_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doordata);

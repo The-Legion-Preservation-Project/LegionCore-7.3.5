@@ -40,7 +40,7 @@ public:
 
     struct instance_halls_of_stone_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_stone_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_halls_of_stone_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         ObjectGuid uiMaidenOfGrief;
         ObjectGuid uiKrystallus;

@@ -19,7 +19,6 @@
 #include "ScriptMgr.h"
 #include "InstanceScript.h"
 #include "ScriptedCreature.h"
-#include "Map.h"
 #include "MapManager.h"
 #include "Transport.h"
 #include "PoolMgr.h"

@@ -67,7 +67,7 @@ public:
 
     struct instance_magisters_terrace_InstanceMapScript : public InstanceScript
     {
-        instance_magisters_terrace_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_magisters_terrace_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         uint32 Encounter[MAX_ENCOUNTER];
         uint32 DelrissaDeathCount;

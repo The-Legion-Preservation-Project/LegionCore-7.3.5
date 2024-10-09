@@ -62,7 +62,7 @@ public:
 
     struct instance_highmaul_InstanceMapScript : public InstanceScript
     {
-        instance_highmaul_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_highmaul_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             m_ArenaElevatorActivated = false;
             m_BrackensporeAchievement = false;

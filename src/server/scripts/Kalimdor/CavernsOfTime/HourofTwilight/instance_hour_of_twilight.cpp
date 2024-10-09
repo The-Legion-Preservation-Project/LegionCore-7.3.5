@@ -21,7 +21,7 @@ class instance_hour_of_twilight : public InstanceMapScript
 
         struct instance_hour_of_twilight_InstanceMapScript : public InstanceScript
         {
-            instance_hour_of_twilight_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_hour_of_twilight_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doordata);

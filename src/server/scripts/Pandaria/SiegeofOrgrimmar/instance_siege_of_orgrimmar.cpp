@@ -126,7 +126,7 @@ public:
 
     struct instance_siege_of_orgrimmar_InstanceMapScript : public InstanceScript
     {
-        instance_siege_of_orgrimmar_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_siege_of_orgrimmar_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         std::map<uint32, ObjectGuid> easyGUIDconteiner;
         //count killed klaxxi

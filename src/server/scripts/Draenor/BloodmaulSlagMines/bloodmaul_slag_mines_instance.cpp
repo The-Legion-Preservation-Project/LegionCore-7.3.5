@@ -27,7 +27,7 @@ public:
 
     struct instance_bloodmaul_slag_mines_InstanceScript : public InstanceScript
     {
-        instance_bloodmaul_slag_mines_InstanceScript(Map* map) : InstanceScript(map) { }
+        instance_bloodmaul_slag_mines_InstanceScript(InstanceMap* map) : InstanceScript(map) { }
 
         void Initialize()
         {

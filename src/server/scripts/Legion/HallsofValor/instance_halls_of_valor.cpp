@@ -31,7 +31,7 @@ public:
 
     struct instance_halls_of_valor_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_valor_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_halls_of_valor_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         WorldLocation loc_res_pla;
 

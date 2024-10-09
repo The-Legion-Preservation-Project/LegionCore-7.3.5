@@ -21,7 +21,7 @@ public:
 
     struct instance_blackwing_descent_InstanceMapScript : public InstanceScript
     {
-        instance_blackwing_descent_InstanceMapScript(Map* pMap) : InstanceScript(pMap) 
+        instance_blackwing_descent_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
             LoadDoorData(doorData);

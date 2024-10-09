@@ -59,7 +59,7 @@ public:
 
     struct instance_utgarde_keep_InstanceMapScript : public InstanceScript
     {
-        instance_utgarde_keep_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_utgarde_keep_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         ObjectGuid Keleseth;
         ObjectGuid Skarvald;

@@ -163,7 +163,7 @@ public:
         uint8 countTank;
         uint8 countFigments;
 
-        instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_temple_of_jade_serpent_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             // Wise Mari script
             doorWiseMari.Clear();

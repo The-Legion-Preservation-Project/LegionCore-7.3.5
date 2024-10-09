@@ -42,7 +42,7 @@ public:
 
     struct instance_ahnkahet_InstanceScript : public InstanceScript
     {
-        instance_ahnkahet_InstanceScript(Map* map) : InstanceScript(map) {}
+        instance_ahnkahet_InstanceScript(InstanceMap* map) : InstanceScript(map) {}
 
         ObjectGuid Elder_Nadox;
         ObjectGuid Prince_Taldaram;

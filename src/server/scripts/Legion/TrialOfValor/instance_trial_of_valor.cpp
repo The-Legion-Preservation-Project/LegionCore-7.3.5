@@ -56,7 +56,7 @@ public:
         uint32 checkTimer = 1000;
         uint32 checkTimerAura = 1000;
 
-        explicit instance_trial_of_valor_InstanceMapScript(Map* map) : InstanceScript(map)
+        explicit instance_trial_of_valor_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(Data::BossIDs::Max);
         }

@@ -44,7 +44,7 @@ DungeonEncounterEntry const* BossInfo::GetDungeonEncounterForDifficulty(Difficul
     return itr != DungeonEncounters.end() ? *itr : nullptr;
 }
 
-InstanceScript::InstanceScript(Map* map) : initDamageManager(false), _maxInCombatResCount(0), _combatResChargeTime(0), _nextCombatResChargeTime(0)
+InstanceScript::InstanceScript(InstanceMap* map) : initDamageManager(false), _maxInCombatResCount(0), _combatResChargeTime(0), _nextCombatResChargeTime(0)
 {
     SetType(ZONE_TYPE_INSTANCE);
     instance = map;

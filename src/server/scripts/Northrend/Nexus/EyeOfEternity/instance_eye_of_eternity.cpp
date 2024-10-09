@@ -30,7 +30,7 @@ public:
 
     struct instance_eye_of_eternity_InstanceMapScript : public InstanceScript
     {
-        instance_eye_of_eternity_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_eye_of_eternity_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
 

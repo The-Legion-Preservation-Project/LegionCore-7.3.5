@@ -26,7 +26,7 @@ public:
 
     struct instance_bastion_of_twilight_InstanceMapScript: public InstanceScript
     {
-        instance_bastion_of_twilight_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_bastion_of_twilight_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
             LoadDoorData(doordata);

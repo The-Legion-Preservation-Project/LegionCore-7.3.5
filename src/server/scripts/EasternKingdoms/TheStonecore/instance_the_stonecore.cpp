@@ -12,7 +12,7 @@ public:
 
     struct instance_the_stonecore_InstanceMapScript : public InstanceScript
     {
-        instance_the_stonecore_InstanceMapScript(Map* map) : InstanceScript(map) {};
+        instance_the_stonecore_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {};
 
         uint32 uiTeamInInstance;
 

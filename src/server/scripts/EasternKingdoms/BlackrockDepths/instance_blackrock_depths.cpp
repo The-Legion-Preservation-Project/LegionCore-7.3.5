@@ -71,7 +71,7 @@ public:
 
     struct instance_blackrock_depths_InstanceMapScript : public InstanceScript
     {
-        instance_blackrock_depths_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_blackrock_depths_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         uint32 encounter[MAX_ENCOUNTER];
         std::string str_data;

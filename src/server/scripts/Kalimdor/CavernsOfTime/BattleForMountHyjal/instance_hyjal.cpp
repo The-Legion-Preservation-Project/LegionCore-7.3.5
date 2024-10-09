@@ -54,7 +54,7 @@ public:
 
     struct instance_mount_hyjal_InstanceMapScript : public InstanceScript
     {
-        instance_mount_hyjal_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_mount_hyjal_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;

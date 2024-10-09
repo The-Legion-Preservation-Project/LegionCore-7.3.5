@@ -15,7 +15,7 @@ class instance_end_time : public InstanceMapScript
 
         struct instance_end_time_InstanceMapScript : public InstanceScript
         {
-            instance_end_time_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_end_time_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 uiTeamInInstance = 0;

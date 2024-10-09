@@ -38,7 +38,7 @@ public:
 
     struct instance_throne_of_thunder_InstanceMapScript : public InstanceScript
     {
-        instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_throne_of_thunder_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         //Special lists for Megaera heads mechanic
         GuidVector megaeralist;

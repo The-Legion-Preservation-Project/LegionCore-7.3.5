@@ -31,7 +31,7 @@ public:
 
     struct instance_black_rook_hold_dungeon_InstanceMapScript : public InstanceScript
     {
-        instance_black_rook_hold_dungeon_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_black_rook_hold_dungeon_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

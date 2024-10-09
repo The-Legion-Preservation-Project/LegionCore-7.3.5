@@ -37,7 +37,7 @@ class instance_oculus : public InstanceMapScript
 
         struct instance_oculus_InstanceMapScript : public InstanceScript
         {
-            instance_oculus_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_oculus_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);

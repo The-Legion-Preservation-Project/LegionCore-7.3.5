@@ -38,7 +38,7 @@ public:
 
     struct instance_scarlet_monastery_InstanceMapScript : public InstanceScript
     {
-        instance_scarlet_monastery_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_scarlet_monastery_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

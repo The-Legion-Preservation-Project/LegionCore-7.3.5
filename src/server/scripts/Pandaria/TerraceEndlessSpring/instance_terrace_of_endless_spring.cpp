@@ -34,7 +34,7 @@ class instance_terrace_of_endless_spring : public InstanceMapScript
 
         struct instance_terrace_of_endless_spring_InstanceMapScript : public InstanceScript
         {
-            instance_terrace_of_endless_spring_InstanceMapScript(Map* map) : InstanceScript(map) { }
+            instance_terrace_of_endless_spring_InstanceMapScript(InstanceMap* map) : InstanceScript(map) { }
 
             bool ritualOfPurification;
             bool introDone;

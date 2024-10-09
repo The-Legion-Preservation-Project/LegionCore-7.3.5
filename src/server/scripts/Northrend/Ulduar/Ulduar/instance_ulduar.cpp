@@ -50,7 +50,7 @@ public:
 
     struct instance_ulduar_InstanceMapScript : public InstanceScript
     {
-        instance_ulduar_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
+        instance_ulduar_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);

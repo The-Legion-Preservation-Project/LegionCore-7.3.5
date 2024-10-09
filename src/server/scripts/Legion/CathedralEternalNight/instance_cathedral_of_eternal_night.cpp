@@ -21,7 +21,7 @@ public:
 
     struct instance_cathedral_of_eternal_night_InstanceMapScript : public InstanceScript
     {
-        instance_cathedral_of_eternal_night_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_cathedral_of_eternal_night_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

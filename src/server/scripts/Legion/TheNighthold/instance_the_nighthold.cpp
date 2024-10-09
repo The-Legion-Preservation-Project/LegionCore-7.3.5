@@ -75,7 +75,7 @@ public:
 
     struct instance_the_nightnold_InstanceMapScript : InstanceScript
     {
-        explicit instance_the_nightnold_InstanceMapScript(Map* map) : InstanceScript(map)
+        explicit instance_the_nightnold_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

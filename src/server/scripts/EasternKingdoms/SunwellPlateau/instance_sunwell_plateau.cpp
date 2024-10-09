@@ -50,7 +50,7 @@ public:
 
     struct instance_sunwell_plateau_InstanceMapScript : public InstanceScript
     {
-        instance_sunwell_plateau_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_sunwell_plateau_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

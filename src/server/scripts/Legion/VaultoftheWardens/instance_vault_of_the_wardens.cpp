@@ -30,7 +30,7 @@ public:
 
     struct instance_vault_of_the_wardens_InstanceMapScript : public InstanceScript
     {
-        instance_vault_of_the_wardens_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_vault_of_the_wardens_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

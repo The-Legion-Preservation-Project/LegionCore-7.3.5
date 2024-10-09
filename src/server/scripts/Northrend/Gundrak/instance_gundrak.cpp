@@ -41,7 +41,7 @@ public:
 
     struct instance_gundrak_InstanceMapScript : public InstanceScript
     {
-        instance_gundrak_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_gundrak_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             bHeroicMode = map->IsHeroic();
         }

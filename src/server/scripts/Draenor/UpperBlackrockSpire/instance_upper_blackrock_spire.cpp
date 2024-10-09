@@ -32,7 +32,7 @@ public:
 
     struct instance_upper_blackrock_spire_InstanceMapScript : public InstanceScript
     {
-        instance_upper_blackrock_spire_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_upper_blackrock_spire_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

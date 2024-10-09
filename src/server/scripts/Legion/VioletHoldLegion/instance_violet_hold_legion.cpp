@@ -17,7 +17,7 @@ public:
 
     struct instance_violet_hold_legion_InstanceMapScript : public InstanceScript
     {
-        instance_violet_hold_legion_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_violet_hold_legion_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

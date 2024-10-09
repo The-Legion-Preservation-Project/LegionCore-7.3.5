@@ -28,7 +28,7 @@ public:
 
     struct instance_return_to_karazhan_InstanceMapScript : public InstanceScript
     {
-        instance_return_to_karazhan_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_return_to_karazhan_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

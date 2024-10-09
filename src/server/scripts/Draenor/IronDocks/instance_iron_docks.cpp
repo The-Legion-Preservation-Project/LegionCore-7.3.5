@@ -16,7 +16,7 @@ public:
 
     struct instance_iron_docks_InstanceMapScript : public InstanceScript
     {
-        instance_iron_docks_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_iron_docks_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         std::list<ObjectGuid> oshirGUIDconteiner;
         std::map<uint32, ObjectGuid> skullocGUIDconteiner;

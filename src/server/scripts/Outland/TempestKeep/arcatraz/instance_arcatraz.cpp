@@ -3,7 +3,6 @@
 #include "Creature.h"
 #include "GameObject.h"
 #include "InstanceScript.h"
-#include "Map.h"
 
 DoorData const doorData[] =
 {
@@ -19,7 +18,7 @@ public:
 
     struct instance_arcatraz_InstanceMapScript : public InstanceScript
     {
-        instance_arcatraz_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_arcatraz_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             //SetHeaders(DataHeader);
             SetBossNumber(EncounterCount);

@@ -31,7 +31,7 @@ public:
 
     struct instance_skyreach_InstanceMapScript : public InstanceScript
     {
-        instance_skyreach_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_skyreach_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

@@ -124,7 +124,7 @@ public:
 
     struct instance_tomb_of_sargeras_InstanceMapScript : InstanceScript
     {
-        instance_tomb_of_sargeras_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_tomb_of_sargeras_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

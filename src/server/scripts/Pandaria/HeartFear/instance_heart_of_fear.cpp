@@ -29,7 +29,7 @@ public:
 
     struct instance_heart_of_fear_InstanceMapScript : public InstanceScript
     {
-        instance_heart_of_fear_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_heart_of_fear_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         //GameObjects
         ObjectGuid vizierentdoorGuid;

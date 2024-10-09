@@ -43,7 +43,7 @@ class instance_uldaman : public InstanceMapScript
 
         struct instance_uldaman_InstanceMapScript : public InstanceScript
         {
-            instance_uldaman_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_uldaman_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
             }
 

@@ -20,7 +20,7 @@ class instance_shadowfang_keep : public InstanceMapScript
 
         struct instance_shadowfang_keep_InstanceMapScript : public InstanceScript
         {
-            instance_shadowfang_keep_InstanceMapScript(Map* pMap) : InstanceScript(pMap) 
+            instance_shadowfang_keep_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);

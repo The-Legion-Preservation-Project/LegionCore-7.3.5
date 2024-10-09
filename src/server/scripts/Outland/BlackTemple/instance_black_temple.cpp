@@ -53,7 +53,7 @@ public:
 
     struct instance_black_temple_InstanceMapScript : public InstanceScript
     {
-        instance_black_temple_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_black_temple_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;

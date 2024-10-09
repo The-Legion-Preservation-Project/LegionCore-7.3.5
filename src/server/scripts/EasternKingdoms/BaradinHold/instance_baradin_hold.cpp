@@ -20,7 +20,7 @@ class instance_baradin_hold : public InstanceMapScript
 
         struct instance_baradin_hold_InstanceMapScript : public InstanceScript
         {
-            instance_baradin_hold_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_baradin_hold_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doorData);

@@ -46,7 +46,7 @@ public:
         uint8 JadeCount;
         uint8 GemCount;
 
-        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_mogu_shan_palace_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         void Initialize() override
         {

@@ -28,7 +28,7 @@ public:
 
     struct instance_maw_of_souls_InstanceMapScript : public InstanceScript
     {
-        instance_maw_of_souls_InstanceMapScript(Map* map) : InstanceScript(map) 
+        instance_maw_of_souls_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

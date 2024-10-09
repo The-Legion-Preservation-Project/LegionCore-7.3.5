@@ -27,7 +27,7 @@ public:
 
     struct instance_mogu_shan_vault_InstanceMapScript : public InstanceScript
     {
-        instance_mogu_shan_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_mogu_shan_vault_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
 
         //GameObject
         ObjectGuid stoneexitdoorGuid;

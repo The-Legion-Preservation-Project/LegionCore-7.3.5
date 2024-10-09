@@ -50,7 +50,7 @@ class instance_molten_core : public InstanceMapScript
 
         struct instance_molten_core_InstanceMapScript : public InstanceScript
         {
-            instance_molten_core_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_molten_core_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 _golemaggTheIncineratorGUID.Clear();

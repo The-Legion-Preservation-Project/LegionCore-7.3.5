@@ -54,7 +54,7 @@ class instance_the_eye : public InstanceMapScript
 
         struct instance_the_eye_InstanceMapScript : public InstanceScript
         {
-            instance_the_eye_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_the_eye_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);

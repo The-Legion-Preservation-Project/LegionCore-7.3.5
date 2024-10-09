@@ -22,7 +22,7 @@ public:
 
     struct instance_throne_of_the_tides_InstanceMapScript : public InstanceScript
     {
-        instance_throne_of_the_tides_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_throne_of_the_tides_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
             LoadDoorData(doordata);
