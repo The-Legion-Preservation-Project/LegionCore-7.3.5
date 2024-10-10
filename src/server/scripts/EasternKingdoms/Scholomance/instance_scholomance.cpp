@@ -38,6 +38,15 @@ enum GameObjectId
     GO_LAST_DOOR  = 210789
 };
 
+DungeonEncounterData const encounters[] =
+{
+    { DATA_INSTRUCTOR,  {{ 1426 }}  },
+    { DATA_BAROV,       {{ 1427 }}  },
+    { DATA_RATTLEGORE,  {{ 1428 }}  },
+    { DATA_LILIAN,      {{ 1429 }}  },
+    { DATA_DARKMASTER,  {{ 1430 }}  }
+};
+
 class instance_scholomance : public InstanceMapScript
 {
 public:
@@ -73,6 +82,8 @@ public:
         {
             SetHeaders(DataHeader);
             SetBossNumber(5);
+            LoadDungeonEncounterData(encounters);
+
             //Creature
             chillheartGuid.Clear();
             barovGuid.Clear();
