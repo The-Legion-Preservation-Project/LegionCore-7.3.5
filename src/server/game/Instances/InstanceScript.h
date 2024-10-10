@@ -173,7 +173,10 @@ class InstanceScript : public ZoneScript
         static void DestroyInstance();
         void CreateInstance();
 
-        // On load
+        // On instance load, exactly ONE of these methods will ALWAYS be called:
+        // if we're starting without any saved instance data
+        virtual void Create();
+        // if we're loading existing instance save data
         virtual void Load(char const* data);
 
         // When save is needed, this function generates the data
@@ -296,7 +299,14 @@ class InstanceScript : public ZoneScript
         void SetCompletedEncountersMask(uint32 newMask);
         uint32 GetCompletedEncounterMask() const;
 
+        // Only used by areatriggers that inherit from OnlyOnceAreaTriggerScript
+        void MarkAreaTriggerDone(uint32 id) { _activatedAreaTriggers.insert(id); }
+        void ResetAreaTriggerDone(uint32 id) { _activatedAreaTriggers.erase(id); }
+        bool IsAreaTriggerDone(uint32 id) const { return _activatedAreaTriggers.find(id) != _activatedAreaTriggers.end(); }
+
         void SendEncounterUnit(uint32 type, Unit* unit = nullptr, uint8 param1 = 0, uint8 param2 = 0);
+
+        void SendBossKillCredit(uint32 encounterId);
 
         bool IsAllowingRelease;
 
@@ -402,6 +412,7 @@ class InstanceScript : public ZoneScript
         ObjectInfoMap _creatureInfo;
         ObjectInfoMap _gameObjectInfo;
         ObjectGuidMap _objectGuids;
+        std::unordered_set<uint32> _activatedAreaTriggers;
         WorldObjectMap _creatureData; // Now is only one object peer entry, if need all object in this entry, change guid to vector<guid>
         WorldObjectMap _gameObjectData; // Now is only one object peer entry, if need all object in this entry, change guid to vector<guid>
         LogsSystem::MainData _logData;

@@ -344,6 +344,12 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
     return false;
 }
 
+void InstanceScript::Create()
+{
+    for (size_t i = 0; i < bosses.size(); ++i)
+        SetBossState(i, NOT_STARTED);
+}
+
 void InstanceScript::Load(char const* data)
 {
     if (!data)
@@ -850,6 +856,12 @@ void InstanceScript::SendEncounterUnit(uint32 type, Unit* unit /*= nullptr*/, ui
         default:
             break;
     }
+}
+
+void InstanceScript::SendBossKillCredit(uint32 encounterId)
+{
+    WorldPackets::Instance::BossKillCredit bossKillCreditMessage(encounterId);
+    instance->SendToPlayers(bossKillCreditMessage.Write());
 }
 
 bool InstanceScript::IsWipe() const
