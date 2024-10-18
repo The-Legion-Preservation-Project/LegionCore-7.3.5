@@ -793,7 +793,7 @@ void MotionMaster::MoveBackward(uint32 id, float x, float y, float z, float spee
     Mutate(new EffectMovementGenerator(id, x, y, z), MOTION_SLOT_CONTROLLED);
 }
 
-void MotionMaster::propagateSpeedChange()
+void MotionMaster::PropagateSpeedChange()
 {
     /*Impl::container_type::iterator it = Impl::c.begin();
     for (; it != end(); ++it)

@@ -15811,7 +15811,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
 
     m_speed_rate[mtype] = rate;
 
-    propagateSpeedChange();
+    PropagateSpeedChange();
 
     // Spline packets are for creatures and move_update are for players
     static OpcodeServer const moveTypeToOpcode[MAX_MOVE_TYPE][3] =
