@@ -28,7 +28,6 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
 {
     public:
         explicit FleeingMovementGenerator(ObjectGuid fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), _timer(0), _interrupt(false) { }
-        ~FleeingMovementGenerator() override;
 
         MovementGeneratorType GetMovementGeneratorType() override { return FLEEING_MOTION_TYPE; }
 
@@ -41,7 +40,7 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
         void SetTargetLocation(T &owner);
         void GetPoint(T &owner, Position &position);
 
-        PathGenerator* _path;
+        std::unique_ptr<PathGenerator> _path;
         ObjectGuid _fleeTargetGUID;
         TimeTracker _timer;
         bool _interrupt;

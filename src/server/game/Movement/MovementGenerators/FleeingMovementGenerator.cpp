@@ -29,16 +29,12 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
-FleeingMovementGenerator<T>::~FleeingMovementGenerator()
-{
-    delete _path;
-}
-
-template<class T>
 void FleeingMovementGenerator<T>::DoInitialize(T &owner)
 {
     owner.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner.AddUnitState(UNIT_STATE_FLEEING);
+
+    _path = nullptr;
     SetTargetLocation(owner);
 }
 
@@ -75,6 +71,7 @@ bool FleeingMovementGenerator<T>::DoUpdate(T &owner, const uint32 &diff)
     {
         _interrupt = true;
         owner.StopMoving();
+        _path = nullptr;
         return true;
     }
     else
@@ -95,6 +92,7 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T &owner)
     {
         _interrupt = true;
         owner.StopMoving();
+        _path = nullptr;
         return;
     }
 
@@ -112,9 +110,11 @@ void FleeingMovementGenerator<T>::SetTargetLocation(T &owner)
     }
 
     if (!_path)
-        _path = new PathGenerator(&owner);
+    {
+        _path = std::make_unique<PathGenerator>(&owner);
+        _path->SetPathLengthLimit(30.0f);
+    }
 
-    _path->SetPathLengthLimit(30.0f);
     bool result = _path->CalculatePath(destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
@@ -167,8 +167,6 @@ void FleeingMovementGenerator<T>::GetPoint(T &owner, Position &position)
     owner.MovePositionToFirstCollision(position, distance, angle);
 }
 
-template void FleeingMovementGenerator<Player>::~FleeingMovementGenerator();
-template void FleeingMovementGenerator<Creature>::~FleeingMovementGenerator();
 template void FleeingMovementGenerator<Player>::DoInitialize(Player &);
 template void FleeingMovementGenerator<Creature>::DoInitialize(Creature &);
 template void FleeingMovementGenerator<Player>::DoReset(Player &);
