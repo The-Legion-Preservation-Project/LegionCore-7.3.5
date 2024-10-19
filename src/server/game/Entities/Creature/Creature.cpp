@@ -386,7 +386,7 @@ bool SetImuneDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 Creature::Creature(bool isWorldObject) : Unit(isWorldObject), lootForPickPocketed(false), lootForBody(false), CreatureSpells(nullptr), m_groupLootTimer(0), m_PlayerDamageReq(0), m_actionData{}, m_CanCallAssistance(false), m_callAssistanceText(0),
  m_onVehicleAccessory(false), m_corpseRemoveTime(0), m_respawnTime(0), m_respawnChallenge(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f), m_reactState(REACT_AGGRESSIVE), m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0),
  m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false), m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_originalEntry(0),
- m_creatureInfo(nullptr), m_creatureData(nullptr), m_waypointID(0), m_path_id(0), m_formation(nullptr), outfitId(0)
+ m_creatureInfo(nullptr), m_creatureData(nullptr), m_waypointID(0), m_path_id(0), m_formation(nullptr), outfitId(0), m_cannotReachTarget(false), m_cannotReachTimer(0)
 {
     m_followAngle = PET_FOLLOW_ANGLE;
     m_regenTimer = CREATURE_REGEN_INTERVAL;
@@ -1107,6 +1107,14 @@ void Creature::Update(uint32 diff)
                 RegenerateHealth();
 
             m_regenTimer = isAnySummons() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL;
+
+            if (CanNotReachTarget() && !IsInEvadeMode() && !GetMap()->IsRaid())
+            {
+                m_cannotReachTimer += diff;
+                if (m_cannotReachTimer >= CREATURE_NOPATH_EVADE_TIME)
+                    if (IsAIEnabled)
+                        AI()->EnterEvadeMode();
+            }
             break;
         }
         default:
@@ -2554,6 +2562,7 @@ void Creature::setDeathState(DeathState s)
         SetFullHealth();
         SetLootRecipient(nullptr);
         ResetPlayerDamageReq();
+        SetCannotReachTarget(false);
         CreatureTemplate const* cinfo = GetCreatureTemplate();
         SetWalk(true);
         if (cinfo->InhabitType & INHABIT_AIR && cinfo->InhabitType & INHABIT_GROUND)

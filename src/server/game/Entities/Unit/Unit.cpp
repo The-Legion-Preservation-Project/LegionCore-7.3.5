@@ -25171,6 +25171,26 @@ void Unit::FocusTarget(Spell const* focusSpell, ObjectGuid target)
     if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         AddUnitState(UNIT_STATE_ROTATING);
 }
+
+bool Unit::IsFocusing(Spell const* focusSpell)
+{
+    if (!IsAlive()) // dead creatures cannot focus
+    {
+        ReleaseFocus(nullptr);
+        return false;
+    }
+
+    if (focusSpell && (focusSpell != _focusSpell))
+        return false;
+
+    if (!_focusSpell)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void Unit::ReleaseFocus(Spell const* focusSpell)
 {
     // focused to something else

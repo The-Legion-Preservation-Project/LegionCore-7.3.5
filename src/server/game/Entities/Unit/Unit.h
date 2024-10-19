@@ -2381,6 +2381,7 @@ class Unit : public WorldObject
 
         // Handling caster facing during spell cast
         void FocusTarget(Spell const* focusSpell, ObjectGuid target);
+        bool IsFocusing(Spell const* focusSpell);
         void ReleaseFocus(Spell const* focusSpell);
 
         uint32 GetNpcDamageTakenInPastSecs(uint32 secs) const;

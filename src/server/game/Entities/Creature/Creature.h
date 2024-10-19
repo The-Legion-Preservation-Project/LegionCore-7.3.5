@@ -90,6 +90,7 @@ constexpr auto CREATURE_FLAG_EXTRA_DB_ALLOWED (CREATURE_FLAG_EXTRA_INSTANCE_BIND
 #define CREATURE_REGEN_INTERVAL 5 * IN_MILLISECONDS
 #define PET_FOCUS_REGEN_INTERVAL 2 * IN_MILLISECONDS
 #define BOSS_REGEN_INTERVAL 1 * IN_MILLISECONDS
+const uint32 CREATURE_NOPATH_EVADE_TIME = 5 * IN_MILLISECONDS;
 
 #define MAX_EQUIPMENT_ITEMS 3
 
@@ -744,6 +745,9 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         virtual uint8 GetPetAutoSpellSize() const { return MAX_SPELL_CHARM; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
 
+        void SetCannotReachTarget(bool cannotReach) { if (cannotReach == m_cannotReachTarget) return; m_cannotReachTarget = cannotReach; m_cannotReachTimer = 0; }
+        bool CanNotReachTarget() const { return m_cannotReachTarget; }
+
         void SetPosition(float x, float y, float z, float o);
         void SetPosition(const Position& pos);
         void SetHomePosition(float x, float y, float z, float o);
@@ -878,6 +882,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         bool m_AlreadyCallAssistance;
         bool m_AlreadySearchedAssistance;
+        bool m_cannotReachTarget;
+        uint32 m_cannotReachTimer;
         bool m_regenHealth;
         bool m_AI_locked;
         std::string AIName;
