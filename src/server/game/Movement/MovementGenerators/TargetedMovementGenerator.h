@@ -46,7 +46,7 @@ class TargetedMovementGenerator : public MovementGeneratorMedium< T, D >, public
         explicit TargetedMovementGenerator(Unit &target, float offset, float angle) : TargetedMovementGeneratorBase(target), _path(nullptr), _timer(0), _offset(offset), _angle(angle), _recalculateTravel(false), _targetReached(false), _interrupt(false) { }
         ~TargetedMovementGenerator();
 
-        bool DoUpdate(T &, const uint32 &);
+        virtual bool DoUpdate(T &, const uint32 &);
 
         void UnitSpeedChanged() override { _recalculateTravel = true; }
 
@@ -111,13 +111,15 @@ template<class T>
 class FollowMovementGenerator : public TargetedMovementGenerator<T, FollowMovementGenerator<T> >
 {
     public:
-        explicit FollowMovementGenerator(Unit& target, float offset, float angle) : TargetedMovementGenerator<T, FollowMovementGenerator<T> >(target, offset, angle) { }
+        explicit FollowMovementGenerator(Unit &target, float offset, float angle) : TargetedMovementGenerator<T, FollowMovementGenerator<T> >(target, offset, angle), _path(nullptr), _recheckPredictedDistanceTimer(0), _recheckPredictedDistance(false), _range(offset), _angle(angle), _inheritWalkState(false) { }
+        ~FollowMovementGenerator() = default;
 
         MovementGeneratorType GetMovementGeneratorType() override { return FOLLOW_MOTION_TYPE; }
 
         void DoInitialize(T &);
         void DoFinalize(T &);
         void DoReset(T &);
+        bool DoUpdate(T &, const uint32 &) override;
 
         void ClearUnitStateMove(T &) override;
         void AddUnitStateMove(T &) override;
@@ -128,6 +130,18 @@ class FollowMovementGenerator : public TargetedMovementGenerator<T, FollowMoveme
 
     private:
         void UpdateSpeed(T &owner);
+
+        bool PositionOkay(Unit* target, bool isPlayerPet, bool& targetIsMoving, uint32 diff);
+
+        std::unique_ptr<PathGenerator> _path;
+        TimeTrackerSmall _recheckPredictedDistanceTimer;
+        bool _recheckPredictedDistance;
+
+        Optional<Position> _lastTargetPosition;
+        Optional<Position> _lastPredictedPosition;
+        float _range;
+        float _angle;
+        bool _inheritWalkState;
 };
 
 #endif
