@@ -628,11 +628,17 @@ bool FollowMovementGenerator<T>::PositionOkay(Unit* target, bool isPlayerPet, bo
 //-----------------------------------------------//
 
 template<class T>
-void FetchMovementGenerator<T>::DoInitialize(T &owner)
+void FetchMovementGenerator<T>::DoInitialize(T &) { }
+
+template<>
+void FetchMovementGenerator<Player>::DoInitialize(Player &) { }
+
+template<>
+void FetchMovementGenerator<Creature>::DoInitialize(Creature &owner)
 {
     owner.SetWalk(false);
     owner.AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
-    (*this).SetTargetLocation(owner, true);
+    SetTargetLocation(owner, true);
 }
 
 template<class T>
@@ -729,6 +735,8 @@ template void ChaseMovementGenerator<Player>::ReachTarget(Player &);
 template void ChaseMovementGenerator<Creature>::ReachTarget(Creature &);
 template void ChaseMovementGenerator<Player>::MovementInform(Player &);
 
+template void FetchMovementGenerator<Player>::DoInitialize(Player &);
+template void FetchMovementGenerator<Creature>::DoInitialize(Creature &);
 template void FetchMovementGenerator<Player>::ClearUnitStateMove(Player &);
 template void FetchMovementGenerator<Creature>::ClearUnitStateMove(Creature &);
 template void FetchMovementGenerator<Player>::AddUnitStateMove(Player &);
