@@ -50,7 +50,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         bool DoUpdate(T &, const uint32 &);
         Unit* GetTarget() const { return i_target.getTarget(); }
 
-        void unitSpeedChanged() override { i_recalculateTravel=true; }
+        void UnitSpeedChanged() override { i_recalculateTravel =true; }
         void UpdateFinalDistance(float fDistance);
         bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
     protected:
@@ -141,7 +141,7 @@ public:
 
     Unit* GetTarget() const { return this->i_target.getTarget(); }
 
-    void unitSpeedChanged() { _lastTargetPosition.reset(); }
+    void UnitSpeedChanged() { _lastTargetPosition.reset(); }
 
     bool PositionOkay(Unit* target, bool isPlayerPet, bool& targetIsMoving, uint32 diff);
 

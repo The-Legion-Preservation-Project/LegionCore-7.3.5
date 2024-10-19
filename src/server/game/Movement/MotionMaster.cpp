@@ -803,7 +803,7 @@ void MotionMaster::PropagateSpeedChange()
     for (int i = 0; i <= _top; ++i)
     {
         if (Impl[i])
-            Impl[i]->unitSpeedChanged();
+            Impl[i]->UnitSpeedChanged();
     }
 }
 
