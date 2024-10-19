@@ -11145,6 +11145,18 @@ void Unit::setPowerType(Powers fieldPower)
     UpdateMaxPower(new_powertype);
 }
 
+void Unit::SetInitialPowerValue(Powers powerType)
+{
+    PowerTypeEntry const* powerTypeEntry = sPowerTypeStore.LookupEntry(powerType);
+    if (!powerTypeEntry)
+        return;
+
+    if ((powerTypeEntry->Flags & PowerTypeFlags::UnitsUseDefaultPowerOnInit) != 0)
+        SetPower(powerType, powerTypeEntry->DefaultPower);
+    else
+        SetPower(powerType, GetMaxPower(powerType));
+}
+
 FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
 {
     FactionTemplateEntry const* entry = sFactionTemplateStore.LookupEntry(getFaction());

@@ -1276,6 +1276,7 @@ class Unit : public WorldObject
         Powers getPowerType() const { return Powers(GetUInt32Value(UNIT_FIELD_DISPLAY_POWER)); }
         void SetFieldPowerType(uint32 powerType) { SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powerType); }
         void setPowerType(Powers power);
+        void SetInitialPowerValue(Powers powerType);
         int32 GetPower(Powers power) const;
         int32 GetMaxPower(Powers power) const;
         void SetPower(Powers power, int32 val, bool send = true);

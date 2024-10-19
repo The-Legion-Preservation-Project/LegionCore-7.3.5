@@ -2296,6 +2296,28 @@ void Creature::LoadEquipment(int8 id, bool force)
         SetVirtualItem(i, einfo->ItemEntry[i*2], einfo->ItemEntry[(i*2)+1]);
 }
 
+void Creature::SetSpawnHealth()
+{
+    uint32 curhealth;
+    if (m_creatureData && !m_regenHealth)
+    {
+        curhealth = m_creatureData->curhealth;
+        if (curhealth)
+        {
+            curhealth = uint32(curhealth * _GetHealthMod(GetCreatureTemplate()->Classification));
+            if (curhealth < 1)
+                curhealth = 1;
+        }
+    }
+    else
+    {
+        curhealth = GetMaxHealth();
+    }
+
+    SetHealth((m_deathState == ALIVE || m_deathState == JUST_RESPAWNED) ? curhealth : 0);
+    SetInitialPowerValue(getPowerType());
+}
+
 bool Creature::hasQuest(uint32 quest_id) const
 {
     QuestRelationBounds qr = sQuestDataStore->GetCreatureQuestRelationBounds(GetEntry());
