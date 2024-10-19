@@ -28,7 +28,7 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
 {
     public:
         explicit FleeingMovementGenerator(ObjectGuid fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), _timer(0), _interrupt(false) { }
-        ~FleeingMovementGenerator();
+        ~FleeingMovementGenerator() override;
 
         MovementGeneratorType GetMovementGeneratorType() override { return FLEEING_MOTION_TYPE; }
 
