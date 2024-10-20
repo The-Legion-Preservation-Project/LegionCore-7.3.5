@@ -20,8 +20,9 @@
 #define MOTIONMASTER_H
 
 #include "Common.h"
-#include "SharedDefines.h"
 #include "Object.h"
+#include "SharedDefines.h"
+#include "WaypointManager.h"
 #include <LockedVector.h>
 
 class MovementGenerator;
@@ -167,7 +168,8 @@ class MotionMaster
         void MoveSeekAssistanceDistract(uint32 timer);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
         void MoveDistract(uint32 time);
-        void MovePath(uint32 path_id, bool repeatable, float randomMoveX = 0, float randomMoveY = 0);
+        void MovePath(uint32 pathId, bool repeatable, float randomMoveX = 0, float randomMoveY = 0);
+        void MovePath(WaypointPath& path, bool repeatable);
         void MoveRotate(uint32 time, RotateDirection direction, bool repeat = false);
         void MoveBackward(uint32 id, float x, float y, float z, float speed = 0.0f);
 

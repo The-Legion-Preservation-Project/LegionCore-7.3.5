@@ -17,19 +17,18 @@
  */
 
 #include "MotionMaster.h"
-#include "CreatureAISelector.h"
-#include "Creature.h"
 #include "ConfusedMovementGenerator.h"
+#include "Creature.h"
+#include "CreatureAISelector.h"
 #include "FleeingMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
-#include "PointMovementGenerator.h"
-#include "TargetedMovementGenerator.h"
-#include "WaypointMovementGenerator.h"
-#include "RandomMovementGenerator.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
-#include <cassert>
+#include "PointMovementGenerator.h"
+#include "RandomMovementGenerator.h"
+#include "TargetedMovementGenerator.h"
+#include "WaypointMovementGenerator.h"
 
 inline bool IsStatic(MovementGenerator* movement)
 {
@@ -41,10 +40,10 @@ MotionMaster::~MotionMaster()
     // clear ALL movement generators (including default)
     while (!empty())
     {
-        MovementGenerator *curr = top();
+        MovementGenerator* curr = top();
         pop();
         if (curr && !IsStatic(curr))
-            delete curr;    // Skip finalizing on delete, it might launch new movement
+            delete curr; // Skip finalizing on delete, it might launch new movement
     }
 }
 
@@ -602,7 +601,7 @@ void MotionMaster::MoveCirclePath(float x, float y, float z, float radius, bool 
 
     if (_owner->IsFlying())
     {
-        init.SetFly();    
+        init.SetFly();
         init.SetAnimation(Movement::ToFly);
     }
     else
@@ -733,19 +732,28 @@ void MotionMaster::MoveDistract(uint32 timer)
     Mutate(mgen, MOTION_SLOT_CONTROLLED);
 }
 
-void MotionMaster::MovePath(uint32 path_id, bool repeatable, float randomMoveX, float randomMoveY)
+void MotionMaster::MovePath(uint32 pathId, bool repeatable, float randomMoveX, float randomMoveY)
 {
-    if (!path_id)
+    if (!pathId)
         return;
 
     if (_owner->IsPlayer())
-        Mutate(new WaypointMovementGenerator<Player>(path_id), MOTION_SLOT_IDLE);
+        Mutate(new WaypointMovementGenerator<Player>(pathId), MOTION_SLOT_IDLE);
     else
-        Mutate(new WaypointMovementGenerator<Creature>(path_id, repeatable, randomMoveX, randomMoveY), MOTION_SLOT_IDLE);
+        Mutate(new WaypointMovementGenerator<Creature>(pathId, repeatable, randomMoveX, randomMoveY), MOTION_SLOT_IDLE);
 
-    TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id:%u, repeatable: %s)",
-        _owner->IsPlayer() ? "Player" : "Creature",
-        _owner->GetGUIDLow(), path_id, repeatable ? "YES" : "NO");
+    TC_LOG_DEBUG("misc", "%s (GUID: %lu) start moving over path(Id: %u, repeatable: %s)",
+                 _owner->IsPlayer() ? "Player" : "Creature",
+                 _owner->GetGUID().GetCounter(), pathId, repeatable ? "YES" : "NO");
+}
+
+void MotionMaster::MovePath(WaypointPath& path, bool repeatable)
+{
+    Mutate(new WaypointMovementGenerator<Creature>(path, repeatable), MOTION_SLOT_IDLE);
+
+    TC_LOG_DEBUG("misc", "%s (GUID: %lu) start moving over path(repeatable: %s)",
+                 _owner->GetTypeId() == TYPEID_PLAYER ? "Player" : "Creature",
+                 _owner->GetGUID().GetCounter(), repeatable ? "YES" : "NO");
 }
 
 void MotionMaster::MoveRotate(uint32 time, RotateDirection direction, bool repeat /* = false*/)

@@ -19,6 +19,8 @@
 #ifndef TRINITY_WAYPOINTMANAGER_H
 #define TRINITY_WAYPOINTMANAGER_H
 
+#include "Containers.h"
+
 enum WaypointMoveType
 {
     WAYPOINT_MOVE_TYPE_WALK,

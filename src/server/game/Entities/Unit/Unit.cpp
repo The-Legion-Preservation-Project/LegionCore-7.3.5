@@ -16,8 +16,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AreaTriggerAI.h"
+#include "Unit.h"
 #include "Anticheat.h"
+#include "AreaTriggerAI.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "Battleground.h"
@@ -46,9 +47,10 @@
 #include "LootPackets.h"
 #include "MapManager.h"
 #include "MiscPackets.h"
-#include "MovementPackets.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
+#include "MovementGenerator.h"
+#include "MovementPackets.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "ObjectVisitors.hpp"
@@ -73,7 +75,6 @@
 #include "TemporarySummon.h"
 #include "Totem.h"
 #include "Transport.h"
-#include "Unit.h"
 #include "UpdateFieldFlags.h"
 #include "UpdatePackets.h"
 #include "Util.h"
@@ -22615,8 +22616,14 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
 
     if (IsCreature())
     {
+        if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MOTION_SLOT_IDLE))
+            movementGenerator->Pause();
+
+        GetMotionMaster()->Clear(MOTION_SLOT_ACTIVE);
+
+        StopMoving();
+
         ToCreature()->AI()->OnCharmed(true);
-        GetMotionMaster()->MoveIdle();
     }
     else
     {
@@ -22728,6 +22735,8 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     Map* map = GetMap();
     if (!IsVehicle() || (IsVehicle() && map && !map->IsBattleground()))
         RestoreFaction();
+
+    ///@todo Handle SLOT_IDLE motion resume
     GetMotionMaster()->Clear(true);
     GetMotionMaster()->InitDefault();
 
