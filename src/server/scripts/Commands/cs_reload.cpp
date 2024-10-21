@@ -491,7 +491,10 @@ public:
             cInfo->maxgold            = fields[index++].GetUInt32();
             cInfo->AIName             = fields[index++].GetString();
             cInfo->MovementType       = fields[index++].GetUInt8();
-            cInfo->InhabitType        = fields[index++].GetUInt8();
+            cInfo->Movement.Ground    = static_cast<CreatureGroundMovementType>(fields[index++].GetUInt8());
+            cInfo->Movement.Swim      = fields[index++].GetBool();
+            cInfo->Movement.Flight    = static_cast<CreatureFlightMovementType>(fields[index++].GetUInt8());
+            cInfo->Movement.Rooted    = fields[index++].GetBool();
             cInfo->HoverHeight        = fields[index++].GetFloat();
             cInfo->ModManaExtra       = fields[index++].GetFloat();
             cInfo->ModArmor           = fields[index++].GetFloat();
