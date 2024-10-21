@@ -29,22 +29,26 @@ class RandomMovementGenerator : public MovementGeneratorMedium<T, RandomMovement
     public:
         explicit RandomMovementGenerator(float distance = 0.0f) : _path(nullptr), _timer(0), _reference(0.f, 0.f, 0.f), _wanderDistance(distance), _wanderSteps(0), _interrupt(false) { }
 
-        MovementGeneratorType GetMovementGeneratorType() override { return RANDOM_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() const override { return RANDOM_MOTION_TYPE; }
 
-        void DoInitialize(T &);
-        void DoFinalize(T &);
-        void DoReset(T &);
-        bool DoUpdate(T &, const uint32);
+        void Pause(uint32 timer = 0) override;
+        void Resume(uint32 overrideTimer = 0) override;
+
+        void DoInitialize(T&);
+        void DoFinalize(T&);
+        void DoReset(T&);
+        bool DoUpdate(T&, uint32);
 
     private:
-        void SetRandomLocation(T &);
+        void SetRandomLocation(T&);
 
         std::unique_ptr<PathGenerator> _path;
         TimeTracker _timer;
-        G3D::Vector3 _reference;
+        Position _reference;
         float _wanderDistance;
         uint8 _wanderSteps;
         bool _interrupt;
+        bool _stalled;
 };
 #endif
 
