@@ -40,8 +40,8 @@ template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creature, WaypointMovementGenerator<Creature>>, public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
-        explicit WaypointMovementGenerator(uint32 pathId = 0, bool repeating = true, float randomMoveX = 0, float randomMoveY = 0, bool forceTpToStart = false) : _nextMoveTime(0), _isArrivalDone(false), _pathId(pathId), _repeating(repeating), _goBack(false), _randomMoveX(randomMoveX), _randomMoveY(randomMoveY), _forceTPToStart(forceTpToStart), _recalculateSpeed(false), _loadedFromDB(true), _stalled(false) { }
-        explicit WaypointMovementGenerator(WaypointPath& path, bool repeating = true) : _nextMoveTime(0), _recalculateSpeed(false), _isArrivalDone(false), _pathId(0), _repeating(repeating), _loadedFromDB(false), _stalled(false), _goBack(false), _forceTPToStart(false), _randomMoveX(0.f), _randomMoveY(0.f)
+        explicit WaypointMovementGenerator(uint32 pathId = 0, bool repeating = true, float randomMoveX = 0, float randomMoveY = 0, bool forceTpToStart = false) : _nextMoveTime(0), _isArrivalDone(false), _pathId(pathId), _repeating(repeating), _goBack(false), _randomMoveX(randomMoveX), _randomMoveY(randomMoveY), _forceTPToStart(forceTpToStart), _recalculateSpeed(false), _loadedFromDB(true), _stalled(false), _pauseTime(0) { }
+        explicit WaypointMovementGenerator(WaypointPath& path, bool repeating = true) : _nextMoveTime(0), _recalculateSpeed(false), _isArrivalDone(false), _pathId(0), _repeating(repeating), _loadedFromDB(false), _stalled(false), _goBack(false), _forceTPToStart(false), _randomMoveX(0.f), _randomMoveY(0.f), _pauseTime(0)
         {
             _path = &path;
         }
@@ -51,7 +51,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
         void DoInitialize(Creature&);
         void DoFinalize(Creature&);
         void DoReset(Creature&);
-        bool DoUpdate(Creature&, uint32);
+        bool DoUpdate(Creature&, uint32 diff);
 
         MovementGeneratorType GetMovementGeneratorType() const override { return WAYPOINT_MOTION_TYPE; }
 
@@ -75,6 +75,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
         }
 
         TimeTrackerSmall _nextMoveTime;
+        int32 _pauseTime;
         bool _recalculateSpeed;
         bool _isArrivalDone;
         uint32 _pathId;

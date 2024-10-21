@@ -74,19 +74,18 @@ struct MovementGeneratorFactory : public MovementGeneratorCreator
 {
     MovementGeneratorFactory(MovementGeneratorType movementGeneratorType) : MovementGeneratorCreator(movementGeneratorType) { }
 
-    MovementGenerator* Create(void *) const override
-    {
-        return new Movement();
-    }
+    MovementGenerator* Create(void*) const override;
 };
 
 struct IdleMovementFactory : public MovementGeneratorCreator
 {
     IdleMovementFactory() : MovementGeneratorCreator(IDLE_MOTION_TYPE) { }
 
-    MovementGenerator* Create(void* object) const override;
+    MovementGenerator* Create(void*) const override;
 };
 
 typedef MovementGeneratorCreator::FactoryHolderRegistry MovementGeneratorRegistry;
+
+#define sMovementGeneratorRegistry MovementGeneratorRegistry::instance()
 
 #endif

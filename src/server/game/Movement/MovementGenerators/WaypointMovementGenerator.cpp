@@ -30,7 +30,7 @@
 #include "SpellScript.h"
 #include "Transport.h"
 
-void WaypointMovementGenerator<Creature>::LoadPath(Creature &creature)
+void WaypointMovementGenerator<Creature>::LoadPath(Creature& creature)
 {
     if (_loadedFromDB)
     {
@@ -243,7 +243,11 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature& creature, uint32 di
     if (!creature.IsAlive())
         return false;
 
-    if (_stalled || creature.HasUnitState(UNIT_STATE_NOT_MOVE) || creature.IsMovementPreventedByCasting())
+    // Creature's movement has been paused.
+    if (_pauseTime > 0)
+        _pauseTime -= diff;
+
+    if (_stalled || _pauseTime > 0 || creature.HasUnitState(UNIT_STATE_NOT_MOVE) || creature.IsMovementPreventedByCasting())
     {
         creature.StopMoving();
         return true;
@@ -317,15 +321,17 @@ bool WaypointMovementGenerator<Creature>::GetResetPosition(Unit&, float& x, floa
     return true;
 }
 
-void WaypointMovementGenerator<Creature>::Pause()
+void WaypointMovementGenerator<Creature>::Pause(uint32 timer /*= 0*/)
 {
-    _stalled = true;
+    _stalled = timer ? false : true;
+    _pauseTime = timer;
 }
 
-void WaypointMovementGenerator<Creature>::Resume()
+void WaypointMovementGenerator<Creature>::Resume(uint32 overrideTimer /*= 0*/)
 {
     _stalled = false;
     _nextMoveTime.Reset(1);
+    _pauseTime = overrideTimer;
 }
 
 bool WaypointMovementGenerator<Creature>::CanMove(Creature& creature)
@@ -335,8 +341,7 @@ bool WaypointMovementGenerator<Creature>::CanMove(Creature& creature)
 
 //----------------------------------------------------//
 
-
-void WaypointMovementGenerator<Player>::LoadPath(Player &player)
+void WaypointMovementGenerator<Player>::LoadPath(Player& player)
 {
     _path = sWaypointMgr->GetPathScript(_pathId);
 
@@ -350,13 +355,13 @@ void WaypointMovementGenerator<Player>::LoadPath(Player &player)
     StartMoveNow(player);
 }
 
-void WaypointMovementGenerator<Player>::DoInitialize(Player &player)
+void WaypointMovementGenerator<Player>::DoInitialize(Player& player)
 {
     LoadPath(player);
     player.AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 }
 
-void WaypointMovementGenerator<Player>::DoFinalize(Player &player)
+void WaypointMovementGenerator<Player>::DoFinalize(Player& player)
 {
     player.ClearUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
     player.SetWalk(false);
@@ -433,7 +438,7 @@ bool WaypointMovementGenerator<Player>::StartMove(Player &player)
     return true;
 }
 
-bool WaypointMovementGenerator<Player>::DoUpdate(Player &player, const uint32 &diff)
+bool WaypointMovementGenerator<Player>::DoUpdate(Player& player, uint32 diff)
 {
     // Waypoint movement can be switched on/off
     // This is quite handy for escort quests and other stuff

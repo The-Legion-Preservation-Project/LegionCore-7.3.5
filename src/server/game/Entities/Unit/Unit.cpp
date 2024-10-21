@@ -18539,6 +18539,27 @@ void Unit::StopMoving()
     Movement::MoveSplineInit(*this).Stop();
 }
 
+void Unit::PauseMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/, bool forced/* = true*/)
+{
+    if (IsInvalidMovementSlot(slot))
+        return;
+
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
+        movementGenerator->Pause(timer);
+
+    if (forced && GetMotionMaster()->GetCurrentSlot() == MovementSlot(slot))
+        StopMoving();
+}
+
+void Unit::ResumeMovement(uint32 timer/* = 0*/, uint8 slot/* = 0*/)
+{
+    if (IsInvalidMovementSlot(slot))
+        return;
+
+    if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MovementSlot(slot)))
+        movementGenerator->Resume(timer);
+}
+
 void Unit::SendMovementFlagUpdate(bool self /*= false*/)
 {
     if (IsPlayer())
@@ -22616,11 +22637,8 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
 
     if (IsCreature())
     {
-        if (MovementGenerator* movementGenerator = GetMotionMaster()->GetMotionSlot(MOTION_SLOT_IDLE))
-            movementGenerator->Pause();
-
         GetMotionMaster()->Clear(MOTION_SLOT_ACTIVE);
-
+        PauseMovement(0, MOTION_SLOT_IDLE);
         StopMoving();
 
         ToCreature()->AI()->OnCharmed(true);

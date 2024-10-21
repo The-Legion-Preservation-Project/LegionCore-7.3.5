@@ -94,6 +94,8 @@ struct JumpArrivalCastArgs
     ObjectGuid Target;
 };
 
+inline bool IsInvalidMovementSlot(uint8 const slot) { return slot >= MAX_MOTION_SLOT; }
+
 class MotionMaster
 {
     private:
@@ -122,6 +124,7 @@ class MotionMaster
         void Clear(bool reset = true);
         void MovementExpired(bool reset = true);
 
+        MovementSlot GetCurrentSlot() const;
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;
         MovementGenerator* GetMotionSlot(int slot) const;

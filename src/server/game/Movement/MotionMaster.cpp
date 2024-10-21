@@ -21,6 +21,7 @@
 #include "Creature.h"
 #include "CreatureAISelector.h"
 #include "FleeingMovementGenerator.h"
+#include "FlightPathMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
 #include "MoveSpline.h"
@@ -30,9 +31,14 @@
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
 
+inline MovementGenerator* GetIdleMovementGenerator()
+{
+    return sMovementGeneratorRegistry->GetRegistryItem(IDLE_MOTION_TYPE)->Create();
+}
+
 inline bool IsStatic(MovementGenerator* movement)
 {
-    return (movement == &si_idleMovement);
+    return (movement == GetIdleMovementGenerator());
 }
 
 MotionMaster::~MotionMaster()
@@ -64,15 +70,7 @@ void MotionMaster::Initialize()
 // set new default movement generator
 void MotionMaster::InitDefault()
 {
-    if (_owner->IsCreature())
-    {
-        MovementGenerator* movement = FactorySelector::selectMovementGenerator(_owner->ToCreature());
-        Mutate(movement == nullptr ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
-    }
-    else
-    {
-        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
-    }
+    Mutate(FactorySelector::SelectMovementGenerator(_owner), MOTION_SLOT_IDLE);
 }
 
 void MotionMaster::UpdateMotion(uint32 diff)
@@ -154,6 +152,20 @@ void MotionMaster::MovementExpired(bool reset /*= true*/)
         DirectExpire(reset);
 }
 
+MovementSlot MotionMaster::GetCurrentSlot() const
+{
+    if (empty() || (_slot[MOTION_SLOT_IDLE] && !_slot[MOTION_SLOT_ACTIVE]))
+        return MOTION_SLOT_IDLE;
+
+    if (_slot[MOTION_SLOT_ACTIVE])
+        return MOTION_SLOT_ACTIVE;
+
+    if (_slot[MOTION_SLOT_CONTROLLED])
+        return MOTION_SLOT_CONTROLLED;
+
+    return MAX_MOTION_SLOT;
+}
+
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 {
     if (empty())
@@ -164,7 +176,7 @@ MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 
 MovementGeneratorType MotionMaster::GetMotionSlotType(int slot) const
 {
-    if (!_slot[slot])
+    if (empty() || IsInvalidMovementSlot(slot) || !_slot[slot])
         return NULL_MOTION_TYPE;
     else
         return _slot[slot]->GetMovementGeneratorType();
@@ -172,17 +184,22 @@ MovementGeneratorType MotionMaster::GetMotionSlotType(int slot) const
 
 MovementGenerator* MotionMaster::GetMotionSlot(int slot) const
 {
-    ASSERT(slot >= 0);
+    if (empty() || IsInvalidMovementSlot(slot) || !_slot[slot])
+        return nullptr;
+
     return _slot[slot];
 }
 
 void MotionMaster::PropagateSpeedChange()
 {
-    for (int i = 0; i <= _top; ++i)
-    {
-        if (_slot[i])
-            _slot[i]->UnitSpeedChanged();
-    }
+    if (empty())
+        return;
+
+    MovementGenerator* movement = top();
+    if (!movement)
+        return;
+
+    movement->UnitSpeedChanged();
 }
 
 bool MotionMaster::GetDestination(float &x, float &y, float &z)
@@ -201,7 +218,7 @@ void MotionMaster::MoveIdle()
 {
     //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
     if (empty() || !IsStatic(top()))
-        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
+        Mutate(GetIdleMovementGenerator(), MOTION_SLOT_IDLE);
 }
 
 void MotionMaster::MoveTargetedHome()
