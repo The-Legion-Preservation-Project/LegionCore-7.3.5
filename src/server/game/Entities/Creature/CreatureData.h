@@ -26,6 +26,7 @@ enum class CreatureGroundMovementType : uint8
     None,
     Run,
     Hover,
+
     Max
 };
 
@@ -34,16 +35,28 @@ enum class CreatureFlightMovementType : uint8
     None,
     DisableGravity,
     CanFly,
+
+    Max
+};
+
+enum class CreatureRandomMovementType : uint8
+{
+    Walk,
+    CanRun,
+    AlwaysRun,
+
     Max
 };
 
 struct TC_GAME_API CreatureMovementData
 {
-    CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None), Swim(true), Rooted(false) { }
+    CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None), Swim(true), Rooted(false), Random(CreatureRandomMovementType::Walk) { }
     CreatureGroundMovementType Ground;
     CreatureFlightMovementType Flight;
     bool Swim;
     bool Rooted;
+    CreatureRandomMovementType Random;
+
     bool IsGroundAllowed() const { return Ground != CreatureGroundMovementType::None; }
     bool IsSwimAllowed() const { return Swim; }
     bool IsFlightAllowed() const { return Flight != CreatureFlightMovementType::None; }
@@ -51,6 +64,9 @@ struct TC_GAME_API CreatureMovementData
     bool IsGravityDisabled() const { return Flight == CreatureFlightMovementType::DisableGravity; }
     bool CanFly() const { return Flight == CreatureFlightMovementType::CanFly; }
     bool IsHoverEnabled() const { return Ground == CreatureGroundMovementType::Hover; }
+
+    CreatureRandomMovementType GetRandom() const { return Random; }
+
     std::string ToString() const;
 };
 
