@@ -49,7 +49,7 @@ void WaypointMovementGenerator<Creature>::LoadPath(Creature& creature)
     if (!_path)
     {
         // No movement found for entry
-        TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", creature.GetName(), creature.GetEntry(), creature.GetGUIDLow(), _pathId);
+        TC_LOG_WARN("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", creature.GetName(), creature.GetEntry(), creature.GetGUIDLow(), _pathId);
         return;
     }
 
@@ -348,7 +348,7 @@ void WaypointMovementGenerator<Player>::LoadPath(Player& player)
     if (!_path)
     {
         // No movement found for entry
-        TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: player %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", player.GetName(), player.GetEntry(), player.GetGUIDLow(), _pathId);
+        TC_LOG_WARN("sql.sql", "WaypointMovementGenerator::LoadPath: player %s (Entry: %u GUID: %u) doesn't have waypoint path id: %u", player.GetName(), player.GetEntry(), player.GetGUIDLow(), _pathId);
         return;
     }
 
