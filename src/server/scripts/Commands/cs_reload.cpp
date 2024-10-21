@@ -491,10 +491,27 @@ public:
             cInfo->maxgold            = fields[index++].GetUInt32();
             cInfo->AIName             = fields[index++].GetString();
             cInfo->MovementType       = fields[index++].GetUInt8();
-            cInfo->Movement.Ground    = static_cast<CreatureGroundMovementType>(fields[index++].GetUInt8());
-            cInfo->Movement.Swim      = fields[index++].GetBool();
-            cInfo->Movement.Flight    = static_cast<CreatureFlightMovementType>(fields[index++].GetUInt8());
-            cInfo->Movement.Rooted    = fields[index++].GetBool();
+
+            if (!fields[index].IsNull())
+                cInfo->Movement.Ground = static_cast<CreatureGroundMovementType>(fields[index].GetUInt8());
+            index++;
+
+            cInfo->Movement.Swim = fields[index++].GetBool();
+
+            if (!fields[index].IsNull())
+                cInfo->Movement.Flight = static_cast<CreatureFlightMovementType>(fields[index].GetUInt8());
+            index++;
+
+            cInfo->Movement.Rooted = fields[index++].GetBool();
+
+            if (!fields[index].IsNull())
+                cInfo->Movement.Random = static_cast<CreatureRandomMovementType>(fields[index].GetUInt8());
+            index++;
+
+            if (!fields[index].IsNull())
+                cInfo->Movement.InteractionPauseTimer = fields[index].GetUInt32();
+            index++;
+
             cInfo->HoverHeight        = fields[index++].GetFloat();
             cInfo->ModManaExtra       = fields[index++].GetFloat();
             cInfo->ModArmor           = fields[index++].GetFloat();
