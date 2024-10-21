@@ -16,24 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "RandomMovementGenerator.h"
 #include "Creature.h"
 #include "CreatureGroups.h"
-#include "Map.h"
 #include "MapManager.h"
-#include "MoveSplineInit.h"
 #include "MoveSpline.h"
+#include "MoveSplineInit.h"
 #include "ObjectAccessor.h"
+#include "PathGenerator.h"
 #include "Util.h"
-#include "RandomMovementGenerator.h"
-
-template<class T>
-RandomMovementGenerator<T>::~RandomMovementGenerator() { }
-
-template<>
-RandomMovementGenerator<Creature>::~RandomMovementGenerator()
-{
-    delete _path;
-}
 
 template<class T>
 void RandomMovementGenerator<T>::DoInitialize(T &) { }
@@ -48,10 +39,14 @@ void RandomMovementGenerator<Creature>::DoInitialize(Creature &owner)
     owner.GetPosition(_reference.x, _reference.y, _reference.z);
     owner.StopMoving();
 
-    if (!_wanderDistance)
+    if (_wanderDistance == 0.f)
         _wanderDistance = owner.GetRespawnRadius();
 
+    // Retail seems to let a creature walk 2 up to 10 splines before triggering a pause
+    _wanderSteps = urand(2, 10);
+
     _timer.Reset(0);
+    _path = nullptr;
 }
 
 template<class T>
@@ -84,22 +79,23 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature& owner)
     {
         _interrupt = true;
         owner.StopMoving();
+        _path = nullptr;
         return;
     }
 
     owner.AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
     Position position(_reference);
-    float distance = frand(0.f, 1.f) * _wanderDistance;
-    float angle = frand(0.f, 1.f) * float(M_PI) * 2.f;
+    float distance = frand(0.f, _wanderDistance);
+    float angle = frand(0.f, float(M_PI * 2));
     owner.MovePositionToFirstCollision(position, distance, angle);
 
-    uint32 resetTimer = roll_chance_i(50) ? urand(5000, 10000) : urand(1000, 2000);
-
     if (!_path)
-        _path = new PathGenerator(&owner);
+    {
+        _path = std::make_unique<PathGenerator>(&owner);
+        _path->SetPathLengthLimit(30.0f);
+    }
 
-    _path->SetPathLengthLimit(30.0f);
     bool result = _path->CalculatePath(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ());
     if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
@@ -110,8 +106,17 @@ void RandomMovementGenerator<Creature>::SetRandomLocation(Creature& owner)
     Movement::MoveSplineInit init(owner);
     init.MovebyPath(_path->GetPath());
     init.SetWalk(true);
-    int32 traveltime = init.Launch();
-    _timer.Reset(traveltime + resetTimer);
+    int32 splineDuration = init.Launch();
+
+    --_wanderSteps;
+    if (_wanderSteps) // Creature has yet to do steps before pausing
+        _timer.Reset(splineDuration);
+    else
+    {
+        // Creature has made all its steps, time for a little break
+        _timer.Reset(splineDuration + urand(4, 10) * IN_MILLISECONDS); // Retail seems to use rounded numbers so we do as well
+        _wanderSteps = urand(2, 10);
+    }
 
     // Call for creature group update
     if (owner.GetFormation() && owner.GetFormation()->getLeader() == &owner)
@@ -134,6 +139,7 @@ bool RandomMovementGenerator<Creature>::DoUpdate(Creature &owner, const uint32 d
     {
         _interrupt = true;
         owner.StopMoving();
+        _path = nullptr;
         return true;
     }
     else
