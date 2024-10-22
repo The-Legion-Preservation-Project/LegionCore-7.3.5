@@ -1316,7 +1316,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
 
             Position pos = dest._position;
 
-            unitCaster->GetFirstCollisionPosition(pos, dist, angle);
+            unitCaster->MovePositionToFirstCollision(pos, dist, angle);
             // Generate path to that point
             if (!m_preGeneratedPath)
                 m_preGeneratedPath = std::make_unique<PathGenerator>(unitCaster);
