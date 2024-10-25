@@ -738,6 +738,7 @@ struct GameObjectData
     uint16 areaId = 0;
     int16 gameEvent = 0;
     uint8 artKit = 0;
+    uint32 ScriptId;
     bool isActive = false;
     float personalSize = 0;
     bool dbData = false;

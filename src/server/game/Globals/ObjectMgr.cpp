@@ -1931,8 +1931,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, zoneId, areaId, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, "
     //        12            13         14          15           16        17         18          19             20                21                   22                    23                    24
         "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, eventEntry, pool_entry, creature.npcflag, creature.npcflag2, creature.unit_flags, creature.unit_flags3, creature.dynamicflags, "
-    //           25                26          27       28		   29	    30		    31               32
-        "creature.isActive, creature.PhaseId, AiID, MovementID, MeleeID, skipClone, personal_size, isTeemingSpawn "
+        //          25                   26                 27           28		  29	    30		    31         32            33
+        " creature.ScriptName, creature.isActive, creature.PhaseId, AiID, MovementID, MeleeID, skipClone, personal_size, isTeemingSpawn "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid "
@@ -1996,6 +1996,11 @@ void ObjectMgr::LoadCreatures()
         data.unit_flags     = fields[index++].GetUInt32();
         data.unit_flags3	= fields[index++].GetUInt32();
         data.dynamicflags   = fields[index++].GetUInt32();
+        data.ScriptId = GetScriptId(fields[index++].GetCString());
+
+        if (!data.ScriptId)
+            data.ScriptId = cInfo->ScriptID;
+
         data.isActive       = fields[index++].GetBool();
 
         Tokenizer phasesToken(fields[index++].GetString(), ' ', 100);
@@ -2468,8 +2473,8 @@ void ObjectMgr::LoadGameobjects()
 
     //                                                0                1   2    3         4           5           6        7           8
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, "
-    //      9          10         11          12         13          14             15      16         17         18        19          20          21      22      23 
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, isActive, spawnMask, phaseMask, eventEntry, pool_entry, PhaseId, AiID, personal_size "
+        //      9          10         11          12         13          14             15      16         17         18        19          20           21        22      23        24
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, isActive, spawnMask, phaseMask, eventEntry, pool_entry, ScriptName, PhaseId, AiID, personal_size "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
         "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid ORDER BY `map` ASC, `guid` ASC");
 
@@ -2537,8 +2542,8 @@ void ObjectMgr::LoadGameobjects()
         data.rotation.z     = fields[11].GetFloat();
         data.rotation.w     = fields[12].GetFloat();
         data.spawntimesecs  = fields[13].GetInt32();
-        data.AiID           = fields[22].GetInt32();
-        data.personalSize   = fields[23].GetFloat();
+        data.AiID           = fields[23].GetInt32();
+        data.personalSize   = fields[24].GetFloat();
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
@@ -2590,6 +2595,10 @@ void ObjectMgr::LoadGameobjects()
         data.phaseMask      = fields[18].GetUInt16();
         int16 gameEvent     = fields[19].GetInt16();
         uint32 PoolId        = fields[20].GetUInt32();
+        data.ScriptId = GetScriptId(fields[21].GetCString());
+
+        if (!data.ScriptId)
+            data.ScriptId = gInfo->ScriptId;
 
         data.gameEvent = gameEvent;
         data.pool = PoolId;
@@ -2619,7 +2628,7 @@ void ObjectMgr::LoadGameobjects()
             continue;
         }
 
-        Tokenizer phasesToken(fields[21].GetString(), ' ', 100);
+        Tokenizer phasesToken(fields[22].GetString(), ' ', 100);
         for (auto itr : phasesToken)
             if (PhaseEntry const* phase = sPhaseStore.LookupEntry(uint32(strtoull(itr, nullptr, 10))))
                 data.PhaseID.insert(phase->ID);
@@ -7354,7 +7363,11 @@ void ObjectMgr::LoadScriptNames()
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM battleground_template WHERE ScriptName <> '' "
       "UNION "
+      "SELECT DISTINCT(ScriptName) FROM creature WHERE ScriptName <> '' "
+      "UNION "
       "SELECT DISTINCT(ScriptName) FROM creature_template WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM gameobject WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM gameobject_template WHERE ScriptName <> '' "
       "UNION "

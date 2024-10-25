@@ -1153,6 +1153,9 @@ uint16 GameObject::GetAIAnimKitId() const
 
 uint32 GameObject::GetScriptId() const
 {
+    if (GameObjectData const* gameObjectData = GetGOData())
+        return gameObjectData->ScriptId;
+
     return GetGOInfo()->ScriptId;
 }
 
