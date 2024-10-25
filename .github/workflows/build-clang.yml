@@ -19,8 +19,8 @@ jobs:
     - name: Dependencies
       run: |
         sudo apt-get update && sudo apt-get install -yq libboost-all-dev clang-14
-        sudo update-alternatives --install clang /usr/bin/clang-14 100
-        sudo update-alternatives --install clang++ /usr/bin/clang++-14 100
+        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
     - name: Setup
       env:
         CMAKE_BUILD_TYPE: Debug
