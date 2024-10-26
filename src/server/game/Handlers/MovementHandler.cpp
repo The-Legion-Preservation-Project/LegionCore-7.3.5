@@ -229,7 +229,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPackets::Movement::MoveTeleportAck
 
     if (Unit* mover = _player->m_mover)
     {
-        mover->m_movementInfo.MoveTime = getMSTime();
+        mover->m_movementInfo.MoveTime = GameTime::GetGameTimeMS();
         mover->m_movementInfo.ClientMoveTime = packet.ClientMoveTime;
         mover->m_movementInfo.Pos = mover->GetPosition();
 

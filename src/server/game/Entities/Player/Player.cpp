@@ -1776,7 +1776,7 @@ void Player::Update(uint32 p_time)
 
     if (m_knockBackTimer)
     {
-        if (m_knockBackTimer + 1000 < getMSTime())
+        if (m_knockBackTimer + 1000 < GameTime::GetGameTimeMS())
         {
             m_knockBackTimer = 0;
             ClearUnitState(UNIT_STATE_JUMPING);
@@ -1841,7 +1841,7 @@ void Player::Update(uint32 p_time)
 
     if (m_spellInQueue.GCDEnd && !(m_operationsAfterDelayMask & OAD_RESET_SPELL_QUEUE))
     {
-        if (m_spellInQueue.GCDEnd < getMSTime())
+        if (m_spellInQueue.GCDEnd < GameTime::GetGameTimeMS())
         {
             SendOperationsAfterDelay(OAD_RESET_SPELL_QUEUE);
             CastSpellInQueue();
@@ -5612,7 +5612,7 @@ void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */)
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
         if (Spell* spell = GetCurrentSpell(CurrentSpellTypes(i)))
             if (spell->m_spellInfo->Id == spell_id && spell->GetCastTime() > 0)
-                delay = (spell->GetStartCastTime() + spell->GetCastTime()) - getMSTime();
+                delay = (spell->GetStartCastTime() + spell->GetCastTime()) - GameTime::GetGameTimeMS();
 
     if (delay > 0)
     {
@@ -10276,7 +10276,7 @@ void Player::CheckDuelDistance()
         {
             if (!IsWithinDistInMap(arbiter, 50.0f))
             {
-                duel->outOfBoundTimer = getMSTime();
+                duel->outOfBoundTimer = GameTime::GetGameTimeMS();
                 SendDirectMessage(WorldPackets::Duel::DuelOutOfBounds().Write());
             }
         }
@@ -10287,7 +10287,7 @@ void Player::CheckDuelDistance()
                 duel->outOfBoundTimer = 0;
                 SendDirectMessage(WorldPackets::Duel::DuelInBounds().Write());
             }
-            else if (getMSTime() >= (duel->outOfBoundTimer + 10 * IN_MILLISECONDS))
+            else if (GameTime::GetGameTimeMS() >= (duel->outOfBoundTimer + 10 * IN_MILLISECONDS))
                 DuelComplete(DUEL_FLED);
         }
     }
@@ -34320,7 +34320,7 @@ void Player::ResetTimeSync()
 {
     m_timeSyncTimer = 0;
     m_timeSyncClient = 0;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = GameTime::GetGameTimeMS();
 }
 
 void Player::SendTimeSync()
@@ -34333,7 +34333,7 @@ void Player::SendTimeSync()
 
     // Schedule next sync in 5 sec
     m_timeSyncTimer = 5000;
-    m_timeSyncServer = getMSTime();
+    m_timeSyncServer = GameTime::GetGameTimeMS();
 
     if (m_timeSyncQueue.size() > 3)
         TC_LOG_TRACE("network", "Not received CMSG_TIME_SYNC_RESP for over 30 seconds from 5s (%s), possible cheater", GetGUID().ToString().c_str());
@@ -38221,7 +38221,7 @@ void Player::HandleSpellInQueue()
 {
     if (m_spellInQueue.GCDEnd && !(m_operationsAfterDelayMask & OAD_RESET_SPELL_QUEUE))
     {
-        if (m_spellInQueue.GCDEnd < getMSTime())
+        if (m_spellInQueue.GCDEnd < GameTime::GetGameTimeMS())
         {
             SendOperationsAfterDelay(OAD_RESET_SPELL_QUEUE);
             CastSpellInQueue();

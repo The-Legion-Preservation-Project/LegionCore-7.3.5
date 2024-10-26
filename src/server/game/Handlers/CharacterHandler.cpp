@@ -907,7 +907,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
         stmt2->setUInt32(0, GetAccountId());
         LoginDatabase.Execute(stmt2);
 
-        player->SetInGameTime(getMSTime());
+        player->SetInGameTime(GameTime::GetGameTimeMS());
 
         if (auto group = player->GetGroup())
         {
