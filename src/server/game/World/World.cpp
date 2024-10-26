@@ -376,7 +376,7 @@ bool World::HasRecentlyDisconnected(WorldSessionPtr session)
     {
         for (DisconnectMap::iterator i = m_disconnects.begin(); i != m_disconnects.end();)
         {
-            if (difftime(i->second, time(nullptr)) < tolerance)
+            if (difftime(i->second, GameTime::GetGameTime()) < tolerance)
             {
                 if (i->first == session->GetAccountId())
                     return true;
@@ -1552,7 +1552,7 @@ void World::SetInitialWorldSettings()
     uint32 startupBegin = getMSTime();
 
     ///- Initialize the random number generator
-    srand(static_cast<uint32>(time(nullptr)));
+    srand(static_cast<uint32>(GameTime::GetGameTime()));
 
     ///- Initialize VMapManager function pointers (to untangle game/collision circular deps)
     if (VMAP::VMapManager2* vmmgr2 = dynamic_cast<VMAP::VMapManager2*>(VMAP::VMapFactory::createOrGetVMapManager()))
@@ -2469,7 +2469,7 @@ void World::Update(uint32 diff)
             LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_OLD_LOGS);
 
             stmt->setUInt32(0, sWorld->getIntConfig(CONFIG_LOGDB_CLEARTIME));
-            stmt->setUInt32(1, uint32(time(nullptr)));
+            stmt->setUInt32(1, uint32(GameTime::GetGameTime()));
 
             LoginDatabase.Execute(stmt);
         }
@@ -3038,7 +3038,7 @@ void World::MuteAccount(uint32 accountId, int64 duration, std::string reason, st
 
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
 
-    int64 muteTime = (duration>0 ? time(NULL) + duration * MINUTE : 4294967295);
+    int64 muteTime = (duration>0 ? GameTime::GetGameTime() + duration * MINUTE : 4294967295);
 
     QueryResult result = LoginDatabase.PQuery("SELECT mutetime FROM account WHERE id = %u", accountId);
 
@@ -3223,7 +3223,7 @@ void World::UpdateSessions(uint32 diff)
         {
             uint32 accuntId = itr->second->GetAccountId();
             if (!RemoveQueuedPlayer(itr->second) && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[accuntId] = time(nullptr);
+                m_disconnects[accuntId] = GameTime::GetGameTime();
             RemoveQueuedPlayer(pSession);
             pSession->LogoutPlayer(true);
             m_sessions.erase(itr);
@@ -3353,7 +3353,7 @@ void World::InitWeeklyResetTime()
     time_t insttime = sWorld->getWorldState(WS_WEEKLY_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_wday = 3; // Wednesday
     localTm.tm_hour = 4; // 4 Hours
@@ -3392,7 +3392,7 @@ void World::InitDailyQuestResetTime()
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm;
     localtime_r(&curTime, &localTm);
     localTm.tm_hour = 6;
@@ -3416,7 +3416,7 @@ void World::InitRandomBGResetTime()
 {
     time_t bgtime = sWorld->getWorldState(WS_BG_DAILY_RESET_TIME);
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm;
     localtime_r(&curTime, &localTm);
     localTm.tm_hour = getIntConfig(CONFIG_RANDOM_BG_RESET_HOUR);
@@ -3441,7 +3441,7 @@ void World::InitCurrencyResetTime()
 {
     time_t currencytime = sWorld->getWorldState(WS_CURRENCY_RESET_TIME);
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm;
     localtime_r(&curTime, &localTm);
     localTm.tm_wday = getIntConfig(CONFIG_CURRENCY_RESET_DAY);
@@ -3467,7 +3467,7 @@ void World::InitInstanceDailyResetTime()
 {
     time_t insttime = sWorld->getWorldState(WS_INSTANCE_DAILY_RESET_TIME);
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
     localTm.tm_min = 0;
@@ -3492,7 +3492,7 @@ void World::InitInstanceWeeklyResetTime()
     time_t insttime = sWorld->getWorldState(WS_INSTANCE_WEEKLY_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_wday = 3;
     localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
@@ -3518,7 +3518,7 @@ void World::InitChallengeKeyResetTime()
     time_t insttime = sWorld->getWorldState(WS_CHALLENGE_KEY_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_wday = 3;
     localTm.tm_hour = getIntConfig(CONFIG_INSTANCE_RESET_TIME_HOUR);
@@ -3547,7 +3547,7 @@ void World::InitWorldQuestHourlyResetTime()
     time_t insttime = sWorld->getWorldState(WS_WORLDQUEST_HOURLY_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_WORLD_QUEST_RESET_TIME_HOUR);
     localTm.tm_min = 0;
@@ -3572,7 +3572,7 @@ void World::InitInvasionPointResetTime()
     time_t insttime = sWorld->getWorldState(WS_INVASION_POINT_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_WORLD_QUEST_RESET_TIME_HOUR);
     localTm.tm_min = 0;
@@ -3597,7 +3597,7 @@ void World::InitWorldQuestDailyResetTime()
     time_t insttime = sWorld->getWorldState(WS_WORLDQUEST_DAILY_RESET_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_WORLD_QUEST_RESET_TIME_HOUR);
     localTm.tm_min = 0;
@@ -3622,7 +3622,7 @@ void World::InitBanWaveTime()
     time_t insttime = sWorld->getWorldState(WS_BAN_WAVE_TIME);
 
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_wday = 5;
     localTm.tm_hour = 4;
@@ -3654,7 +3654,7 @@ time_t World::getInstanceResetTime(uint32 resetTime)
         case 3:
             return sWorld->getWorldState(WS_WEEKLY_RESET_TIME);
         default:
-            return time(nullptr) + 2 * HOUR;
+            return GameTime::GetGameTime() + 2 * HOUR;
     }
 }
 
@@ -3706,7 +3706,7 @@ void World::ResetCurrencyWeekCap()
 
 void World::InstanceDailyResetTime()
 {
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextInstanceDailyReset = time_t(m_NextInstanceDailyReset + DAY * getIntConfig(CONFIG_INSTANCE_DAILY_RESET));
 
     while (curTime >= m_NextInstanceDailyReset)
@@ -3738,7 +3738,7 @@ void World::InstanceDailyResetTime()
 
 void World::InstanceWeeklyResetTime()
 {
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextInstanceWeeklyReset = time_t(m_NextInstanceWeeklyReset + DAY * getIntConfig(CONFIG_INSTANCE_WEEKLY_RESET));
 
     while (curTime >= m_NextInstanceWeeklyReset)
@@ -3775,7 +3775,7 @@ void World::ChallengeKeyResetTime()
         if (Player* player = itr->second->GetPlayer())
                 player->AddDelayedEvent(100, [player]() -> void { player->ResetChallengeKey(); });
 
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     time_t m_LastChallengeKeyReset = m_NextChallengeKeyReset;
     m_NextChallengeKeyReset = time_t(m_NextChallengeKeyReset + DAY * getIntConfig(CONFIG_CHALLENGE_KEY_RESET));
 
@@ -3788,7 +3788,7 @@ void World::ChallengeKeyResetTime()
 
 void World::WorldQuestHourlyResetTime()
 {
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextWorldQuestHourlyReset = time_t(m_NextWorldQuestHourlyReset + HOUR * getIntConfig(CONFIG_WORLD_QUEST_HOURLY_RESET));
 
     while (curTime >= m_NextWorldQuestHourlyReset)
@@ -3802,7 +3802,7 @@ void World::WorldQuestHourlyResetTime()
 
 void World::InvasionPointResetTime()
 {
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextInvasionPointReset = time_t(m_NextInvasionPointReset + HOUR * getIntConfig(CONFIG_INVASION_POINT_RESET));
 
     while (curTime >= m_NextInvasionPointReset)
@@ -3816,7 +3816,7 @@ void World::InvasionPointResetTime()
 
 void World::WorldQuestDailyResetTime()
 {
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextWorldQuestDailyReset = time_t(m_NextWorldQuestDailyReset + DAY * getIntConfig(CONFIG_WORLD_QUEST_DAILY_RESET));
 
     while (curTime >= m_NextWorldQuestDailyReset)
@@ -3839,7 +3839,7 @@ void World::StartBanWave()
 {
     BanFlaggedAccounts();
 
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     uint32 periodDays = urand(1, 3);
     m_NextBanWaveTime = time_t(m_NextBanWaveTime + DAY * periodDays);
 
@@ -3877,7 +3877,7 @@ void World::ResetWeekly()
 
     sBracketMgr->ResetWeekly();
 
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     m_NextWeeklyReset = time_t(m_NextWeeklyReset + WEEK);
 
     while (curTime >= m_NextWeeklyReset)
@@ -4476,7 +4476,7 @@ void World::ProcessMailboxQueue()
 void World::InitServerAutoRestartTime()
 {
     // generate time by config
-    time_t curTime = time(nullptr);
+    time_t curTime = GameTime::GetGameTime();
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_AUTO_SERVER_RESTART_HOUR);
     localTm.tm_min = 0;
@@ -4541,7 +4541,7 @@ void World::Transfer()
 
             if (dumpState == DUMP_SUCCESS)
             {
-                CharacterDatabase.PExecute("UPDATE `characters` SET `at_login` = '512', `deleteInfos_Name` = `name`, `deleteInfos_Account` = `account`, `deleteDate` ='" UI64FMTD "', `name` = '', `account` = 0, `transfer` = '%u' WHERE `guid` = '" UI64FMTD "'", uint64(time(nullptr)), to, guid);
+                CharacterDatabase.PExecute("UPDATE `characters` SET `at_login` = '512', `deleteInfos_Name` = `name`, `deleteInfos_Account` = `account`, `deleteDate` ='" UI64FMTD "', `name` = '', `account` = 0, `transfer` = '%u' WHERE `guid` = '" UI64FMTD "'", uint64(GameTime::GetGameTime()), to, guid);
                 LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_DUMP);
                 if(stmt)
                 {

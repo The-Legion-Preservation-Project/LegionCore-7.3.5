@@ -169,7 +169,7 @@ void WorldSession::HandleWorldPortAck()
         if (MapDifficultyEntry const* mapDiff = sDB2Manager.GetMapDifficultyData(mEntry->ID, diff))
             if (mapDiff->GetRaidDuration())
                 if (time_t timeReset = sWorld->getInstanceResetTime(mapDiff->GetRaidDuration()))
-                    player->SendInstanceResetWarning(mEntry->ID, diff, uint32(timeReset - time(nullptr)));
+                    player->SendInstanceResetWarning(mEntry->ID, diff, uint32(timeReset - GameTime::GetGameTime()));
 
         allowMount = mInstance->AllowMount;
     }

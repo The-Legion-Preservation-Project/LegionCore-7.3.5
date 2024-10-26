@@ -698,7 +698,7 @@ void AuctionEntry::BuildAuctionInfo(std::vector<WorldPackets::AuctionHouse::Auct
     auctionItem.Charges = item->GetSpellCharges();
     auctionItem.Count = item->GetCount();
     auctionItem.DeleteReason = 0; // Always 0 ?
-    auctionItem.DurationLeft = (expire_time - time(nullptr)) * IN_MILLISECONDS;
+    auctionItem.DurationLeft = (expire_time - GameTime::GetGameTime()) * IN_MILLISECONDS;
     auctionItem.EndTime = expire_time;
     auctionItem.Flags = 0; // todo
     auctionItem.ItemGuid = item->GetGUID();

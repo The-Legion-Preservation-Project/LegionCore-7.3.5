@@ -363,7 +363,7 @@ std::unique_ptr<Battlenet::Session::AccountInfo> LoginRESTService::VerifyLoginTi
     auto itr = _validLoginTickets.find(id);
     if (itr != _validLoginTickets.end())
     {
-        if (itr->second.ExpiryTime > time(nullptr))
+        if (itr->second.ExpiryTime > GameTime::GetGameTime())
         {
             std::unique_ptr<Battlenet::Session::AccountInfo> accountInfo = std::move(itr->second.Account);
             _validLoginTickets.erase(itr);
@@ -383,19 +383,19 @@ void LoginRESTService::AddLoginTicket(std::string const& id, std::unique_ptr<Bat
     {
         itr->second.Id = std::move(id);
         itr->second.Account = std::move(accountInfo);
-        itr->second.ExpiryTime = time(nullptr) + _waitTime;
+        itr->second.ExpiryTime = GameTime::GetGameTime() + _waitTime;
         return;
     }
 
     LoginTicket& ticket = _validLoginTickets[id];
     ticket.Id = std::move(id);
     ticket.Account = std::move(accountInfo);
-    ticket.ExpiryTime = time(nullptr) + _waitTime;
+    ticket.ExpiryTime = GameTime::GetGameTime() + _waitTime;
 }
 
 void LoginRESTService::CleanupLoginTickets()
 {
-    time_t now = time(nullptr);
+    time_t now = GameTime::GetGameTime();
 
     {
         std::unique_lock<std::mutex> lock(_loginTicketMutex);

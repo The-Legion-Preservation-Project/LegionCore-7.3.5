@@ -413,7 +413,7 @@ void BattlegroundStrandOfTheAncients::PostUpdateImpl(uint32 diff)
                 SendChatMessage(c, TEXT_ROUND_STARTED);
 
             TotalTime = 0;
-            m_EndTimestamp = time(nullptr) + BG_SA_ROUNDLENGTH / IN_MILLISECONDS;
+            m_EndTimestamp = GameTime::GetGameTime() + BG_SA_ROUNDLENGTH / IN_MILLISECONDS;
             ToggleTimer();
             DemolisherStartState(false);
             Status = BG_SA_ROUND_ONE;
@@ -437,7 +437,7 @@ void BattlegroundStrandOfTheAncients::PostUpdateImpl(uint32 diff)
                 SendChatMessage(sender, TEXT_ROUND_STARTED);
 
             TotalTime = 0;
-            m_EndTimestamp = time(nullptr) + EndRoundTimer / IN_MILLISECONDS;
+            m_EndTimestamp = GameTime::GetGameTime() + EndRoundTimer / IN_MILLISECONDS;
             ToggleTimer();
             DemolisherStartState(false);
             Status = BG_SA_ROUND_TWO;

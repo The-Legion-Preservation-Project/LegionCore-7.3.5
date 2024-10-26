@@ -73,7 +73,7 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& packet)
             store->WriteRecord(rec.RecordID, GetSessionDbcLocale(), response.Data);
         }
         else
-            response.Timestamp = time(nullptr);
+            response.Timestamp = GameTime::GetGameTime();
 
         SendPacket(response.Write());
     }

@@ -949,7 +949,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
             player->ApplyModFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);
             player->ApplyModFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_PVP_TIMER, true);
             if (!player->pvpInfo.inHostileArea && player->IsPvP())
-                player->pvpInfo.endTimer = time(nullptr);
+                player->pvpInfo.endTimer = GameTime::GetGameTime();
         }
 
         if (player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
@@ -2123,7 +2123,7 @@ void WorldSession::HandleLogoutRequest(WorldPackets::Character::LogoutRequest& /
         player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    LogoutRequest(time(nullptr));
+    LogoutRequest(GameTime::GetGameTime());
 }
 
 void WorldSession::HandleLogoutInstant(WorldPackets::Character::LogoutInstant& /*packet*/)
@@ -2183,7 +2183,7 @@ void WorldSession::HandleUndeleteCharacter(WorldPackets::Character::UndeleteChar
         if (result)
         {
             auto lastUndelete = result->Fetch()[0].GetUInt32();
-            if (lastUndelete && (lastUndelete + uint32(MONTH) > time(nullptr)))
+            if (lastUndelete && (lastUndelete + uint32(MONTH) > GameTime::GetGameTime()))
             {
                 SendUndeleteCharacterResponse(CHARACTER_UNDELETE_RESULT_ERROR_COOLDOWN, undeleteInfo.get());
                 return;
@@ -2263,7 +2263,7 @@ void WorldSession::HandleUndeleteCooldownStatusCallback(PreparedQueryResult cons
     uint32 cooldown = 0;
     if (result)
     {
-        auto now = uint32(time(nullptr));
+        auto now = uint32(GameTime::GetGameTime());
         auto undeleteTime = result->Fetch()[0].GetUInt32() + uint32(MONTH);
         if (undeleteTime > now)
             cooldown = std::max<uint32>(0, undeleteTime - now);
