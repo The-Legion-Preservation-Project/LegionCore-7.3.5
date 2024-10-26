@@ -42,6 +42,8 @@ namespace GameTime
     /// Uptime (in secs)
     uint32 GetUptime();
 
+    tm const* GetDateAndTime();
+
     void UpdateGameTimers();
 };
 
