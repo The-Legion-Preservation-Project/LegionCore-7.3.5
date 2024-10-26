@@ -189,8 +189,6 @@ m_achievementMgr(sf::safe_ptr<AchievementMgr<Player>>(this))
 
     m_session = session;
 
-    m_divider.Clear();
-
     m_ExtraFlags = 0;
 
     m_spellModTakingSpell = NULL;
@@ -30129,6 +30127,14 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
     SendLfgUpdatePlayer();
 
     sLFGListMgr->OnPlayerLogin(this);
+
+    if (!GetPlayerSharingQuest().IsEmpty())
+    {
+        if (Quest const* quest = sQuestDataStore->GetQuestTemplate(GetSharedQuestID()))
+            PlayerTalkClass->SendQuestGiverQuestDetails(quest, GetGUID(), true, false);
+        else
+            ClearQuestSharingInfo();
+    }
 }
 
 void Player::SendSpellHistoryData()
