@@ -26,14 +26,15 @@
 #include "GameObjectAI.h"
 #include "GameObjectModel.h"
 #include "GameObjectPackets.h"
+#include "GameTime.h"
 #include "Garrison.h"
 #include "GridNotifiersImpl.h"
 #include "Group.h"
 #include "GroupMgr.h"
-#include "MapManager.h"
-#include "MiscPackets.h"
 #include "MMapFactory.h"
 #include "MMapManager.h"
+#include "MapManager.h"
+#include "MiscPackets.h"
 #include "ObjectMgr.h"
 #include "ObjectVisitors.hpp"
 #include "OutdoorPvPMgr.h"
@@ -1582,10 +1583,10 @@ void GameObject::Use(Unit* user)
     // If cooldown data present in template
     if (uint32 cooldown = GetGOInfo()->GetCooldown())
     {
-        if (m_cooldownTime > sWorld->GetGameTime())
+        if (m_cooldownTime > GameTime::GetGameTime())
             return;
 
-        m_cooldownTime = sWorld->GetGameTime() + cooldown;
+        m_cooldownTime = GameTime::GetGameTime() + cooldown;
     }
 
     switch (GetGoType())

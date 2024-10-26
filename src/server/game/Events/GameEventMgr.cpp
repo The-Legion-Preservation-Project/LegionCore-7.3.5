@@ -17,22 +17,23 @@
  */
 
 #include "GameEventMgr.h"
-#include "World.h"
-#include "ObjectMgr.h"
-#include "WorldPacket.h"
-#include "PoolMgr.h"
+#include "BattlegroundMgr.h"
+#include "DatabaseEnv.h"
+#include "GameObjectAI.h"
+#include "GameTime.h"
 #include "Language.h"
 #include "Log.h"
 #include "MapManager.h"
-#include <WowTime.hpp>
-#include "Player.h"
-#include "BattlegroundMgr.h"
-#include "UnitAI.h"
-#include "GameObjectAI.h"
-#include "DatabaseEnv.h"
-#include "QuestData.h"
-#include "WorldStateMgr.h"
+#include "ObjectMgr.h"
 #include "OutdoorPvPMgr.h"
+#include "Player.h"
+#include "PoolMgr.h"
+#include "QuestData.h"
+#include "UnitAI.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "WorldStateMgr.h"
+#include <WowTime.hpp>
 
 static uint32 timerConstant = 946684800; // 01/01/2000 00:00:00
 
@@ -312,7 +313,7 @@ void GameEventMgr::LoadFromDB()
             pGameEvent.start = time_t(starttime);
             uint64 endtime = fields[2].GetUInt64();
             if (fields[2].IsNull())
-                endtime = sWorld->GetGameTime() + 63072000; // add 2 years to current date
+                endtime = GameTime::GetGameTime() + 63072000; // add 2 years to current date
             pGameEvent.end = time_t(endtime);
             pGameEvent.occurence = fields[3].GetUInt64();
             pGameEvent.length = fields[4].GetUInt64();
@@ -1869,7 +1870,7 @@ bool GameEventMgr::IsHolidayActive(int32 holidayID, uint32& expirationTime) cons
             if (!choosedDuration)
                 choosedDuration = 24;
 
-            time_t l_CurrentTime = sWorld->GetGameTime();
+            time_t l_CurrentTime = GameTime::GetGameTime();
             struct tm l_LocalTime;
             l_LocalTime.tm_isdst = -1;
 

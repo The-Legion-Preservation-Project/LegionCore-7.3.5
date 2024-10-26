@@ -16,10 +16,11 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "WorldSession.h"
 #include "Containers.h"
-#include "HotfixPackets.h"
 #include "DB2Store.h"
+#include "GameTime.h"
+#include "HotfixPackets.h"
+#include "WorldSession.h"
 
 void WorldSession::HandleHotfixRequest(WorldPackets::Hotfix::HotfixRequest& packet)
 {
@@ -68,7 +69,7 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& packet)
         if (store->HasRecord(rec.RecordID))
         {
             response.Allow = true;
-            response.Timestamp = sWorld->GetGameTime();
+            response.Timestamp = GameTime::GetGameTime();
             store->WriteRecord(rec.RecordID, GetSessionDbcLocale(), response.Data);
         }
         else

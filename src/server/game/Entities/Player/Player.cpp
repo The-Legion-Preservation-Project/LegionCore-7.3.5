@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Player.h"
 #include "AccountMgr.h"
 #include "AchievementMgr.h"
 #include "Anticheat.h"
@@ -23,14 +24,14 @@
 #include "ArtifactPackets.h"
 #include "AuctionHouseMgr.h"
 #include "AuthenticationPackets.h"
+#include "BattlePayMgr.h"
+#include "BattlePayPackets.h"
+#include "BattlePetData.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "BattlegroundAlteracValley.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundPackets.h"
-#include "BattlePayMgr.h"
-#include "BattlePayPackets.h"
-#include "BattlePetData.h"
 #include "Bracket.h"
 #include "BracketMgr.h"
 #include "CalendarPackets.h"
@@ -50,14 +51,15 @@
 #include "ConditionMgr.h"
 #include "Config.h"
 #include "CreatureAI.h"
-#include "DatabaseEnv.h"
 #include "DB2Stores.h"
+#include "DatabaseEnv.h"
 #include "DisableMgr.h"
 #include "DuelPackets.h"
 #include "EquipmentSetPackets.h"
 #include "Formulas.h"
 #include "GameEventMgr.h"
 #include "GameObjectAI.h"
+#include "GameTime.h"
 #include "Garrison.h"
 #include "GlobalFunctional.h"
 #include "GossipData.h"
@@ -72,9 +74,9 @@
 #include "InstanceSaveMgr.h"
 #include "InstanceScript.h"
 #include "KillRewarder.h"
-#include "Language.h"
 #include "LFGListMgr.h"
 #include "LFGMgr.h"
+#include "Language.h"
 #include "Log.h"
 #include "LootPackets.h"
 #include "MailPackets.h"
@@ -92,7 +94,6 @@
 #include "PetBattle.h"
 #include "PetBattleSystem.h"
 #include "PetPackets.h"
-#include "Player.h"
 #include "PlayerDefines.h"
 #include "QueryHolder.h"
 #include "QuestData.h"
@@ -23814,10 +23815,10 @@ void Player::_LoadQuestStatus(PreparedQueryResult result)
                 {
                     AddTimedQuest(quest_id);
 
-                    if (quest_time <= sWorld->GetGameTime())
+                    if (quest_time <= GameTime::GetGameTime())
                         q_status.Timer = 1;
                     else
-                        q_status.Timer = uint32((quest_time - sWorld->GetGameTime()) * IN_MILLISECONDS);
+                        q_status.Timer = uint32((quest_time - GameTime::GetGameTime()) * IN_MILLISECONDS);
                 }
                 //! WARN! time should send always. As it require for correct showing on tracking list. 
                 /*else
@@ -25824,7 +25825,7 @@ void Player::_SaveQuestStatus(CharacterDatabaseTransaction& trans)
                 stmt->setUInt64(index++, guid);
                 stmt->setUInt32(index++, saveItr->first);
                 stmt->setUInt8(index++, uint8(status->Status));
-                stmt->setUInt32(index++, uint32(status->Timer / IN_MILLISECONDS + sWorld->GetGameTime()));
+                stmt->setUInt32(index++, uint32(status->Timer / IN_MILLISECONDS + GameTime::GetGameTime()));
                 stmt->setUInt32(index, GetSession()->GetAccountId());
                 trans->Append(stmt);
 
@@ -27085,7 +27086,7 @@ void Player::VehicleSpellInitialize()
         spellsMessage.Buttons[i] = MAKE_UNIT_ACTION_BUTTON(spellId, i + 8);
     }
 
-    time_t now = sWorld->GetGameTime();
+    time_t now = GameTime::GetGameTime();
     for (CreatureSpellCooldowns::iterator itr = vehicle->m_CreatureSpellCooldowns.begin(); itr != vehicle->m_CreatureSpellCooldowns.end(); ++itr)
     {
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
@@ -29943,7 +29944,7 @@ void Player::SendInitialPacketsBeforeAddToMap(bool login)
     if (login) // Don`t send when teleported
     {
         SendEquipmentSetList();
-        uint32 speedtime = ((sWorld->GetGameTime() - sWorld->GetUptime()) + (sWorld->GetUptime()));
+        uint32 speedtime = ((GameTime::GetGameTime() - GameTime::GetUptime()) + (GameTime::GetUptime()));
         m_achievementMgr->SendAllAchievementData(this);
 
         WorldPackets::Misc::LoginSetTimeSpeed loginSetTimeSpeed;
