@@ -30127,14 +30127,6 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
     SendLfgUpdatePlayer();
 
     sLFGListMgr->OnPlayerLogin(this);
-
-    if (!GetPlayerSharingQuest().IsEmpty())
-    {
-        if (Quest const* quest = sQuestDataStore->GetQuestTemplate(GetSharedQuestID()))
-            PlayerTalkClass->SendQuestGiverQuestDetails(quest, GetGUID(), true, false);
-        else
-            ClearQuestSharingInfo();
-    }
 }
 
 void Player::SendSpellHistoryData()
