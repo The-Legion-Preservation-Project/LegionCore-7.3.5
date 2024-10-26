@@ -483,11 +483,6 @@ uint32 Battlenet::Session::GetLastCharPlayed(std::unordered_map<std::string, Var
         auto lastPlayerChar = _accountInfo->LastPlayedCharacters.find(subRegion->string_value());
         if (lastPlayerChar != _accountInfo->LastPlayedCharacters.end())
         {
-            // don't return last played on an offline realm
-            auto realm = sRealmList->GetRealm(lastPlayerChar->second.RealmId);
-            if (realm && realm->Flags & RealmFlags::REALM_FLAG_OFFLINE)
-                return ERROR_OK;
-
             std::vector<uint8> compressed = sRealmList->GetRealmEntryJSON(lastPlayerChar->second.RealmId, _build);
 
             if (compressed.empty())
