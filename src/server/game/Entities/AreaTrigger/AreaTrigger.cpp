@@ -2802,11 +2802,9 @@ void AreaTrigger::ReCalculateSplinePosition(bool setReach /*= false*/)
             _spline.ElapsedTimeForMovement = _liveTime;
             InitSplines();
 
-            #ifdef WIN32
-            TC_LOG_DEBUG("entities.areatrigger", "AreaTrigger::UpdateMovement AT_MOVE_TYPE_RE_PATH_LOS size %i _timeToTarget %i _dest (%f %f %f) %f",
-                _spline.VerticesPoints.size(), _spline.TimeToTarget, _dest.GetPositionX(), _dest.GetPositionY(), _dest.GetPositionZH(), m_moveAngleLos);
+            TC_LOG_DEBUG("entities.areatrigger", "AreaTrigger::UpdateMovement AT_MOVE_TYPE_RE_PATH_LOS size %zu _timeToTarget %i _dest (%f %f %f) %f",
+                _spline.VerticesPoints.size(), _spline.TimeToTarget, _dest.GetPositionX(), _dest.GetPositionY(), _dest.GetPositionZ(), m_moveAngleLos);
                 DebugVisualizePosition();
-            #endif
             break;
         }
         default:
