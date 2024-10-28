@@ -35,6 +35,7 @@
 #include "GarrisonPackets.h"
 #include "QuestData.h"
 #include "GameEventMgr.h"
+#include "CreatureAI.h"
 
 void WorldSession::HandleQuestGiverStatusQuery(WorldPackets::Quest::QuestGiverStatusQuery& packet)
 {
@@ -199,6 +200,24 @@ void WorldSession::HandleQuestGiverAcceptQuest(WorldPackets::Quest::QuestGiverAc
 
             if (quest->SourceSpellID)
                 _player->CastSpell(_player, quest->SourceSpellID, true);
+
+            if (Creature* questGiver = object->ToCreature())
+            {
+                QuestGiverStatus questStatus = QuestGiverStatus::None;
+
+                questStatus = _player->GetQuestDialogStatus(questGiver);
+                if (questStatus != QuestGiverStatus::Future && questStatus != QuestGiverStatus::Incomplete)
+                {
+                    if (!sScriptMgr->OnGossipHello(_player, questGiver))
+                    {
+                        _player->TalkedToCreature(questGiver->GetEntry(), questGiver->GetGUID());
+                        _player->PrepareGossipMenu(questGiver, questGiver->GetCreatureTemplate()->GossipMenuId, true);
+                        _player->SendPreparedGossip(questGiver);
+                    }
+                    questGiver->AI()->sGossipHello(_player);
+                    return;
+                }
+            }
 
             return;
         }
