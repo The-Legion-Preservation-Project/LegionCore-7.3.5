@@ -28,7 +28,6 @@
 
 #include "MovementGenerator.h"
 #include "PathMovementBase.h"
-#include "WaypointManager.h"
 
 class Creature;
 class Player;
@@ -63,10 +62,14 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium<Creat
 
         bool GetResetPosition(Unit&, float& x, float& y, float& z) override;
 
+        TimeTrackerSmall & GetTrackerTimer() { return _nextMoveTime; }
+
     private:
         void LoadPath(Creature&);
         void OnArrived(Creature&);
         bool StartMove(Creature&);
+        void Stop(int32 time) { _nextMoveTime.Reset(time);}
+        bool Stopped() { return !_nextMoveTime.Passed();}
         bool CanMove(Creature&);
         bool StartMoveNow(Creature& creature)
         {

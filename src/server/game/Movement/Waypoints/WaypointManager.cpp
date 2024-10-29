@@ -58,27 +58,27 @@ void WaypointMgr::Load()
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[1].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[6].GetUInt32();
+        WaypointNode wp;
+        wp.id = fields[1].GetUInt32();
+        wp.x = x;
+        wp.y = y;
+        wp.z = z;
+        wp.orientation = o;
+        wp.moveType = fields[6].GetUInt32();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
+        if (wp.moveType >= WAYPOINT_MOVE_TYPE_MAX)
         {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", waypoint.id);
+            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", wp.id);
             continue;
         }
 
-        waypoint.speed = fields[7].GetFloat();
-        waypoint.delay = fields[8].GetUInt32();
-        waypoint.event_id = fields[9].GetUInt32();
-        waypoint.event_chance = fields[10].GetInt16();
-        waypoint.delay_chance = fields[11].GetInt16();
+        wp.speed = fields[7].GetFloat();
+        wp.delay = fields[8].GetUInt32();
+        wp.eventId = fields[9].GetUInt32();
+        wp.eventChance = fields[10].GetInt16();
+        wp.delayChance = fields[11].GetInt16();
 
-        path.push_back(std::move(waypoint));
+        path.nodes.push_back(std::move(wp));
         ++count;
     }
     while (result->NextRow());
@@ -107,26 +107,26 @@ void WaypointMgr::Load()
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[1].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[6].GetUInt32();
+        WaypointNode wp;
+        wp.id = fields[1].GetUInt32();
+        wp.x = x;
+        wp.y = y;
+        wp.z = z;
+        wp.orientation = o;
+        wp.moveType = fields[6].GetUInt32();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
+        if (wp.moveType >= WAYPOINT_MOVE_TYPE_MAX)
         {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", waypoint.id);
+            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", wp.id);
             continue;
         }
 
-        waypoint.speed = fields[7].GetFloat();
-        waypoint.delay = fields[8].GetUInt32();
-        waypoint.event_id = fields[9].GetUInt32();
-        waypoint.event_chance = fields[10].GetInt16();
+        wp.speed = fields[7].GetFloat();
+        wp.delay = fields[8].GetUInt32();
+        wp.eventId = fields[9].GetUInt32();
+        wp.eventChance = fields[10].GetInt16();
 
-        path.push_back(std::move(waypoint));
+        path.nodes.push_back(std::move(wp));
         ++count;
     }
     while (result->NextRow());
@@ -160,27 +160,27 @@ void WaypointMgr::ReloadPath(uint32 id)
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[0].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[5].GetUInt32();
+        WaypointNode wp;
+        wp.id = fields[0].GetUInt32();
+        wp.x = x;
+        wp.y = y;
+        wp.z = z;
+        wp.orientation = o;
+        wp.moveType = fields[5].GetUInt32();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
+        if (wp.moveType >= WAYPOINT_MOVE_TYPE_MAX)
         {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", waypoint.id);
+            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", wp.id);
             continue;
         }
 
-        waypoint.speed = fields[6].GetFloat();
-        waypoint.delay = fields[7].GetUInt32();
-        waypoint.event_id = fields[8].GetUInt32();
-        waypoint.event_chance = fields[9].GetUInt8();
-        waypoint.delay_chance = fields[10].GetUInt8();
+        wp.speed = fields[6].GetFloat();
+        wp.delay = fields[7].GetUInt32();
+        wp.eventId = fields[8].GetUInt32();
+        wp.eventChance = fields[9].GetUInt8();
+        wp.delayChance = fields[10].GetUInt8();
 
-        path.push_back(std::move(waypoint));
+        path.nodes.push_back(std::move(wp));
 
     }
     while (result->NextRow());
@@ -209,26 +209,26 @@ void WaypointMgr::ReloadPath(uint32 id)
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[0].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[5].GetUInt32();
+        WaypointNode wp;
+        wp.id = fields[0].GetUInt32();
+        wp.x = x;
+        wp.y = y;
+        wp.z = z;
+        wp.orientation = o;
+        wp.moveType = fields[5].GetUInt32();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
+        if (wp.moveType >= WAYPOINT_MOVE_TYPE_MAX)
         {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", waypoint.id);
+            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", wp.id);
             continue;
         }
 
-        waypoint.speed = fields[6].GetFloat();
-        waypoint.delay = fields[7].GetUInt32();
-        waypoint.event_id = fields[8].GetUInt32();
-        waypoint.event_chance = fields[9].GetUInt8();
+        wp.speed = fields[6].GetFloat();
+        wp.delay = fields[7].GetUInt32();
+        wp.eventId = fields[8].GetUInt32();
+        wp.eventChance = fields[9].GetUInt8();
 
-        pathS.push_back(std::move(waypoint));
+        pathS.nodes.push_back(std::move(wp));
 
     }
     while (result->NextRow());

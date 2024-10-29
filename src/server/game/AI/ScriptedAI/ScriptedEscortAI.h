@@ -7,19 +7,9 @@
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "WaypointDefines.h"
 
 #define DEFAULT_MAX_PLAYER_DISTANCE 50
-
-struct Escort_Waypoint
-{
-    Escort_Waypoint(uint32 _id, float _x, float _y, float _z, uint32 _w);
-
-    uint32 id;
-    float x;
-    float y;
-    float z;
-    uint32 WaitTimeMs;
-};
 
 enum eEscortState
 {
@@ -33,9 +23,6 @@ struct npc_escortAI : public ScriptedAI
 {
         explicit npc_escortAI(Creature* creature);
         ~npc_escortAI() {}
-
-        // CreatureAI functions
-        void AttackStart(Unit* who);
 
         void MoveInLineOfSight(Unit* who);
 
@@ -56,15 +43,6 @@ struct npc_escortAI : public ScriptedAI
 
         // EscortAI functions
         void AddWaypoint(uint32 id, float x, float y, float z, uint32 waitTime = 0);    // waitTime is in ms
-
-        //this will set the current position to x/y/z/o, and the current WP to pointId.
-        bool SetNextWaypoint(uint32 pointId, float x, float y, float z, float orientation);
-
-        //this will set the current position to WP start position (if setPosition == true),
-        //and the current WP to pointId
-        bool SetNextWaypoint(uint32 pointId, bool setPosition = true, bool resetWaypointsOnFail = true);
-
-        bool GetWaypointPosition(uint32 pointId, float& x, float& y, float& z);
 
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void LastWaypointReached() {}
@@ -87,8 +65,8 @@ struct npc_escortAI : public ScriptedAI
         bool GetAttack() { return m_bIsActiveAttacker; }//used in EnterEvadeMode override
         void SetCanAttack(bool attack) { m_bIsActiveAttacker = attack; }
         ObjectGuid GetEventStarterGUID() { return m_uiPlayerGUID; }
-        void SetCurentWP(uint32 id);
-        uint32 GetCurentWP() { return CurrentWP->id; }
+        void SetWaitTimer(uint32 timer) { m_uiWPWaitTimer = timer; }
+
         void SetGeneratePath(bool path) { GeneratePath = path; }
 
         void SetFollowerGUID(ObjectGuid guid) { m_uifollowerGUID = guid; } // add follower guid
@@ -109,11 +87,11 @@ struct npc_escortAI : public ScriptedAI
         uint32 m_uiPlayerCheckTimer;
         uint32 m_uiEscortState;
         float MaxPlayerDistance;
+        uint32 LastWP;
+
+        WaypointPath _path;
 
         Quest const* m_pQuestForEscort;                     //generally passed in Start() when regular escort script.
-
-        std::list<Escort_Waypoint> WaypointList;
-        std::list<Escort_Waypoint>::iterator CurrentWP;
 
         bool m_bIsActiveAttacker;                           //obsolete, determined by faction.
         bool m_bIsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
@@ -124,5 +102,7 @@ struct npc_escortAI : public ScriptedAI
         bool ScriptWP;
         bool HasImmuneToNPCFlags;
         bool GeneratePath;
+        bool _started;
+        bool _ended;
 };
 #endif

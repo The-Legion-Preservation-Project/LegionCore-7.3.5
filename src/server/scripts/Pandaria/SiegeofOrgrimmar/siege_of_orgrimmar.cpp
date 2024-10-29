@@ -197,7 +197,7 @@ public:
                         sCreatureTextMgr->SendChat(me, eventId -1, ObjectGuid::Empty, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_ZONE);
                         break;
                     case EVENT_FC_1:
-                        SetNextWaypoint(10, false, false);
+                        // TODO: SetNextWaypoint(10, false, false);
                         Start(false, false, ObjectGuid::Empty, NULL, false, false, false);
                         break;
                     case EVENT_FC_2:

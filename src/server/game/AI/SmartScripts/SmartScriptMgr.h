@@ -22,7 +22,7 @@
 
 struct WayPoint
 {
-    WayPoint(uint32 _id, float _x, float _y, float _z);
+    WayPoint() : id(0), x(0.0f), y(0.0f), z(0.0f) { }
 
     uint32 id;
     float x;
@@ -544,7 +544,7 @@ enum SMART_ACTION
     SMART_ACTION_REMOVE_POWER                       = 110,    // PowerType, newPower
     SMART_ACTION_GAME_EVENT_STOP                    = 111,    // GameEventId
     SMART_ACTION_GAME_EVENT_START                   = 112,    // GameEventId
-    SMART_ACTION_START_CLOSEST_WAYPOINT             = 113,    // wp1, wp2, wp3, wp4, wp5, wp6, wp7
+    // not used                                     = 113,    // wp1, wp2, wp3, wp4, wp5, wp6, wp7
     SMART_ACTION_RISE_UP                            = 114,    // distance
     SMART_ACTION_DISABLE_EVADE                      = 117,    // 0/1 (1 = disabled, 0 = enabled)
     SMART_ACTION_SET_CAN_FLY                        = 119,    // 0/1 (0 = disabled, 1 = enabled)
@@ -1563,25 +1563,25 @@ struct SmartScriptHolder
     bool enableTimed;
 };
 
-typedef std::unordered_map<uint32, WayPoint*> WPPath;
+typedef std::vector<WayPoint> WPPath;
 
 typedef std::list<WorldObject*> ObjectList;
 typedef std::unordered_map<uint32, ObjectList*> ObjectListMap;
 
 class SmartWaypointMgr
 {
-        SmartWaypointMgr() { }
-        ~SmartWaypointMgr();
+        SmartWaypointMgr() = default;
+        ~SmartWaypointMgr() = default;
 
     public:
         static SmartWaypointMgr* instance();
 
         void LoadFromDB();
 
-        WPPath* GetPath(uint32 id);
+        WPPath const* GetPath(uint32 id);
 
     private:
-        std::unordered_map<uint32, WPPath*> waypoint_map;
+        std::unordered_map<uint32, WPPath> waypoint_map;
 };
 
 // all events for a single entry
@@ -1592,8 +1592,8 @@ typedef std::unordered_map<int64, SmartAIEventList> SmartAIEventMap;
 
 class SmartAIMgr
 {
-        SmartAIMgr() { }
-        ~SmartAIMgr() { }
+        SmartAIMgr() = default;
+        ~SmartAIMgr() = default;
 
     public:
         static SmartAIMgr* instance();

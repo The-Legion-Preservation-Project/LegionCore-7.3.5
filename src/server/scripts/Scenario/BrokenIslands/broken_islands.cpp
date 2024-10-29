@@ -894,7 +894,7 @@ public:
                     {
                         DoCast(218619);
                         onFinish = true;
-                        SetNextWaypoint(9, false, false);
+                        // TODO: SetNextWaypoint(9, false, false);
                     }
                  
                  }
@@ -917,7 +917,7 @@ public:
             switch (i)
             {
                 case 8:
-                    SetNextWaypoint(1, false, false);
+                    // TODO: SetNextWaypoint(1, false, false);
                     break;
                 case 9:
                     DoCast(199676);
@@ -943,7 +943,7 @@ public:
                         {
                             DoCast(218619);
                             onFinish = true;
-                            SetNextWaypoint(9, false, false);
+                            // TODO: SetNextWaypoint(9, false, false);
                         }
                     }
                     break;

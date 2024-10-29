@@ -41,7 +41,7 @@ static float constexpr SMART_MAX_AID_DIST = SMART_ESCORT_MAX_PLAYER_DIST / 2.f;
 class SmartAI : public CreatureAI
 {
     public:
-        ~SmartAI();
+        ~SmartAI() = default;
         explicit SmartAI(Creature* c);
 
         // Start moving to the desired MovePoint
@@ -51,7 +51,6 @@ class SmartAI : public CreatureAI
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
         void EndPath(bool fail = false);
         void ResumePath();
-        WayPoint* GetNextWayPoint();
         bool HasEscortState(uint32 uiEscortState);
         void AddEscortState(uint32 uiEscortState);
         void RemoveEscortState(uint32 uiEscortState);
@@ -211,15 +210,13 @@ class SmartAI : public CreatureAI
         void ReturnToLastOOCPos();
         void UpdatePath(const uint32 diff);
         SmartScript mScript;
-        WPPath* mWayPoints;
         uint32 mEscortState;
         uint32 mCurrentWPID;
-        uint32 mLastWPIDReached;
         bool mWPReached;
+        bool mOOCReached;
+        bool m_Ended;
         uint32 mWPPauseTimer;
-        WayPoint* mLastWP;
-        Position mLastOOCPos;//set on enter combat
-        uint32 GetWPCount();
+        uint32 mEscortNPCFlags;
         bool mCanRepeatPath;
         bool mRun;
         bool mEvadeDisabled;
@@ -229,6 +226,7 @@ class SmartAI : public CreatureAI
         uint32 mInvincibilityHpLevel;
         bool AssistPlayerInCombat(Unit* who);
 
+        WaypointPath _path;
         uint32 mDespawnTime;
         uint32 mDespawnState;
         void UpdateDespawn(const uint32 diff);

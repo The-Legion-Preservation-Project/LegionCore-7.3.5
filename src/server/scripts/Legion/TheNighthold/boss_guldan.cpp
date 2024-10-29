@@ -2739,7 +2739,7 @@ class areatrigger_guldan_visual_charging : public AreaTriggerScript
             if (!WP_path)
                 return false;
             
-            for (auto cur_point = WP_path->begin(); cur_point != WP_path->end(); ++cur_point)
+            for (auto cur_point = WP_path->nodes.begin(); cur_point != WP_path->nodes.end(); ++cur_point)
                 path.push_back({(*cur_point).x, (*cur_point).y, (*cur_point).z, (*cur_point).orientation});
             
             if (need_reverse)

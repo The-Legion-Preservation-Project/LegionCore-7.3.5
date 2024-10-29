@@ -208,8 +208,8 @@ public:
 
         void WaypointReached(uint32 i) override
         {
-            if (i == 8)
-                SetCurentWP(0);
+            //if (i == 8)
+                // TODO: SetCurentWP(0);
         }
 
         void IsSummonedBy(Unit* owner) override
@@ -224,7 +224,7 @@ public:
                 _mobid = action + 1;
                 InitWaypoint();
                 Start(false, false);
-                SetCurentWP(_mobid);
+                // TODO: SetCurentWP(_mobid);
             }
             else if (action == 15)
             {
@@ -255,7 +255,7 @@ public:
                         _angle = owner->GetAngle(me->GetPositionX(), me->GetPositionY());
                         Position _pos = owner->GetNearPosition(5.0f, _angle);
                         me->GetMotionMaster()->MovementExpired(false);
-                        me->GetMotionMaster()->MovePoint(GetCurentWP(), _pos);
+                        // TODO: me->GetMotionMaster()->MovePoint(GetCurentWP(), _pos);
                     }
                     break;
                 case EVENT_RESET_VORTEX:

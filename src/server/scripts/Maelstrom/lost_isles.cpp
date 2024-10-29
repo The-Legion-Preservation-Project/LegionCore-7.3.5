@@ -1208,7 +1208,7 @@ public:
             {
                 // last point of cycle. set 4 point, skipp start.
                 case 25:
-                    SetNextWaypoint(4, false, false);
+                    // TODO: SetNextWaypoint(4, false, false);
                     break;
                 case 34:
                     if (Player* player = GetPlayerForEscort())
@@ -1223,7 +1223,7 @@ public:
                         if (player->GetQuestStatus(QUEST_WARCHIEF_REVENGE) == QUEST_STATUS_COMPLETE)
                         {
                             sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, player->GetGUID());
-                            SetNextWaypoint(26, false, false);
+                            // TODO: SetNextWaypoint(26, false, false);
                             onFinish = true;
                         }
                     }
@@ -1886,18 +1886,19 @@ public:
             Start(false, false);
             if (me->GetPositionY() < 2285.0f)
             {
-                switch(me->GetGUID().GetCounter()%3)
-                {
-                    case 0:
-                        SetNextWaypoint(urand(0, 15), true, false);
-                        break;
-                    case 1:
-                        SetNextWaypoint(urand(26, 41), true, false);
-                        break;
-                    default:
-                        SetNextWaypoint(urand(51, 66), true, false);
-                        break;
-                }
+                // TODO:
+//                switch(me->GetGUID().GetCounter()%3)
+//                {
+//                    case 0:
+//                        SetNextWaypoint(urand(0, 15), true, false);
+//                        break;
+//                    case 1:
+//                        SetNextWaypoint(urand(26, 41), true, false);
+//                        break;
+//                    default:
+//                        SetNextWaypoint(urand(51, 66), true, false);
+//                        break;
+//                }
                 
             }
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);

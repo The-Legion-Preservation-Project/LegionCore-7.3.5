@@ -265,7 +265,7 @@ public:
                 if(ai->respawned)
                 {
                     ai->Start(true, true, ObjectGuid::Empty, 0, false, false);
-                    ai->SetNextWaypoint(9, false);
+                    // TODO: ai->SetNextWaypoint(9, false);
                     ai->respawned = false;
                 }
                 ai->bStepping = true;
@@ -275,7 +275,7 @@ public:
                 if(ai->respawned)
                 {
                     ai->Start(true, true, ObjectGuid::Empty, 0, false, false);
-                    ai->SetNextWaypoint(21, false);
+                    // TODO: ai->SetNextWaypoint(21, false);
                     ai->respawned = false;
                 }
                 ai->SetEscortPaused(false);
@@ -290,7 +290,7 @@ public:
                 {
                     ai->Start(true, true, ObjectGuid::Empty, 0, false, false);
                     ai->respawned = false;
-                    ai->SetNextWaypoint(46, false);
+                    // TODO: ai->SetNextWaypoint(46, false);
                 }
                 ai->bStepping = true;
                 ai->uiStep = 84;
@@ -304,7 +304,7 @@ public:
                 ai->SetDespawnAtEnd(false);
                 ai->bStepping = false;
                 ai->uiStep = 22;
-                ai->SetNextWaypoint(3);
+                // TODO: ai->SetNextWaypoint(3);
                 break;
         }
         player->CLOSE_GOSSIP_MENU();
@@ -1282,7 +1282,7 @@ public:
                     me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                     break;
                 case 1:
-                    SetNextWaypoint(19, true);
+                    // TODO: SetNextWaypoint(19, true);
                     break;
             }
         }
