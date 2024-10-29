@@ -36,13 +36,13 @@
 
 enum SolocraftTrinityStrings
 {
-    SOLOCRAFT_TRINITYSTRING_ACTIVE                       = 30001,    // |cff4CFF00SoloCraft system|r active.
-    SOLOCRAFT_TRINITYSTRING_STATUS                       = 30002,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s entered %s - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i. XP Gain: |cffFF0000%s XP Balancing:%s |cff4CFF00%s
-    SOLOCRAFT_TRINITYSTRING_ERR_LEVEL_TOO_HIGH           = 30003,    // |cff4CFF00[SoloCraft]|r |cffFF0000 %s entered %s - |cffFF0000You have not been buffed.|r |cffFF8000Your level is higher than the max level (%i) threshold for this dungeon.
-    SOLOCRAFT_TRINITYSTRING_ERR_GROUP_ALREADY_BUFFED     = 30004,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s entered %s - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i. |cffFF8000A group member already inside has the dungeon's full buff offset. No Spellpower buff will be applied to spell casters. ALL group members must exit the dungeon and re-enter to receive a balanced offset.
-    SOLOCRAFT_TRINITYSTRING_CLEAR_BUFFS                  = 30005,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s exited to %s - Reverting Difficulty Offset: %0.2f. Spellpower Bonus Removed: %i
-    SOLOCRAFT_TRINITYSTRING_ENABLED                      = 30006,    // Enabled
-    SOLOCRAFT_TRINITYSTRING_DISABLED                     = 30007,    // Disabled
+    SOLOCRAFT_TRINITYSTRING_ACTIVE                       = 40000,    // |cff4CFF00SoloCraft system|r active.
+    SOLOCRAFT_TRINITYSTRING_STATUS                       = 40001,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s entered %s - Difficulty Offset: %0.2f. Spellpower Bonus: %i. Class Balance Weight: %i. XP Gain: |cffFF0000%s XP Balancing:%s |cff4CFF00%s
+    SOLOCRAFT_TRINITYSTRING_ERR_LEVEL_TOO_HIGH           = 40002,    // |cff4CFF00[SoloCraft]|r |cffFF0000 %s entered %s - |cffFF0000You have not been buffed.|r |cffFF8000Your level is higher than the max level (%i) threshold for this dungeon.
+    SOLOCRAFT_TRINITYSTRING_ERR_GROUP_ALREADY_BUFFED     = 40003,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s entered %s - |cffFF0000BE ADVISED - You have been debuffed by offset: %0.2f with a Class Balance Weight: %i. |cffFF8000A group member already inside has the dungeon's full buff offset. No Spellpower buff will be applied to spell casters. ALL group members must exit the dungeon and re-enter to receive a balanced offset.
+    SOLOCRAFT_TRINITYSTRING_CLEAR_BUFFS                  = 40004,    // |cffFF0000[SoloCraft]|r |cffFF8000 %s exited to %s - Reverting Difficulty Offset: %0.2f. Spellpower Bonus Removed: %i
+    SOLOCRAFT_TRINITYSTRING_ENABLED                      = 40005,    // Enabled
+    SOLOCRAFT_TRINITYSTRING_DISABLED                     = 40006,    // Disabled
 };
 
 class SolocraftConfig
