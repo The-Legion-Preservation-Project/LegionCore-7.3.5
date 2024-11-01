@@ -1831,7 +1831,7 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
     targets.SetCaster(m_caster);
     targets.SetUnitTarget(m_caster);
 
-    unitTarget->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK);
+    unitTarget->CastSpell(targets, spellInfo, &values, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD));
 }
 
 void Spell::EffectTriggerRitualOfSummoning(SpellEffIndex effIndex)
