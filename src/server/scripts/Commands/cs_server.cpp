@@ -37,6 +37,7 @@ EndScriptData */
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <openssl/crypto.h>
+#include <numeric>
 
 class server_commandscript : public CommandScript
 {
