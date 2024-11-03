@@ -3365,7 +3365,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
     }
 
     if (m_spellInfo->Id == 144859) //Add CP after use old CP
-        m_caster->m_movedPlayer->SaveAddComboPoints(damage);
+        m_caster->GetPlayerMovingMe()->SaveAddComboPoints(damage);
 }
 
 void Spell::EffectEnergizePct(SpellEffIndex effIndex)
