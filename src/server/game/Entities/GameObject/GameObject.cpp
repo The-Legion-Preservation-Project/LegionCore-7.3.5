@@ -2703,11 +2703,6 @@ void GameObject::SetLootState(LootState state, Unit* unit)
 
 void GameObject::SetGoState(GOState state)
 {
-    if (this->GetEntry() == 191588 && state == GO_STATE_ACTIVE)
-    {
-        TC_LOG_ERROR("server.loading", "SET GO STATE: %u", state);
-    }
-
     SetByteValue(GAMEOBJECT_FIELD_BYTES_1, GAMEOJBECT_BYTES_0_STATE, state);
 
     sScriptMgr->OnGameObjectStateChanged(this, state);
