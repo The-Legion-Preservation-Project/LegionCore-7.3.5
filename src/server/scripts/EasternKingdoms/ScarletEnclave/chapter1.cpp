@@ -1167,6 +1167,10 @@ struct npc_eye_of_acherus : public ScriptedAI
                     break;
                 case EVENT_UNROOT:
                     me->RemoveAurasDueToSpell(SPELL_ROOT_SELF);
+
+                    // TODO: hack
+                    me->ClearUnitState(UNIT_STATE_ROOT);
+
                     DoCastSelf(SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST);
                     _events.ScheduleEvent(EVENT_LAUNCH_TOWARDS_DESTINATION, 1s + 200ms);
                     break;
@@ -1183,6 +1187,11 @@ struct npc_eye_of_acherus : public ScriptedAI
                 }
                 case EVENT_GRANT_CONTROL:
                     me->RemoveAurasDueToSpell(SPELL_ROOT_SELF);
+
+                    // TODO: hack
+                    me->SetSheath(SHEATH_STATE_MELEE);
+                    me->ClearUnitState(UNIT_STATE_ROOT);
+
                     DoCastSelf(SPELL_EYE_OF_ACHERUS_FLIGHT);
                     me->RemoveAurasDueToSpell(SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST);
                     if (Unit* owner = me->GetCharmerOrOwner())
@@ -1203,6 +1212,10 @@ struct npc_eye_of_acherus : public ScriptedAI
         {
             case POINT_NEW_AVALON:
                 DoCastSelf(SPELL_ROOT_SELF);
+
+                // TODO: hack
+                me->AddUnitState(UNIT_STATE_ROOT);
+
                 _events.ScheduleEvent(EVENT_GRANT_CONTROL, 2s + 500ms);
                 break;
             default:

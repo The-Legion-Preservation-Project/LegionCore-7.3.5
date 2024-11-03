@@ -1163,15 +1163,6 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case 207510: //Flame of Woe
                     m_caster->CastSpell(m_caster, 207509, true);
                     break;
-                case 51858:     //Q: Death Comes From On High ID 12641
-                    if (unitTarget &&
-                        (unitTarget->GetEntry() == 28543 ||
-                        unitTarget->GetEntry() == 28542 ||
-                        unitTarget->GetEntry() == 28525 ||
-                        unitTarget->GetEntry() == 28544))
-                        if (Player *plr = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself())
-                            plr->KilledMonsterCredit(unitTarget->GetEntry(), unitTarget->GetGUID());
-                    break;
                 case 78640: // Deepstone Oil
                 {
                     if (m_caster->HasAuraType(SPELL_AURA_MOUNTED))
