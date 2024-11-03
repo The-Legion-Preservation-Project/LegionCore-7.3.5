@@ -31416,13 +31416,31 @@ bool Player::IsAtRecruitAFriendDistance(WorldObject const* pOther) const
 
 void Player::SetClientControl(Unit* target, bool allowMove)
 {
+    // a player can never client control nothing
+    ASSERT(target);
+
+    // still affected by some aura that shouldn't allow control, only allow on last such aura to be removed
+    if (target->HasUnitState(UNIT_STATE_CONTROLLED))
+        allowMove = false;
+
+    // don't allow possession to be overridden
     WorldPackets::Movement::ControlUpdate update;
     update.Guid = target->GetGUID();
     update.On = allowMove;
     SendDirectMessage(update.Write());
 
-    if (target == this && allowMove)
-        SetMover(this);
+    WorldObject* viewpoint = GetViewpoint();
+    if (!viewpoint)
+        viewpoint = this;
+    if (target != viewpoint)
+    {
+        if (viewpoint != this)
+            SetViewpoint(viewpoint, false);
+        if (target != this)
+            SetViewpoint(target, true);
+    }
+
+    SetMover(target);
 }
 
 void Player::UpdateZoneDependentAuras(uint32 newZone)

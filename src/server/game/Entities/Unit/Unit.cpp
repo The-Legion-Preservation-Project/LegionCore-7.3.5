@@ -22704,18 +22704,14 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
             case CHARM_TYPE_VEHICLE:
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 charmer->ToPlayer()->SetClientControl(this, true);
-                charmer->ToPlayer()->SetMover(this);
-                charmer->ToPlayer()->SetViewpoint(this, true);
                 charmer->ToPlayer()->VehicleSpellInitialize();
                 break;
             case CHARM_TYPE_POSSESS:
-                AddUnitState(UNIT_STATE_POSSESSED);
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                 charmer->ToPlayer()->SetClientControl(this, true);
-                charmer->ToPlayer()->SetMover(this);
-                charmer->ToPlayer()->SetViewpoint(this, true);
                 charmer->ToPlayer()->PossessSpellInitialize();
+                AddUnitState(UNIT_STATE_POSSESSED);
                 break;
             case CHARM_TYPE_CHARM:
                 if (IsCreature() && charmer->getClass() == CLASS_WARLOCK)
@@ -22819,21 +22815,15 @@ void Unit::RemoveCharmedBy(Unit* charmer)
         switch (type)
         {
             case CHARM_TYPE_VEHICLE:
-                charmer->ToPlayer()->SetClientControl(charmer, true);
-                charmer->ToPlayer()->SetViewpoint(this, false);
                 charmer->ToPlayer()->SetClientControl(this, false);
-                if (IsPlayer())
-                    ToPlayer()->SetMover(this);
+                charmer->ToPlayer()->SetClientControl(charmer, true);
                 RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 break;
             case CHARM_TYPE_POSSESS:
-                charmer->ToPlayer()->SetClientControl(charmer, true);
-                charmer->ToPlayer()->SetViewpoint(this, false);
-                charmer->ToPlayer()->SetClientControl(this, false);
-                if (IsPlayer())
-                    ToPlayer()->SetMover(this);
-                charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                 ClearUnitState(UNIT_STATE_POSSESSED);
+                charmer->ToPlayer()->SetClientControl(this, false);
+                charmer->ToPlayer()->SetClientControl(charmer, true);
+                charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                 RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 break;
             case CHARM_TYPE_CHARM:
