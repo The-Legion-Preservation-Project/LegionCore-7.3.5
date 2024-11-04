@@ -440,7 +440,9 @@ void Map::LoadMapImpl(Map* map, int gx, int gy, bool reload)
     #endif
     // loading data
     map->GridMaps[gx][gy] = new GridMap();
-    if (!map->GridMaps[gx][gy]->loadData(fileName.c_str()))
+    GridMap::LoadResult gridMapLoadResult = map->GridMaps[gx][gy]->loadData(fileName.c_str());
+
+    if (gridMapLoadResult == GridMap::LoadResult::InvalidFile)
         TC_LOG_ERROR("maps", "Error loading map file: %s", fileName.c_str());
 
     sScriptMgr->OnLoadGridMap(map, map->GridMaps[gx][gy], gx, gy);

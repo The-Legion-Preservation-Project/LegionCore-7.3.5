@@ -53,7 +53,7 @@ GridMap::~GridMap()
     unloadData();
 }
 
-bool GridMap::loadData(const char* filename)
+GridMap::LoadResult GridMap::loadData(const char* filename)
 {
     // Unload old data if exist
     unloadData();
@@ -62,13 +62,13 @@ bool GridMap::loadData(const char* filename)
     // Not return error if file not found
     FILE* in = fopen(filename, "rb");
     if (!in)
-        return false;
+        return LoadResult::FileDoesNotExist;
 
     _fileExists = true;
     if (fread(&header, sizeof(header), 1, in) != 1)
     {
         fclose(in);
-        return false;
+        return LoadResult::InvalidFile;
     }
 
     if (header.mapMagic == MapMagic.asUInt && header.versionMagic == MapVersionMagic.asUInt)
@@ -78,28 +78,28 @@ bool GridMap::loadData(const char* filename)
         {
             TC_LOG_ERROR("maps", "Error loading map area data\n");
             fclose(in);
-            return false;
+            return LoadResult::InvalidFile;
         }
         // loadup height data
         if (header.heightMapOffset && !loadHeightData(in, header.heightMapOffset, header.heightMapSize))
         {
             TC_LOG_ERROR("maps", "Error loading map height data\n");
             fclose(in);
-            return false;
+            return LoadResult::InvalidFile;
         }
         // loadup liquid data
         if (header.liquidMapOffset && !loadLiquidData(in, header.liquidMapOffset, header.liquidMapSize))
         {
             TC_LOG_ERROR("maps", "Error loading map liquids data\n");
             fclose(in);
-            return false;
+            return LoadResult::InvalidFile;
         }
         fclose(in);
-        return true;
+        return LoadResult::Ok;
     }
     TC_LOG_ERROR("maps", "Map file '%s' is from an incompatible clientversion. Please recreate using the mapextractor.", filename);
     fclose(in);
-    return false;
+    return LoadResult::InvalidFile;
 }
 
 void GridMap::unloadData()
