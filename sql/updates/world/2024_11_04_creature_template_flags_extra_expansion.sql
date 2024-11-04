@@ -21,6 +21,6 @@ UPDATE `creature_template` SET `flags_extra` = `flags_extra` | 0x2000000 WHERE `
 UPDATE `creature_template` SET `flags_extra` = `flags_extra` & ~0x80000000;
 UPDATE `creature_template` SET `flags_extra` = `flags_extra` | 0x4000000 WHERE `entry` IN (28921, 45847, 46391, 54969, 55524, 55532);
 
--- TODO: remove LC value for CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK 0x2000, replace with TC value 0x40000000
+-- remove LC value for CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK 0x2000, replace with TC value 0x40000000
 UPDATE `creature_template` SET `flags_extra` = `flags_extra` & ~0x2000;
 UPDATE `creature_template` SET `flags_extra` = `flags_extra` | 0x40000000 WHERE `entry` IN (91782, 91792, 91796, 92387, 95939, 97097, 97173, 97182, 97185, 97200, 98243, 98368, 98521, 98538, 98706, 102788, 105304, 105322, 105906, 111405, 111528, 111852, 111856, 111858, 111860, 111975, 112474, 113088, 113920);
