@@ -741,9 +741,14 @@ class spell_dk_death_strike : public SpellScriptLoader
                 Unit* caster = GetCaster();
 
                 // max of 20% of dmg taken in past 5 sec, or 10% of health
-                int32 ten = CalculatePct(caster->GetMaxHealth(), GetSpellInfo()->GetEffect(EFFECT_4)->CalcValue());
-                int32 dmg = caster->GetDamageTakenInPastSecs(5) * 0.2f;
-                int32 heal = std::max(ten, dmg);
+
+                float pctDamage = caster->CanPvPScalar() ? GetSpellInfo()->GetEffect(EFFECT_2)->CalcValue() / 2 : GetSpellInfo()->GetEffect(EFFECT_2)->CalcValue();
+                int32 lastTime = GetSpellInfo()->GetEffect(EFFECT_3)->CalcValue();
+                int32 pctHeal = GetSpellInfo()->GetEffect(EFFECT_4)->CalcValue();
+
+                int32 minHeal = CalculatePct(caster->GetMaxHealth(), pctHeal);
+                int32 dmg = CalculatePct(caster->GetDamageTakenInPastSecs(lastTime, true, true), pctDamage);
+                int32 heal = std::max(minHeal, dmg);
 
                 caster->CastCustomSpell(SPELL_DK_DEATH_STRIKE_HEAL, SPELLVALUE_BASE_POINT0, heal, caster, true);
 
