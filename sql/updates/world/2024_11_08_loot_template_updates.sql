@@ -77,7 +77,7 @@ VALUES
     (17381, 24387, 0, 0,1, 0, 1, 1, 0);
 
 -- Iron Deposit
-DELETE FROM `gameobject_loot_template` WHERE `Entry` IN (51300, 51299, 51297, 51303, 51301, 51305, 51306, 51307, 51308, 51309, 51296, 1502, 1503, 51302, 51295);
+DELETE FROM `gameobject_loot_template` WHERE `Entry` IN (51300, 51299, 51297, 51303, 51301, 51305, 51306, 51307, 51308, 51309, 51296, 1502, 1503, 51302, 51295, 12883, 51298);
 INSERT INTO `gameobject_loot_template` (`Entry`, `Item`, `Reference`, `Chance`, `QuestRequired`, `LootMode`, `GroupId`, `MinCount`, `MaxCount`, `Comment`)
 VALUES
 (51300, 3858, 0, 100, 0, 1, 0, 2, 4, 'Mithril Deposit'),
@@ -167,4 +167,21 @@ VALUES
 (51295, 1206, 0, 5, 0, 1, 1, 1, 1, 'Silver Vein'),
 (51295, 1210, 0, 5, 0, 1, 1, 1, 1, 'Silver Vein'),
 (51295, 1705, 0, 5, 0, 1, 1, 1, 1, 'Silver Vein'),
-(51295, 2775, 0, 100, 0, 1, 0, 2, 4, 'Silver Vein');
+(51295, 2775, 0, 100, 0, 1, 0, 2, 4, 'Silver Vein'),
+(12883, 1, 12900, 25, 0, 1, 0, 1, 1, 'Rich Thorium Vein'),
+(12883, 10620, 0, 100, 0, 1, 0, 1, 10, 'Rich Thorium Vein'),
+(12883, 12365, 0, 100, 0, 1, 0, 1, 12, 'Rich Thorium Vein'),
+(51298, 1, 12900, 25, 0, 1, 0, 1, 1, 'Small Thorium Vein'),
+(51298, 10620, 0, 100, 0, 1, 0, 1, 8, 'Small Thorium Vein'),
+(51298, 12365, 0, 100, 0, 1, 0, 1, 10, 'Small Thorium Vein');
+
+
+DELETE FROM `reference_loot_template` WHERE `Entry` = 12900;
+INSERT INTO `reference_loot_template` (`Entry`, `Item`, `Reference`, `Chance`, `QuestRequired`, `LootMode`, `GroupId`, `MinCount`, `MaxCount`, `Comment`)
+VALUES
+(12900, 7910, 0, 12, 0, 1, 1, 1, 1, null),
+(12900, 12361, 0, 12, 0, 1, 1, 1, 1, null),
+(12900, 12363, 0, 40, 0, 1, 1, 1, 1, null),
+(12900, 12364, 0, 12, 0, 1, 1, 1, 1, null),
+(12900, 12799, 0, 12, 0, 1, 1, 1, 1, null),
+(12900, 12800, 0, 12, 0, 1, 1, 1, 1, null);
