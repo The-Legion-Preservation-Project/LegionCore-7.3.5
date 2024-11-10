@@ -3573,8 +3573,12 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
         return;
     }
 
+    if (reqSkillValue == 0)
+        reqSkillValue = skillValue;
+
     if (gameObjTarget)
         SendLoot(guid, LOOT_SKINNING);
+
     else if (itemTarget)
     {
         itemTarget->SetFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_UNLOCKED);
@@ -3589,11 +3593,6 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
         {
             if (gameObjTarget)
             {
-                if (gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_CHEST)
-                    reqSkillValue = gameObjTarget->GetGOInfo()->chest.trivialSkillLow - 50;
-                else if (gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_GATHERING_NODE)
-                    reqSkillValue = gameObjTarget->GetGOInfo()->gatheringNode.trivialSkillLow - 50;
-
                 // Allow one skill-up until respawned
                 if (!gameObjTarget->IsInSkillupList(player->GetGUID()) && player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue))
                 {
