@@ -76,15 +76,15 @@ VALUES
     (17381, 24388, 0, 0,1, 0, 1, 1, 0),
     (17381, 24387, 0, 0,1, 0, 1, 1, 0);
 
--- Iron Deposit
+
 DELETE FROM `gameobject_loot_template` WHERE `Entry` IN (51300, 51299, 51297, 51303, 51301, 51305, 51306, 51307, 51308, 51309, 51296, 1502, 1503, 51302, 51295, 12883, 51298);
 INSERT INTO `gameobject_loot_template` (`Entry`, `Item`, `Reference`, `Chance`, `QuestRequired`, `LootMode`, `GroupId`, `MinCount`, `MaxCount`, `Comment`)
 VALUES
-(51300, 3858, 0, 100, 0, 1, 0, 2, 4, 'Mithril Deposit'),
+(51300, 3858, 0, 100, 0, 1, 0, 1, 9, 'Mithril Deposit'),
 (51300, 3864, 0, 5, 0, 1, 1, 1, 1, 'Mithril Deposit'),
 (51300, 7909, 0, 5, 0, 1, 1, 1, 1, 'Mithril Deposit'),
 (51300, 7910, 0, 5, 0, 1, 1, 1, 1, 'Mithril Deposit'),
-(51300, 7912, 0, 80, 0, 1, 0, 1, 8, 'Mithril Deposit'),
+(51300, 7912, 0, 80, 0, 1, 0, 1, 13, 'Mithril Deposit'),
 (51300, 9262, 0, 5, 0, 1, 1, 1, 1, 'Mithril Deposit'),
 (51299, 3864, 0, 5, 0, 1, 1, 1, 1, 'Truesilver Deposit'),
 (51299, 7909, 0, 5, 0, 1, 1, 1, 1, 'Truesilver Deposit'),
