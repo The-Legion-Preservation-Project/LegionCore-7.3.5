@@ -3573,12 +3573,8 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
         return;
     }
 
-    if (reqSkillValue == 0)
-        reqSkillValue = skillValue;
-
     if (gameObjTarget)
         SendLoot(guid, LOOT_SKINNING);
-
     else if (itemTarget)
     {
         itemTarget->SetFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_UNLOCKED);
@@ -3594,8 +3590,9 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
             if (gameObjTarget)
             {
                 // Allow one skill-up until respawned
-                if (!gameObjTarget->IsInSkillupList(player->GetGUID()) && player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue))
+                if (!gameObjTarget->IsInSkillupList(player->GetGUID()))
                 {
+                    player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue, 1, gameObjTarget);
                     gameObjTarget->AddToSkillupList(player->GetGUID());
                     if (skillId == SKILL_MINING || skillId == SKILL_HERBALISM || skillId == SKILL_ARCHAEOLOGY)
                         player->GiveGatheringXP();
