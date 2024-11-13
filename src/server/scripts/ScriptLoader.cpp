@@ -26,6 +26,8 @@ void AddSC_battleground_shado_pan();
 //customs
 void AddSC_CustomStartups();
 void AddSC_solocraft();
+void AddSC_BossKillReward();
+void AddLfgSoloScripts();
 
 //battlepay
 void AddSC_BattlePay_Services();
@@ -2619,5 +2621,7 @@ void AddCustomScripts()
 #ifdef SCRIPTS
     AddSC_CustomStartups();
     AddSC_solocraft();
+	AddSC_BossKillReward();
+	AddLfgSoloScripts();
 #endif
 }
