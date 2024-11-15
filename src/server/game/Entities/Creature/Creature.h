@@ -141,6 +141,7 @@ struct CreatureTemplate
     uint32 Classification;
     uint32 MovementInfoID;
     uint32 Family;                                         // enum CreatureFamily
+    int32 HealthScalingExpansion;
     int8   RequiredExpansion;
     uint32 TypeFlags[2];                                   // enum CreatureTypeFlags[0] mask values [1] unk for now
     uint32 Type;                                           // enum CreatureType values
@@ -826,6 +827,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
 
         float GetFollowDistance() const override { return m_followDistance; }
         void SetFollowDistance(float dist) { m_followDistance = dist; }
+
+        bool CanGiveExperience() const;
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds const& forceRespawnTimer = Seconds(0));
 

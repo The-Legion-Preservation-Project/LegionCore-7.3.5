@@ -337,13 +337,13 @@ bool CreatureTemplate::isTameable(Player const* caster) const
 uint64 CreatureBaseStats::GenerateHealth(CreatureTemplate const* info, CreatureDifficultyStat const* diffStats) const
 {
     if (diffStats)
-        return uint64((BaseHealth[info->RequiredExpansion] * diffStats->ModHealth) + 0.5f);
-    return uint64((BaseHealth[info->RequiredExpansion] * info->HpMulti) + 0.5f);
+        return uint64((BaseHealth[info->HealthScalingExpansion] * diffStats->ModHealth) + 0.5f);
+    return uint64((BaseHealth[info->HealthScalingExpansion] * info->HpMulti) + 0.5f);
 }
 
 float CreatureBaseStats::GenerateBaseDamage(CreatureTemplate const* info) const
 {
-    return BaseDamage[info->RequiredExpansion];
+    return BaseDamage[info->HealthScalingExpansion];
 }
 
 uint32 CreatureBaseStats::GenerateMana(CreatureTemplate const* info) const
@@ -359,7 +359,7 @@ uint32 CreatureBaseStats::GenerateArmor(CreatureTemplate const* info) const
     return uint32((BaseArmor * info->ModArmor) + 0.5f);
 }
 
-CreatureTemplate::CreatureTemplate(): Entry(0), KillCredit{}, Modelid{}, QuestItem{}, VignetteID(0), FlagQuest(0), VerifiedBuild(0), Classification(0), MovementInfoID(0), Family(0), RequiredExpansion(0), TypeFlags{}, Type(0), PowerMulti(0)
+CreatureTemplate::CreatureTemplate(): Entry(0), KillCredit{}, Modelid{}, QuestItem{}, VignetteID(0), FlagQuest(0), VerifiedBuild(0), Classification(0), MovementInfoID(0), Family(0), HealthScalingExpansion(0), RequiredExpansion(0), TypeFlags{}, Type(0), PowerMulti(0)
 {
     for (auto& i : resistance)
         i = 0;
@@ -2702,6 +2702,14 @@ void Creature::Respawn(bool force, uint32 timer /*= 3*/)
     }
 
     UpdateObjectVisibility();
+}
+
+bool Creature::CanGiveExperience() const
+{
+    return !IsCritter()
+        && !isPet()
+        && !isTotem()
+        && !(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL);
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn /*= 0*/, Seconds const& forceRespawnTimer /*= Seconds(0)*/)

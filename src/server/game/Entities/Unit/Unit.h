@@ -1213,6 +1213,7 @@ class Unit : public WorldObject
         bool IsVehicle() const  { return (m_unitTypeMask & UNIT_MASK_VEHICLE) != 0; }
         bool isMinion() const   { return (m_unitTypeMask & UNIT_MASK_MINION) != 0; }
         bool isTrainingDummy() const { return m_unitTypeMask & UNIT_MASK_TRAINING_DUMMY; }
+        bool IsCritter() const { return GetCreatureType() == CREATURE_TYPE_CRITTER; }
         bool isAnySummons() const;
         bool CanVehicleAI() const;
 

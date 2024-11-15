@@ -729,10 +729,26 @@ void ObjectMgr::CheckCreatureTemplateWDB(CreatureTemplate* cInfo)
         cInfo->Family = 0;
     }
 
+    if (cInfo->HealthScalingExpansion < EXPANSION_LEVEL_CURRENT || cInfo->HealthScalingExpansion > (MAX_EXPANSIONS - 1))
+    {
+        TC_LOG_ERROR("sql.sql", "Table `creature_template` lists creature (Entry: %u) with `HealthScalingExpansion` %i. Ignored and set to 0.", cInfo->Entry, cInfo->RequiredExpansion);
+        cInfo->HealthScalingExpansion = 0;
+    }
+
     if (cInfo->RequiredExpansion > (MAX_EXPANSIONS - 1))
     {
-        TC_LOG_ERROR("sql.sql", "Table `creature_template` lists creature (Entry: %u) with `exp` %i. Ignored and set to 0.", cInfo->Entry, cInfo->RequiredExpansion);
+        TC_LOG_ERROR("sql.sql", "Table `creature_template` lists creature (Entry: %u) with `RequiredExpansion` %i. Ignored and set to 0.", cInfo->Entry, cInfo->RequiredExpansion);
         cInfo->RequiredExpansion = 0;
+    }
+
+    // -1, as expansion, is used in CreatureDifficulty.db2 for
+    // auto-updating the levels of creatures having their expansion
+    // set to that value to the current expansion's max leveling level
+    if (cInfo->HealthScalingExpansion == EXPANSION_LEVEL_CURRENT)
+    {
+        cInfo->minlevel = (MAX_LEVEL + cInfo->minlevel);
+        cInfo->maxlevel = (MAX_LEVEL + cInfo->maxlevel);
+        cInfo->HealthScalingExpansion = CURRENT_EXPANSION;
     }
 }
 
@@ -753,8 +769,8 @@ void ObjectMgr::LoadCreatureTemplates()
     "AIName, MovementType, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, ctm.Random, ctm.InteractionPauseTimer,  HoverHeight, Mana_mod_extra, Armor_mod, RegenHealth, mechanic_immune_mask, flags_extra, ScriptName, "
     //60                 61              62                63                64            65             66
     "ScaleLevelMin, ScaleLevelMax, ScaleLevelDelta, ScaleLevelDuration, ControllerID, WorldEffects, PassiveSpells,"
-    //67                         68                 69                 70              71          72          73           74
-    "StateWorldEffectID, SpellStateVisualID, SpellStateAnimID, SpellStateAnimKitID, IgnoreLos, AffixState, MaxVisible, SandboxScalingID"
+    //67                         68                 69                 70              71          72          73           74           75
+    "StateWorldEffectID, SpellStateVisualID, SpellStateAnimID, SpellStateAnimKitID, IgnoreLos, AffixState, MaxVisible, SandboxScalingID, HealthScalingExpansion"
     " FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId;");
 
     uint32 count = 0;
@@ -865,6 +881,7 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.AffixState = fields[index++].GetUInt32();
         creatureTemplate.MaxVisible = fields[index++].GetBool();
         creatureTemplate.SandboxScalingID = fields[index++].GetUInt16();
+        creatureTemplate.HealthScalingExpansion = fields[index++].GetUInt32();
 
         if(creatureTemplate.TypeFlags[0] & CREATURE_TYPEFLAGS_BOSS)
         {
