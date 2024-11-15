@@ -1220,7 +1220,6 @@ class Unit : public WorldObject
         uint8 getLevel() const;
         uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return getLevel(); }
         uint8 GetEffectiveLevel() const;
-        uint8 getLevelForXPReward(Player const* player) const;
         float getScaleForTarget(int32 delta) const;
         uint32 GetDamageFromLevelScale(Unit* target, uint32 damage);
         void SetLevel(uint8 lvl);

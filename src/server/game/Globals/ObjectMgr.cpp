@@ -767,9 +767,9 @@ void ObjectMgr::LoadCreatureTemplates()
     "resistance4, resistance5, resistance6, spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, PetSpellDataId, VehicleId, mingold, maxgold, "
     //45     46            47          48        49          50          51           52                         53           54               55        56           57                    58           59
     "AIName, MovementType, ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, ctm.Random, ctm.InteractionPauseTimer,  HoverHeight, Mana_mod_extra, Armor_mod, RegenHealth, mechanic_immune_mask, flags_extra, ScriptName, "
-    //60                 61              62                63                64            65             66
-    "ScaleLevelMin, ScaleLevelMax, ScaleLevelDelta, ScaleLevelDuration, ControllerID, WorldEffects, PassiveSpells,"
-    //67                         68                 69                 70              71          72          73           74           75
+    //60            61             62
+    "ControllerID, WorldEffects, PassiveSpells,"
+    //63                         64                 65                 66              67          68          69           70           71
     "StateWorldEffectID, SpellStateVisualID, SpellStateAnimID, SpellStateAnimKitID, IgnoreLos, AffixState, MaxVisible, SandboxScalingID, HealthScalingExpansion"
     " FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId;");
 
@@ -856,10 +856,6 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.MechanicImmuneMask = fields[index++].GetUInt32();
         creatureTemplate.flags_extra        = fields[index++].GetUInt32();
         creatureTemplate.ScriptID           = GetScriptId(fields[index++].GetCString());
-        creatureTemplate.ScaleLevelMin      = std::min(fields[index++].GetUInt8(), CREATURE_MAX_LEVEL);
-        creatureTemplate.ScaleLevelMax      = std::min(fields[index++].GetUInt8(), CREATURE_MAX_LEVEL);
-        creatureTemplate.ScaleLevelDelta    = std::min(fields[index++].GetInt16(), int16(CREATURE_MAX_LEVEL));
-        creatureTemplate.ScaleLevelDuration = std::min(fields[index++].GetUInt16(), std::numeric_limits<uint16>::max());
         creatureTemplate.ControllerID       = fields[index++].GetInt32();
         Tokenizer WorldEffects(fields[index++].GetString(), ' ');
         for (char const* token : WorldEffects)
@@ -966,6 +962,47 @@ void ObjectMgr::LoadCreatureTemplates()
         CheckCreatureTemplate(&v.second);
 
     TC_LOG_INFO("server.loading", ">> Loaded %u creature definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadCreatureScalingData()
+{
+    uint32 oldMSTime = getMSTime();
+
+    //                                                 0            1                2                  3                    4                     5
+    QueryResult result = WorldDatabase.Query("SELECT Entry, LevelScalingMin, LevelScalingMax, LevelScalingDeltaMin, LevelScalingDeltaMax, LevelScalingDuration FROM creature_template_scaling");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 creature template scaling definitions. DB table `creature_template_scaling` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].GetUInt32();
+
+        CreatureTemplate* creatureTemplate = _creatureTemplateStore[entry];
+        if (!creatureTemplate)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature template (Entry: %u) does not exist but has a record in `creature_template_scaling`", entry);
+            continue;
+        }
+
+        CreatureLevelScaling creatureLevelScaling = {};
+        creatureLevelScaling.MinLevel              = fields[1].GetUInt16();
+        creatureLevelScaling.MaxLevel              = fields[2].GetUInt16();
+        creatureLevelScaling.DeltaLevelMin         = fields[3].GetInt16();
+        creatureLevelScaling.DeltaLevelMax         = fields[4].GetInt16();
+        creatureLevelScaling.Duration              = fields[5].GetUInt16();
+        creatureTemplate->levelScaling             = creatureLevelScaling;
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u creature template scaling data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadCreatureDifficultyStat()
@@ -2425,8 +2462,8 @@ ObjectGuid::LowType ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 
         return UI64LIT(0);
 
     uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel);
-    if (cInfo->ScaleLevelDuration)
-        level = cInfo->ScaleLevelDuration;
+    if (cInfo->levelScaling.has_value() && cInfo->levelScaling->Duration)
+        level = cInfo->levelScaling->Duration;
 
     CreatureBaseStats const* stats = GetCreatureBaseStats(level, cInfo->unit_class);
 

@@ -27561,63 +27561,13 @@ uint8 Unit::GetEffectiveLevel() const
     return uint8(GetUInt32Value(UNIT_FIELD_EFFECTIVE_LEVEL) ? GetUInt32Value(UNIT_FIELD_EFFECTIVE_LEVEL) : GetUInt32Value(UNIT_FIELD_LEVEL));
 }
 
-uint8 Unit::getLevelForXPReward(Player const* player) const
-{
-    Creature const* creature = ToCreature();
-    if (!player || !creature)
-        return GetEffectiveLevel();
-
-    uint8 playerLevel = player->getLevel();
-    int32 level = GetEffectiveLevel();
-    int32 levelMin = creature->ScaleLevelMin;
-    int32 levelMax = creature->ScaleLevelMax;
-
-    CreatureTemplate const* cInfo = creature->GetCreatureTemplate();
-
-    if (cInfo)
-    {
-        if (levelMin == 0)
-            levelMin = cInfo->minlevel;
-
-        if (levelMax == 0)
-            levelMax = cInfo->maxlevel;
-    }
-
-    if (levelMin && levelMax)
-    {
-        if (levelMin <= playerLevel && playerLevel <= levelMax)
-        {
-            level = playerLevel;
-            if (creature->isWorldBoss())
-                level += 1;
-        }
-        else if (levelMin >= playerLevel)
-        {
-            level = levelMin;
-            if (creature->isWorldBoss())
-                level += 1;
-        }
-        else if (levelMax <= playerLevel)
-            level = levelMax;
-    }
-
-    level += cInfo->ScaleLevelDelta;
-
-    if (level < 1)
-        return 1;
-    if (level > 123)
-        return 123;
-
-    return uint8(level);
-}
-
 uint64 Unit::GetHealth(Unit* victim) const
 {
     Creature const* creature = ToCreature();
     if (!victim || !creature)
         return GetHealth();
 
-    if (!creature->ScaleLevelMin || !creature->ScaleLevelMax)
+    if (!creature->HasScalableLevels())
         return GetHealth();
 
     uint8 level = GetLevelForTarget(victim);
@@ -27638,7 +27588,7 @@ uint64 Unit::GetMaxHealth(Unit* victim) const
     if (!victim || !creature)
         return GetMaxHealth();
 
-    if (!creature->ScaleLevelMin || !creature->ScaleLevelMax)
+    if (!creature->HasScalableLevels())
         return GetMaxHealth();
 
     uint8 level = GetLevelForTarget(victim);
@@ -27655,7 +27605,7 @@ uint32 Unit::GetArmor(Unit* victim) const
     if (!victim || !creature)
         return GetArmor();
 
-    if (!creature->ScaleLevelMin || !creature->ScaleLevelMax)
+    if (!creature->HasScalableLevels())
         return GetArmor();
 
     uint8 level = GetLevelForTarget(victim);
@@ -27675,7 +27625,7 @@ void Unit::SetHealthScal(uint64 val, Unit* victim, uint32 spellId)
         return;
     }
 
-    if (!creature->ScaleLevelMin || !creature->ScaleLevelMax)
+    if (!creature->HasScalableLevels())
     {
         SetHealth(val, spellId);
         return;
@@ -27748,7 +27698,7 @@ uint32 Unit::GetDamageFromLevelScale(Unit* target, uint32 damage)
                 if (lvlCalc > 10)
                     damage /= 10;
             }
-            else if (cInfo->ScaleLevelMax && (cInfo->ScaleLevelMax > plrlvl))
+            else if (cInfo->levelScaling.has_value() && (cInfo->levelScaling->MaxLevel > plrlvl))
                 damage *= getScaleForTarget(lvlCalc);
         }
         else if (casterPlayer && target->IsCreature() && !target->HasUnitTypeMask(UNIT_MASK_CREATED_BY_PLAYER))

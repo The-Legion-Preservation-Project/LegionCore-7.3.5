@@ -739,30 +739,22 @@ bool Creature::UpdateEntry(uint32 entry, uint32 team, const CreatureData* data)
     if (!GetMap()->IsDungeon() || GetMap()->IsCanScale() || cInfo->RequiredExpansion < EXPANSION_LEGION)
     {
         SandboxScalingID = cInfo->SandboxScalingID;
-
-        // Need before set level
-        if (cInfo->ScaleLevelMin)
-            ScaleLevelMin = cInfo->ScaleLevelMin;
-        if (cInfo->ScaleLevelMax)
-            ScaleLevelMax = cInfo->ScaleLevelMax;
-        else
-            SandboxScalingID = GetScalingID();
     }
 
     // TODO: This should probably be reworked, in which cases should a creature being summoned/charmed/owned
     // mean that level scaling is not applied? Maybe only in case of GetOwner() != NULL?
     // Without this exception the NPCs summoned in quest 40604 (Disturbing the Past) do not get lvl scaled.
-    if (entry != 100735)
-    {
-        if (Unit* owner = GetAnyOwner())
-        {
-            if (owner->IsPlayer())
-            {
-                ScaleLevelMin = 0;
-                ScaleLevelMax = 0;
-            }
-        }
-    }
+//    if (entry != 100735)
+//    {
+//        if (Unit* owner = GetAnyOwner())
+//        {
+//            if (owner->IsPlayer())
+//            {
+//                ScaleLevelMin = 0;
+//                ScaleLevelMax = 0;
+//            }
+//        }
+//    }
 
     SelectLevel(cInfo);
     setFaction(cInfo->faction);
@@ -790,14 +782,8 @@ bool Creature::UpdateEntry(uint32 entry, uint32 team, const CreatureData* data)
 
     SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, dynamicflags);
 
-    if (ScaleLevelMin)
-        SetUInt32Value(UNIT_FIELD_SCALING_LEVEL_MIN, ScaleLevelMin);
-    if (ScaleLevelMax)
-        SetUInt32Value(UNIT_FIELD_SCALING_LEVEL_MAX, ScaleLevelMax);
-    if (cInfo->ScaleLevelDelta)
-        SetUInt32Value(UNIT_FIELD_SCALING_LEVEL_DELTA, cInfo->ScaleLevelDelta);
-    if (cInfo->ScaleLevelDuration)
-        SetUInt32Value(UNIT_FIELD_SCALE_DURATION, cInfo->ScaleLevelDuration);
+    if (cInfo->levelScaling.has_value() && cInfo->levelScaling->Duration)
+        SetUInt32Value(UNIT_FIELD_SCALE_DURATION, cInfo->levelScaling->Duration);
     if (cInfo->ControllerID)
         SetUInt32Value(UNIT_FIELD_LOOK_AT_CONTROLLER_ID, cInfo->ControllerID);
     if (SandboxScalingID)
@@ -1819,22 +1805,38 @@ void Creature::SelectLevel(const CreatureTemplate* cInfo)
     CreatureDifficultyStat const* diffStats = GetCreatureDiffStat();
 
     // level
-    uint8 level = 0;
-    if(m_difficulty == 1 || m_difficulty == 2)
-        level = cInfo->maxlevel;
-    else
-        level = cInfo->minlevel;
+    uint8 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
+    uint8 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
 
-    if (BattlegroundMap* map = GetMap()->ToBgMap())
+    if (HasScalableLevels())
     {
-        if (map->GetBG())
-            level = map->GetBG()->GetMaxLevel();
+        SetLevel(maxlevel);
+
+        SetUInt32Value(UNIT_FIELD_SCALING_LEVEL_MIN, cInfo->levelScaling->MinLevel);
+        SetUInt32Value(UNIT_FIELD_SCALING_LEVEL_MAX, cInfo->levelScaling->MaxLevel);
+
+        int8 mindelta = std::min(cInfo->levelScaling->DeltaLevelMax, cInfo->levelScaling->DeltaLevelMin);
+        int8 maxdelta = std::max(cInfo->levelScaling->DeltaLevelMax, cInfo->levelScaling->DeltaLevelMin);
+        int8 delta = mindelta == maxdelta ? mindelta : irand(mindelta, maxdelta);
+
+        SetInt32Value(UNIT_FIELD_SCALING_LEVEL_DELTA, delta);
+    }
+    else
+    {
+        uint8 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
+
+        if (BattlegroundMap* map = GetMap()->ToBgMap())
+        {
+            if (map->GetBG())
+                level = map->GetBG()->GetMaxLevel();
+        }
+
+        SetLevel(level);
     }
 
-    SetLevel(level);
     SetEffectiveLevel(0);
 
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(getLevel(), cInfo->unit_class);
     ASSERT(stats);
 
     // health
@@ -1898,12 +1900,12 @@ void Creature::SelectLevel(const CreatureTemplate* cInfo)
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, stats->AttackPower);
     SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, stats->RangedAttackPower);
 
-    if (!ScaleLevelMin || !ScaleLevelMax)
+    if (!HasScalableLevels())
     {
-        if (level >= m_levelStat.size())
-            m_levelStat.resize(level + 1);
+        if (getLevel() >= m_levelStat.size())
+            m_levelStat.resize(getLevel() + 1);
 
-        CreatureLevelStat& levelStat = m_levelStat[level];
+        CreatureLevelStat& levelStat = m_levelStat[getLevel()];
         levelStat.baseHP = basehp;
         levelStat.baseMP = mana;
         levelStat.healthMax = health;
@@ -1929,35 +1931,38 @@ void Creature::GenerateScaleLevelStat(const CreatureTemplate* cInfo)
     if (GetMap() && GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_KEYSTONE)
         maxDmgMod = 1.2f;
 
-    for (uint8 level = ScaleLevelMin; level <= ScaleLevelMax; ++level)
+    if (HasScalableLevels())
     {
-        CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+        for (uint8 level = cInfo->levelScaling->MinLevel; level <= cInfo->levelScaling->MaxLevel; ++level)
+        {
+            CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
 
-        // health
-        uint64 basehp = stats->GenerateHealth(cInfo, diffStats);
-        auto health = uint64(basehp * healthmod);
+            // health
+            uint64 basehp = stats->GenerateHealth(cInfo, diffStats);
+            auto health = uint64(basehp * healthmod);
 
-        // mana
-        uint32 mana = stats->GenerateMana(cInfo);
+            // mana
+            uint32 mana = stats->GenerateMana(cInfo);
 
-        //damage
-        float basedamage = stats->GenerateBaseDamage(cInfo) * _GetDamageModForDiff();
+            // damage
+            float basedamage = stats->GenerateBaseDamage(cInfo) * _GetDamageModForDiff();
 
-        //armor
-        uint32 armor = stats->GenerateArmor(cInfo);
+            // armor
+            uint32 armor = stats->GenerateArmor(cInfo);
 
-        if (level >= m_levelStat.size())
-            m_levelStat.resize(level + 1);
+            if (level >= m_levelStat.size())
+                m_levelStat.resize(level + 1);
 
-        CreatureLevelStat& levelStat = m_levelStat[level];
-        levelStat.baseHP = basehp;
-        levelStat.baseMP = mana;
-        levelStat.healthMax = health;
-        levelStat.baseMinDamage = basedamage;
-        levelStat.baseMaxDamage = basedamage * maxDmgMod;
-        levelStat.AttackPower = stats->AttackPower;
-        levelStat.RangedAttackPower = stats->RangedAttackPower;
-        levelStat.BaseArmor = armor;
+            CreatureLevelStat& levelStat = m_levelStat[level];
+            levelStat.baseHP = basehp;
+            levelStat.baseMP = mana;
+            levelStat.healthMax = health;
+            levelStat.baseMinDamage = basedamage;
+            levelStat.baseMaxDamage = basedamage * maxDmgMod;
+            levelStat.AttackPower = stats->AttackPower;
+            levelStat.RangedAttackPower = stats->RangedAttackPower;
+            levelStat.BaseArmor = armor;
+        }
     }
 }
 
@@ -3544,7 +3549,7 @@ void Creature::AllLootRemovedFromCorpse()
 bool Creature::HasScalableLevels() const
 {
     CreatureTemplate const* cinfo = GetCreatureTemplate();
-    return cinfo->ScaleLevelMin && cinfo->ScaleLevelMax;
+    return !isPet() && cinfo->levelScaling.has_value();
 }
 
 std::string Creature::GetAIName() const
@@ -3858,33 +3863,6 @@ bool MirrorImageUpdate::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     creature->SetDisplayId(creature->GetNativeDisplayId());
     creature->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
     return true;
-}
-
-uint32 Creature::GetScalingID()
-{
-    // Zone
-    if (WorldMapAreaEntry const* wma = sDB2Manager.GetWorldMapArea(m_zoneId))
-    {
-        if (wma->LevelRangeMax <= 100) // Limit by WOD
-        {
-            ScaleLevelMin = wma->LevelRangeMin;
-            ScaleLevelMax = wma->LevelRangeMax;
-            return sDB2Manager.GetScalingByLevel(ScaleLevelMin, ScaleLevelMax);
-        }
-    }
-
-    // Dungeon
-    if (auto const& dungeons = sDB2Manager.GetLFGDungeonsByMapDIff(GetMapId(), m_spawnMode))
-    {
-        if (dungeons->MaxLevel <= 100) // Limit by WOD
-        {
-            ScaleLevelMin = dungeons->MinLevel;
-            ScaleLevelMax = dungeons->MaxLevel;
-            return sDB2Manager.GetScalingByLevel(ScaleLevelMin, ScaleLevelMax);
-        }
-    }
-
-    return 0;
 }
 
 CreatureSpell const* Creature::GetCreatureSpell(uint32 SpellID)

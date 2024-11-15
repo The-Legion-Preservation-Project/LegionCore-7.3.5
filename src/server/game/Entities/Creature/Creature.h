@@ -121,6 +121,15 @@ struct CreatureSpell
 };
 typedef std::unordered_map<uint32, CreatureSpell> CreatureSpellList;
 
+struct CreatureLevelScaling
+{
+    uint16 MinLevel;
+    uint16 MaxLevel;
+    int16 DeltaLevelMin;
+    int16 DeltaLevelMax;
+    uint16 Duration;
+};
+
 // from `creature_template` table
 struct CreatureTemplate
 {
@@ -181,13 +190,10 @@ struct CreatureTemplate
     uint32 unit_flags2 = 2048;                             // enum UnitFlags2 mask values
     uint32 unit_flags3 = 0;                                // enum UnitFlags3 mask values
     uint32 VehicleId = 0;
-    uint16 ScaleLevelDuration = 0;
     uint16 SandboxScalingID = 0;
     uint8 maxlevel = 1;
     uint8 minlevel = 1;
-    uint8 ScaleLevelMin = 0;
-    uint8 ScaleLevelMax = 0;
-    int16 ScaleLevelDelta = 0;
+    Optional<CreatureLevelScaling> levelScaling;
     int8 ControllerID = 0;
     float dmg_multiplier = 1.0f;
     float HoverHeight = 1.0f;
@@ -863,9 +869,6 @@ class Creature : public Unit, public GridObject<Creature>, public MapObject
         uint32 disableAffix;
         bool IsAffixDisabled(uint8 affixe) const { return (disableAffix & (1 << affixe)) != 0; }
 
-        uint8 ScaleLevelMin = 0;
-        uint8 ScaleLevelMax = 0;
-        uint32 GetScalingID();
         bool m_CanCallAssistance;
         uint8 m_callAssistanceText;
 
