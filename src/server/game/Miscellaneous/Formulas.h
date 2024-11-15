@@ -46,6 +46,27 @@ namespace Trinity
         return CURRENT_EXPANSION;
     }
 
+    inline float GetDamageMultiplierForExpansion(uint32 playerExpansion, uint32 creatureExpansion)
+    {
+        if (playerExpansion > creatureExpansion)
+        {
+            switch (creatureExpansion)
+            {
+                case EXPANSION_CLASSIC:
+                case EXPANSION_THE_BURNING_CRUSADE:
+                    return 20.0f;
+                case EXPANSION_WRATH_OF_THE_LICH_KING:
+                    return 25.0f;
+                case EXPANSION_CATACLYSM:
+                    return 13.5f;
+                default:
+                    break;
+            }
+        }
+
+        return 1.0f;
+    }
+
     namespace Honor
     {
         inline float hk_honor_at_level_f(uint8 level, float multiplier = 1.0f)
@@ -60,6 +81,7 @@ namespace Trinity
             return uint32(ceil(hk_honor_at_level_f(level, multiplier)));
         }
     }
+
     namespace XP
     {
         inline uint8 GetGrayLevel(uint8 pl_level)

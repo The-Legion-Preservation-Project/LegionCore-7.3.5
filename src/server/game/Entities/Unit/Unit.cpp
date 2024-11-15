@@ -837,6 +837,20 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb, SpellInf
 
         damage = GetDamageFromLevelScale(victim, damage);
 
+        // Damage increase with expansion/level difference, except in DK start zone
+        if (sWorld->getBoolConfig(CONFIG_LEGACY_BUFF_ENABLED))
+            if (IsPlayer() && victim->IsCreature())
+                if (GetMapId() != MAP_EBON_HOLD_DK_START_ZONE)
+                {
+                    // player level 60 should return EXPANSION_CLASSIC not EXPANSION_THE_BURNING_CRUSADE
+                    auto playerExpansion = Trinity::GetExpansionForLevel(ToPlayer()->GetEffectiveLevel()) - 1;
+
+                    // creature expansion is not based on level; so use as-is
+                    auto creatureExpansion = victim->ToCreature()->GetCreatureTemplate()->RequiredExpansion;
+
+                    damage *= Trinity::GetDamageMultiplierForExpansion(playerExpansion, creatureExpansion);
+                }
+
         //Challenge Mythic+
         if (spellProto && spellProto->ClassOptions.SpellClassSet == SPELLFAMILY_GENERIC && victim->IsPlayer())
         {
@@ -1147,7 +1161,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
     if (victim->IsPlayer())
         victim->ToPlayer()->UpdateAchievementCriteria(CRITERIA_TYPE_HIGHEST_HIT_RECEIVED, damage);
-    else if (!victim->IsControlledByPlayer() || victim->IsVehicle())
+
+    damage /= victim->GetHealthMultiplierForTarget(this);
+
+    if (!victim->IsControlledByPlayer() || victim->IsVehicle())
     {
         if (!victim->ToCreature()->hasLootRecipient())
             victim->ToCreature()->SetLootRecipient(this);
@@ -2540,6 +2557,8 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
 uint32 Unit::CalcArmorReducedDamage(Unit* attacker, Unit* victim, uint32 const damage, SpellInfo const* spellInfo)
 {
     float armor = float(victim->GetArmor(this));
+
+    armor *= victim->GetArmorMultiplierForTarget(attacker);
 
     // bypass enemy armor by SPELL_AURA_BYPASS_ARMOR_FOR_CASTER
     int32 armorBypassPct = 0;

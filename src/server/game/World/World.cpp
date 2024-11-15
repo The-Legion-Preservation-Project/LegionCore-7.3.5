@@ -1538,6 +1538,8 @@ void World::LoadConfigSettings(bool reload)
         m_int_configs[CONFIG_ARTIFACT_KNOWLEDGE_START]  = sConfigMgr->GetIntDefault("Artifact.Knowledge.Start", 40);
     }
 
+    m_bool_configs[CONFIG_LEGACY_BUFF_ENABLED] = sConfigMgr->GetBoolDefault("LegacyBuffEnabled", true);
+
     sAnticheatMgr->LoadConfig();
 
     if (reload)

@@ -1273,6 +1273,10 @@ class Unit : public WorldObject
         int64 ModifyHealth(int64 val, Unit* victim = nullptr, uint32 spellId = 0);
         int64 GetHealthGain(int64 dVal);
 
+        virtual float GetHealthMultiplierForTarget(WorldObject const* /*target*/) const { return 1.0f; }
+        virtual float GetDamageMultiplierForTarget(WorldObject const* /*target*/) const { return 1.0f; }
+        virtual float GetArmorMultiplierForTarget(WorldObject const* /*target*/) const { return 1.0f; }
+
         Powers getPowerType() const { return Powers(GetUInt32Value(UNIT_FIELD_DISPLAY_POWER)); }
         void SetFieldPowerType(uint32 powerType) { SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powerType); }
         void setPowerType(Powers power);

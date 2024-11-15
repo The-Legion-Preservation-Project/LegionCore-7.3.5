@@ -3799,6 +3799,59 @@ uint8 Creature::GetLevelForTarget(WorldObject const* target) const
     return Unit::GetLevelForTarget(target);
 }
 
+uint64 Creature::GetMaxHealthByLevel(uint8 level) const
+{
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+    return stats->GenerateHealth(cInfo);
+}
+
+float Creature::GetHealthMultiplierForTarget(WorldObject const* target) const
+{
+    if (!HasScalableLevels())
+        return 1.0f;
+
+    uint8 levelForTarget = GetLevelForTarget(target);
+    if (getLevel() < levelForTarget)
+        return 1.0f;
+
+    return double(GetMaxHealthByLevel(levelForTarget)) / double(GetCreateHealth());
+}
+
+float Creature::GetBaseDamageForLevel(uint8 level) const
+{
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+    return stats->GenerateBaseDamage(cInfo);
+}
+
+float Creature::GetDamageMultiplierForTarget(WorldObject const* target) const
+{
+    if (!HasScalableLevels())
+        return 1.0f;
+
+    uint8 levelForTarget = GetLevelForTarget(target);
+
+    return GetBaseDamageForLevel(levelForTarget) / GetBaseDamageForLevel(getLevel());
+}
+
+float Creature::GetBaseArmorForLevel(uint8 level) const
+{
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
+    return stats->GenerateArmor(cInfo);
+}
+
+float Creature::GetArmorMultiplierForTarget(WorldObject const* target) const
+{
+    if (!HasScalableLevels())
+        return 1.0f;
+
+    uint8 levelForTarget = GetLevelForTarget(target);
+
+    return GetBaseArmorForLevel(levelForTarget) / GetBaseArmorForLevel(getLevel());
+}
+
 void Creature::ClearLootList()
 {
     for (auto const& _guid : lootList)
