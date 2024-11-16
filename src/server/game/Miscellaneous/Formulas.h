@@ -202,7 +202,14 @@ namespace Trinity
                 if (gain && creature)
                 {
                     // Players get only 10% xp for killing creatures of lower expansion levels than himself
-                    if ((uint32(creature->GetCreatureTemplate()->HealthScalingExpansion) < GetExpansionForLevel(player->getLevel())))
+                    auto creatureExpansion = uint32(creature->GetCreatureTemplate()->HealthScalingExpansion);
+
+                    // try to work around zone scaling, e.g. BC zones scale to 80 and we don't want
+                    // to cut XP by 90% inside those levels
+                    if (creature->HasScalableLevels())
+                        creatureExpansion = GetExpansionForLevel(creature->GetLevelForTarget(player));
+
+                    if (creatureExpansion < GetExpansionForLevel(player->getLevel()))
                         gain = uint32(round(gain / 10.0f));
 
                     if(creature->isElite())
