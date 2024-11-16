@@ -843,7 +843,7 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb, SpellInf
                 if (GetMapId() != MAP_EBON_HOLD_DK_START_ZONE)
                 {
                     // player level 60 should return EXPANSION_CLASSIC not EXPANSION_THE_BURNING_CRUSADE
-                    auto playerExpansion = Trinity::GetExpansionForLevel(ToPlayer()->GetEffectiveLevel()) - 1;
+                    auto playerExpansion = Trinity::GetExpansionForLevel(ToPlayer()->GetEffectiveLevel() - 1);
 
                     // creature expansion is not based on level; so use as-is
                     auto creatureExpansion = victim->ToCreature()->GetCreatureTemplate()->RequiredExpansion;
