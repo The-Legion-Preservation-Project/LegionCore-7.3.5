@@ -3480,6 +3480,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
 
     Player* player = m_caster->ToPlayer();
 
+    uint32 xpLevel = 0;
     uint32 lockId = 0;
     ObjectGuid guid;
 
@@ -3544,6 +3545,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
             return;
 
         lockId = goInfo->GetLockId();
+        xpLevel = goInfo->GetXpLevel();
         guid = gameObjTarget->GetGUID();
 
         if (auto const& goTemplate = sObjectMgr->GetGameObjectTemplate(gameObjTarget->GetEntry()))
@@ -3595,7 +3597,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                     player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue, 1, gameObjTarget);
                     gameObjTarget->AddToSkillupList(player->GetGUID());
                     if (skillId == SKILL_MINING || skillId == SKILL_HERBALISM || skillId == SKILL_ARCHAEOLOGY)
-                        player->GiveGatheringXP();
+                        player->GiveGatheringXP(xpLevel);
                 }
             }
             else if (itemTarget)
@@ -6827,7 +6829,7 @@ void Spell::EffectCharge(SpellEffIndex effIndex)
         }
 
         // Spell is not using explicit target - no generated path
-        if (m_preGeneratedPath->GetPathType() == PATHFIND_BLANK)
+        if (!m_preGeneratedPath || m_preGeneratedPath->GetPathType() == PATHFIND_BLANK)
         {
             Position pos = unitTarget->GetFirstCollisionPosition(unitTarget->GetObjectSize(), unitTarget->GetRelativeAngle(m_caster));
             m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speed, EVENT_CHARGE, false, unitTarget, std::to_address(spellEffectExtraData));
