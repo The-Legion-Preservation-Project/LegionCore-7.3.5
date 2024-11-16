@@ -1091,13 +1091,6 @@ AccountInstancesPerHour = 255
 MaxAccountsOnline = 1000
 
 #
-#     LegacyBuffEnabled
-#        Description: Enable player damage increase for mobs of lower expansion, prior to Mists of Pandaria
-#        Default:     1  - (Enabled)
-
-LegacyBuffEnabled = 1
-
-#
 ###################################################################################################
 
 ###################################################################################################
