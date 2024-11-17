@@ -131,6 +131,7 @@
 #include "WorldStatePackets.h"
 #include "WowTime.hpp"
 
+
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
 // corpse reclaim times
@@ -13196,6 +13197,41 @@ bool Player::ChangeTokenCount(uint8 tokenType, int64 change, uint8 buyType, uint
     //     }
     // });
     
+    return true;
+}
+
+bool Player::AddDonateTokenCount(uint32 count)
+{
+    // locale copy of balans
+
+    if (!GetCanUseDonate()) // if this there, then will cancel next buying by all steps
+    {
+        ChatHandler chH = ChatHandler(this);
+        chH.PSendSysMessage(20079);
+        return false;
+    }
+
+    ModifyCanUseDonate(false);
+
+    LoginDatabaseTransaction trans = LoginDatabase.BeginTransaction();
+
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_OR_UPD_TOKEN);
+    stmt->setUInt32(0, count);
+    stmt->setUInt32(1, GetSession()->GetAccountId());
+    trans->Append(stmt);
+
+    uint32 guid = GetGUIDLow();
+    //LoginDatabase.CommitTransaction(trans, [guid, count]() -> void
+        {
+            if (Player* target = sObjectMgr->GetPlayerByLowGUID(guid))
+            {
+                target->ModifyCanUseDonate(true); // succes, return this
+                ChatHandler chH = ChatHandler(target);
+                chH.PSendSysMessage(20063, count);
+            }
+
+        }
+
     return true;
 }
 
