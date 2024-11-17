@@ -832,6 +832,7 @@ namespace
     std::unordered_map<uint32, uint32> _mapDifficultyCondition;
     std::unordered_map<uint32, uint32> _hostileSpellVisualIdContainer;
     std::unordered_map<uint32, bool> _isChildItem;
+    std::unordered_map<uint32, MapEntry const*> _mapEntryContainer;
 }
 
 typedef std::vector<std::string> DB2StoreProblemList;
@@ -3839,5 +3840,15 @@ uint32 DB2Manager::GetHostileSpellVisualId(uint32 spellVisualId)
     auto itr = _hostileSpellVisualIdContainer.find(spellVisualId);
     if (itr != _hostileSpellVisualIdContainer.end())
         return itr->second;
+    return 0;
+}
+
+MapEntry const* DB2Manager::GetMapByID(uint32 mapID)
+{
+    auto itr = _mapEntryContainer.find(mapID);
+
+    if (itr != _mapEntryContainer.end())
+        return itr->second;
+
     return 0;
 }

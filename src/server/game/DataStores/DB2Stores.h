@@ -542,6 +542,8 @@ public:
 
     uint32 GetHostileSpellVisualId(uint32 spellVisualId);
 
+    MapEntry const* GetMapByID(uint32 mapID);
+
     ItemSetSpellsContainer _itemSetSpells;
     ResearchProjectContainer _researchProjectContainer;
     ResearchSiteDataMap _researchSiteDataMap;

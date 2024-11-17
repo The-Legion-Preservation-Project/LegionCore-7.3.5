@@ -421,6 +421,10 @@ public:
 
     void InitiBattlgroundCheckRoles(Group* group, ObjectGuid playerGuid, uint32 queueid, uint8 roles, uint8 bgQueueTypeId, WorldPackets::Battleground::IgnorMapInfo ignormap, bool isSkirmish = false);
 
+    /// Toggle LFG in debug mode
+    void ToggleSoloLFG();
+    /// Check if debug mode
+    bool IsSoloLFG() const { return m_isSoloLFG; }
 
 private:
     void SetTicket(ObjectGuid guid, WorldPackets::LFG::RideTicket const& ticket, uint32 queueId);
@@ -461,6 +465,7 @@ private:
     DungeonSet GroupDungeons;
     std::recursive_mutex m_lock;
     bool m_Testing = false;
+    bool m_isSoloLFG = false;
 
     LfgCTARewardContainer CTARewardStore;              ///< Player selecter roles which were eligible for CTA reward when joining a queue
 };

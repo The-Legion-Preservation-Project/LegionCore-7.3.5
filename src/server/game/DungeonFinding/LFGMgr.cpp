@@ -39,7 +39,7 @@
 
 namespace lfg
 {
-LFGMgr::LFGMgr() : m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK))
+LFGMgr::LFGMgr() : m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)), m_isSoloLFG(false)
 {
     new LFGPlayerScript();
     new LFGGroupScript();
@@ -3008,6 +3008,11 @@ void LFGMgr::StopAllOtherQueue(ObjectGuid guid, uint32 queueId)
         SetState(guid, LFG_STATE_WAITE, queue);
         SendLfgUpdatePlayer(guid, LfgUpdateData(LFG_UPDATETYPE_PAUSE, GetSelectedDungeons(guid, queue)));
     }
+}
+
+void LFGMgr::ToggleSoloLFG()
+{
+    m_isSoloLFG = !m_isSoloLFG;
 }
 
 void LFGMgr::SendLfgUpdateQueue(ObjectGuid guid)

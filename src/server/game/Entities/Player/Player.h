@@ -1716,6 +1716,7 @@ class Player : public Unit, public GridObject<Player>
         bool HasToken(uint8 tokenType, uint32 count) const;
         bool ChangeTokenCount(uint8 tokenType, int64 change, uint8 buyType, uint64 productId);
         void ModifyCanUseDonate(bool apply){ canUseDonate = apply; }
+        bool AddDonateTokenCount(uint32 count);
         bool GetCanUseDonate() const { return canUseDonate; }
         std::string GetInfoForDonate() const;
         

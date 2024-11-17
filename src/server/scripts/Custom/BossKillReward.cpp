@@ -70,7 +70,7 @@ public:
         if (sConfigMgr->GetBoolDefault("BossKillReward.Enable", true))
         {	
 			// If the creature too low level skip reward
-			if (killed->getLevelForTarget(player) < player->getLevel() - 5)
+			if (killed->GetLevelForTarget(player) < player->getLevel() - 5)
 				return;
 
 			// If not boss
