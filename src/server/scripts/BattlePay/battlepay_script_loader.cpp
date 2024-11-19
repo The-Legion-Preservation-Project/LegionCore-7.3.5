@@ -16,7 +16,6 @@
  */
 
  // This is where scripts' loading functions should be declared:
-void AddSC_BattlePay_Golds();
 void AddSC_BattlePay_Professions();
 void AddSC_BattlePay_Services();
 
@@ -24,8 +23,7 @@ void AddSC_BattlePay_Services();
 // void Add${NameOfDirectory}Scripts()
 void AddBattlePayScripts()
 {
-    AddSC_BattlePay_Golds();
-	AddSC_BattlePay_Professions();
+    AddSC_BattlePay_Professions();
 	AddSC_BattlePay_Services();
 	
 }

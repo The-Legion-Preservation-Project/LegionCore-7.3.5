@@ -40,9 +40,6 @@ void AddSC_cs_world_chat();
 void AddSC_XP_Modifier();
 void AddSC_WhoLoggedScripts();
 void AddSC_WhoLoggedScripts();
-void AddSC_BattlePay_Professions();
-void AddSC_BattlePay_Services();
-void AddSC_BattlePay_Golds();
 void AddSC_CustomStartups();
 
 

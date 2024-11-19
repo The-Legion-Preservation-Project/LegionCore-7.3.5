@@ -1218,7 +1218,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -1378,7 +1378,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -1534,7 +1534,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -1716,7 +1716,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -1892,7 +1892,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2047,7 +2047,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2207,7 +2207,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2362,7 +2362,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2552,7 +2552,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2746,7 +2746,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
@@ -2940,7 +2940,7 @@ public:
         {
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     return;
