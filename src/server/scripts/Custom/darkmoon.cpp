@@ -630,7 +630,7 @@ class spell_darkmoon_faire_cannon : public SpellScript
         if (!caster || !target)
             return;
 
-        if (target->isAlive() && target->GetEntry() == NPC_TONK_TARGET)
+        if (target->IsAlive() && target->GetEntry() == NPC_TONK_TARGET)
             caster->CastSpell(caster, SPELL_TONK_TARGET, true);
     }
 

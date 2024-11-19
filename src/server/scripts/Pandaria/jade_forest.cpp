@@ -2748,7 +2748,7 @@ public:
 
             if (Player* player = ObjectAccessor::FindPlayer(playerGUID))
             {
-                if (!player->isAlive())
+                if (!player->IsAlive())
                 {
                     DoAction(ACTION_REINITIALIZE);
                     events.Reset();
@@ -3212,23 +3212,6 @@ private:
     };
 };
 
-class player_pandaria_quest_intro : public PlayerScript
-{
-public:
-    player_pandaria_quest_intro() : PlayerScript("player_pandaria_quest_intro") {}
-
-	void OnUpdateArea(Player* player, uint32 NewArea) override
-	{
-		if (NewArea == 5853 && player->GetQuestStatus(29548) == QUEST_STATUS_INCOMPLETE && player->GetTeam() == ALLIANCE)
-		{
-            Position pos;
-            player->GetPosition(&pos);
-            player->KilledMonsterCredit(66292);
-            player->SendSpellScene(94, nullptr, true, &pos);
-		}
-	}
-};
-
 void AddSC_jade_forest()
 {
     // Rare mobs
@@ -3281,6 +3264,4 @@ void AddSC_jade_forest()
 	
 	// Items
     new item_alliance_flare_89602();
-	
-	RegisterPlayerScript(player_pandaria_quest_intro);
 }

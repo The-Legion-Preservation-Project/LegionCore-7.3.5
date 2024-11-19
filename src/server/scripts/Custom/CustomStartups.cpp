@@ -47,25 +47,41 @@ public:
     }
 };
 
-class player_pandaria_quest_intro : public PlayerScript
+namespace {
+
+    class OnNewCharFirstLogin : public PlayerScript
+    {
+
+    public:
+        OnNewCharFirstLogin() : PlayerScript("OnNewCharFirstLogin")
+        {
+        }
+
+        // run at first login of a new character
+        void OnLogin(Player* player, bool firstLogin) override
+        {
+            if (firstLogin)
+            {
+                ChatHandler(player->GetSession()).SendSysMessage("|cffFF0000HeronCore |r");
+            }
+        }
+    };
+}
+
+class OnWorldserverLoaded : public WorldScript
 {
 public:
-    player_pandaria_quest_intro() : PlayerScript("player_pandaria_quest_intro") {}
+    OnWorldserverLoaded() : WorldScript("OnWorldserverLoaded") {}
 
-	void OnUpdateArea(Player* player, uint32 NewArea)
-	{
-		if (NewArea == 5853 && player->GetQuestStatus(29548) == QUEST_STATUS_INCOMPLETE && player->IsInAlliance())
-		{
-            Position pos;
-            player->GetPosition(&pos);
-            player->KilledMonsterCredit(66292);
-            player->SendSpellScene(94, nullptr, true, &pos);
-		}
-	}
+    // run always when worldserver has loaded
+    void OnStartup() override
+    {
+        //TC_LOG_INFO(LOG_FILTER_WORLDSERVER, "LegionCore loaded...");
+    }
 };
 
 void AddSC_CustomStartups() {
-   
+    new OnNewCharFirstLogin();
+    new OnWorldserverLoaded();
     new OnMoPArrival();
-    new player_pandaria_quest_intro();
 }
