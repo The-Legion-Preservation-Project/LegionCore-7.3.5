@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,9 +15,17 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SC_SCRIPTLOADER_H
-#define SC_SCRIPTLOADER_H
+ // This is where scripts' loading functions should be declared:
+void AddSC_BattlePay_Golds();
+void AddSC_BattlePay_Professions();
+void AddSC_BattlePay_Services();
 
-void AddScripts();
-
-#endif
+// The name of this function should match:
+// void Add${NameOfDirectory}Scripts()
+void AddBattlePayScripts()
+{
+    AddSC_BattlePay_Golds();
+	AddSC_BattlePay_Professions();
+	AddSC_BattlePay_Services();
+	
+}

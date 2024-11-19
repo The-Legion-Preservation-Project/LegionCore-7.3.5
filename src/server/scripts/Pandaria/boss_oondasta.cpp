@@ -1,5 +1,13 @@
-
+//UWoWCore
 //World boss
+
+#include "ScriptMgr.h"
+#include "CreatureAI.h"
+#include "CombatAI.h"
+#include "UnitAI.h"
+#include "UnitEvents.h"
+
+
 
 enum eSpells
 {

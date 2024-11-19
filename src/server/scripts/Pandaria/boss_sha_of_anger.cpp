@@ -2,6 +2,13 @@
 Pandaria
 World boss
 */
+
+#include "CreatureAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+
+
 enum eBosses
 {
     BOSS_SHA_OF_ANGER,
