@@ -24,20 +24,6 @@ void AddSC_invasion_point_argus();
 void AddSC_sentinax();
 void Addsc_paraxis();
 
-// Class Halls
-void AddSC_class_hall_dh();
-void AddSC_class_hall_dk();
-void AddSC_class_hall_druid();
-void AddSC_class_hall_hunter();
-void AddSC_class_hall_mage();
-void AddSC_class_hall_monk();
-void AddSC_class_hall_paladin();
-void AddSC_class_hall_priest();
-void AddSC_class_hall_rogue();
-void AddSC_class_hall_shaman();
-void AddSC_class_hall_warlock();
-void AddSC_class_hall_warrior();
-
 void AddSC_brokenIslands();
 void AddSC_instance_broken_islands();
 
@@ -215,20 +201,6 @@ void AddLegionScripts()
     AddSC_sentinax();
     Addsc_paraxis();
 	
-	// Class Halls
-    AddSC_class_hall_dh();
-    AddSC_class_hall_dk();
-    AddSC_class_hall_druid();
-    AddSC_class_hall_hunter();
-    AddSC_class_hall_mage();
-    AddSC_class_hall_monk();
-    AddSC_class_hall_paladin();
-    AddSC_class_hall_priest();
-    AddSC_class_hall_rogue();
-    AddSC_class_hall_shaman();
-    AddSC_class_hall_warlock();
-    AddSC_class_hall_warrior();
-
     AddSC_brokenIslands();
     AddSC_instance_broken_islands();
 

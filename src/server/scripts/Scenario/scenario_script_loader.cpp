@@ -177,6 +177,16 @@ void AddSC_instance_army_training();
 void AddSC_instance_temple_of_the_jade_serpent();
 
 
+void AddSC_the_brawlers_guild();
+void AddSC_the_brawlers_guild_bosses_rank_one();
+void AddSC_the_brawlers_guild_bosses_rank_two();
+void AddSC_the_brawlers_guild_bosses_rank_three();
+void AddSC_the_brawlers_guild_bosses_rank_four();
+void AddSC_the_brawlers_guild_bosses_rank_five();
+void AddSC_the_brawlers_guild_bosses_rank_six();
+void AddSC_the_brawlers_guild_bosses_rank_seven();
+
+
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
 void AddScenarioScripts()
@@ -339,5 +349,15 @@ void AddScenarioScripts()
     AddSC_instance_army_training();
 
     AddSC_instance_temple_of_the_jade_serpent();
+
+    
+    AddSC_brawlers_guild();
+    AddSC_brawlers_guild_bosses_rank_one();
+    AddSC_brawlers_guild_bosses_rank_two();
+    AddSC_brawlers_guild_bosses_rank_three();
+    AddSC_brawlers_guild_bosses_rank_four();
+    AddSC_brawlers_guild_bosses_rank_five();
+    AddSC_brawlers_guild_bosses_rank_six();
+    AddSC_brawlers_guild_bosses_rank_seven();
 
 }
