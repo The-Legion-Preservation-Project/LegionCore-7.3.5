@@ -30,7 +30,6 @@ void AddSC_battleground_shado_pan();
 #ifdef SCRIPTS
 void AddWorldScripts();
 void AddBattlePayScripts();
-void AddBrawlersGuildScripts();
 void AddDraenorScripts();
 void AddEasternKingdomsScripts();
 void AddKalimdorScripts();
@@ -59,7 +58,6 @@ void AddScripts()
 #ifdef SCRIPTS
     AddWorldScripts();
     AddBattlePayScripts();
-    AddBrawlersGuildScripts();
     AddDraenorScripts();
     AddEasternKingdomsScripts();
     AddKalimdorScripts();
