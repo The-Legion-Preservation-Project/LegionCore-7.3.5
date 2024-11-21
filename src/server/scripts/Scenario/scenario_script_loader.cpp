@@ -18,14 +18,6 @@
  // This is where scripts' loading functions should be declared:
 
 //< Arena of Annihilation
-#include <BrawlersGuild/brawlers_guild.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_one.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_two.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_three.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_four.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_five.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_six.cpp>
-#include <BrawlersGuild/brawlers_guild_bosses_rank_seven.cpp>
 void AddSC_instance_arena_of_annihilation();
 void AddSC_boss_scar_shell();
 void AddSC_boss_jolgrum();
@@ -184,15 +176,14 @@ void AddSC_instance_army_training();
 
 void AddSC_instance_temple_of_the_jade_serpent();
 
-
-void AddSC_the_brawlers_guild();
-void AddSC_the_brawlers_guild_bosses_rank_one();
-void AddSC_the_brawlers_guild_bosses_rank_two();
-void AddSC_the_brawlers_guild_bosses_rank_three();
-void AddSC_the_brawlers_guild_bosses_rank_four();
-void AddSC_the_brawlers_guild_bosses_rank_five();
-void AddSC_the_brawlers_guild_bosses_rank_six();
-void AddSC_the_brawlers_guild_bosses_rank_seven();
+void AddSC_brawlers_guild();
+void AddSC_brawlers_guild_bosses_rank_one();
+void AddSC_brawlers_guild_bosses_rank_two();
+void AddSC_brawlers_guild_bosses_rank_three();
+void AddSC_brawlers_guild_bosses_rank_four();
+void AddSC_brawlers_guild_bosses_rank_five();
+void AddSC_brawlers_guild_bosses_rank_six();
+void AddSC_brawlers_guild_bosses_rank_seven();
 
 
 // The name of this function should match:
