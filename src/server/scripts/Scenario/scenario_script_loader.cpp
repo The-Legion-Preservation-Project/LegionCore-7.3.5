@@ -18,6 +18,14 @@
  // This is where scripts' loading functions should be declared:
 
 //< Arena of Annihilation
+#include <BrawlersGuild/brawlers_guild.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_one.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_two.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_three.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_four.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_five.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_six.cpp>
+#include <BrawlersGuild/brawlers_guild_bosses_rank_seven.cpp>
 void AddSC_instance_arena_of_annihilation();
 void AddSC_boss_scar_shell();
 void AddSC_boss_jolgrum();
