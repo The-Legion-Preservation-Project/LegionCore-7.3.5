@@ -1102,7 +1102,7 @@ void Creature::Update(uint32 diff)
             if(HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
             {
                 m_regenTimerCount += diff;
-                Regenerate(getPowerType(), diff);
+                Regenerate(GetPowerType(), diff);
                 
                 if (m_regenTimerCount >= GetRegenerateInterval())
                     m_regenTimerCount -= m_sendInterval;
@@ -1871,17 +1871,17 @@ void Creature::SelectLevel(const CreatureTemplate* cInfo)
     switch (getClass())
     {
         case CLASS_WARRIOR:
-            setPowerType(POWER_RAGE);
+            SetPowerType(POWER_RAGE);
             //SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
             //SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
             break;
         case CLASS_ROGUE:
-            setPowerType(POWER_ENERGY);
+            SetPowerType(POWER_ENERGY);
             SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
             SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
             break;
         default:
-            setPowerType(POWER_MANA);
+            SetPowerType(POWER_MANA);
             SetMaxPower(POWER_MANA, mana);
             SetPower(POWER_MANA, mana);
             break;
@@ -2280,12 +2280,12 @@ bool Creature::LoadCreatureFromDB(ObjectGuid::LowType guid, Map* map, bool addTo
         switch (getClass())
         {
             case CLASS_WARRIOR:
-                setPowerType(POWER_RAGE);
+                SetPowerType(POWER_RAGE);
                 //SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 //SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
-                setPowerType(POWER_ENERGY);
+                SetPowerType(POWER_ENERGY);
                 SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
@@ -2300,12 +2300,12 @@ bool Creature::LoadCreatureFromDB(ObjectGuid::LowType guid, Map* map, bool addTo
         switch (getClass())
         {
             case CLASS_WARRIOR:
-                setPowerType(POWER_RAGE);
+                SetPowerType(POWER_RAGE);
                 //SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 //SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
                 break;
             case CLASS_ROGUE:
-                setPowerType(POWER_ENERGY);
+                SetPowerType(POWER_ENERGY);
                 SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
@@ -2382,7 +2382,7 @@ void Creature::SetSpawnHealth()
     }
 
     SetHealth((m_deathState == ALIVE || m_deathState == JUST_RESPAWNED) ? curhealth : 0);
-    SetInitialPowerValue(getPowerType());
+    SetInitialPowerValue(GetPowerType());
 }
 
 bool Creature::hasQuest(uint32 quest_id) const

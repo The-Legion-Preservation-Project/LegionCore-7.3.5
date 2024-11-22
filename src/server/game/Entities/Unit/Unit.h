@@ -1277,9 +1277,9 @@ class Unit : public WorldObject
         virtual float GetDamageMultiplierForTarget(WorldObject const* /*target*/) const { return 1.0f; }
         virtual float GetArmorMultiplierForTarget(WorldObject const* /*target*/) const { return 1.0f; }
 
-        Powers getPowerType() const { return Powers(GetUInt32Value(UNIT_FIELD_DISPLAY_POWER)); }
+        Powers GetPowerType() const { return Powers(GetUInt32Value(UNIT_FIELD_DISPLAY_POWER)); }
         void SetFieldPowerType(uint32 powerType) { SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, powerType); }
-        void setPowerType(Powers power);
+        void SetPowerType(Powers power);
         void SetInitialPowerValue(Powers powerType);
         int32 GetPower(Powers power) const;
         int32 GetMaxPower(Powers power) const;

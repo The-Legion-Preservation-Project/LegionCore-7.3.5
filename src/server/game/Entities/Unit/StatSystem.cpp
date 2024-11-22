@@ -1856,7 +1856,7 @@ bool Creature::UpdateAllStats()
     UpdateMaxHealth();
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);
-    UpdateMaxPower(getPowerType());
+    UpdateMaxPower(GetPowerType());
     UpdateMaxPower(POWER_ALTERNATE);
 
     for (int8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
@@ -2137,7 +2137,7 @@ bool Guardian::UpdateStats(Stats stat)
         }
         case STAT_INTELLECT:
         {
-            if (getPowerType() == POWER_MANA)
+            if (GetPowerType() == POWER_MANA)
                 UpdateMaxPower(POWER_MANA);
             if (owner->getClass() == CLASS_MAGE)
                 UpdateAttackPowerAndDamage();
@@ -2155,7 +2155,7 @@ bool Guardian::UpdateAllStats()
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         UpdateStats(Stats(i));
 
-    UpdateMaxPower(getPowerType());
+    UpdateMaxPower(GetPowerType());
     UpdateMaxPower(POWER_ALTERNATE);
 
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)

@@ -372,8 +372,8 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
             SetHealth(GetCreateHealth());
         }
 
-        if (getPowerType() != pStats->energy_type)
-            setPowerType(Powers(pStats->energy_type));
+        if (GetPowerType() != pStats->energy_type)
+            SetPowerType(Powers(pStats->energy_type));
 
         if (pStats->energy_type)
         {

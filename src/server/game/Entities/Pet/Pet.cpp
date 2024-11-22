@@ -339,7 +339,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
     SetCanModifyStats(true);
 
     if (getPetType() == SUMMON_PET && !current)
-        SetPower(getPowerType(), GetMaxPower(getPowerType()));
+        SetPower(GetPowerType(), GetMaxPower(GetPowerType()));
     else
     {
         uint32 savedhealth = petInfo->Health;
@@ -350,7 +350,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
         else
         {
             SetHealth(savedhealth);
-            SetPower(getPowerType(), savedmana > uint32(GetMaxPower(getPowerType())) ? GetMaxPower(getPowerType()) : savedmana);
+            SetPower(GetPowerType(), savedmana > uint32(GetMaxPower(GetPowerType())) ? GetMaxPower(GetPowerType()) : savedmana);
         }
     }
 
@@ -922,7 +922,7 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
     if (!Create(guid, map, phaseMask, cinfo->Entry, pet_number))
         return false;
 
-    setPowerType(POWER_FOCUS);
+    SetPowerType(POWER_FOCUS);
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, 0);
     SetUInt32Value(UNIT_FIELD_PET_EXPERIENCE, 0);
     SetUInt32Value(UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE, 2147483647);

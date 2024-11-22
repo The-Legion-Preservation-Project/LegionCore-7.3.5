@@ -815,7 +815,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     InitTalentForLevel();
     InitPrimaryProfessions();                               // to max set before any spell added
 
-    switch (getPowerType())
+    switch (GetPowerType())
     {
         case POWER_MANA:
             UpdateMaxPower(POWER_MANA);                         // Update max Mana (for add bonus from intellect)
@@ -3179,7 +3179,7 @@ void Player::ResetAllPowers()
 
     ResetPowers();
 
-    switch (getPowerType())
+    switch (GetPowerType())
     {
         case POWER_MANA:
             SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
@@ -4307,7 +4307,7 @@ void Player::LearnSpecializationSpells()
         }
     }
 
-    setPowerType(GetPowerTypeBySpecId(specializationId));
+    SetPowerType(GetPowerTypeBySpecId(specializationId));
 }
 
 void Player::UnlearnSpellsFromOtherClasses()
@@ -26618,7 +26618,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     pet->SetUInt32Value(UNIT_FIELD_PET_EXPERIENCE, 0);
     pet->SetUInt32Value(UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE, 1000);
     pet->SetFullHealth();
-    pet->SetPower(getPowerType(), GetMaxPower(getPowerType()));
+    pet->SetPower(GetPowerType(), GetMaxPower(GetPowerType()));
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(GameTime::GetGameTime())); // cast can't be helped in this case
 
     // after SetPetNumber
@@ -27993,30 +27993,30 @@ void Player::InitDataForForm(bool reapplyMods)
         case FORM_FIERCE_TIGER:
         {
             FierceTiger = true;
-            if (getPowerType() != POWER_ENERGY)
-                setPowerType(POWER_ENERGY);
+            if (GetPowerType() != POWER_ENERGY)
+                SetPowerType(POWER_ENERGY);
             break;
         }
         case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
         {
-            if (getPowerType() != POWER_ENERGY)
-                setPowerType(POWER_ENERGY);
+            if (GetPowerType() != POWER_ENERGY)
+                SetPowerType(POWER_ENERGY);
             break;
         }
         case FORM_BEAR:
         {
-            if (getPowerType() != POWER_RAGE)
-                setPowerType(POWER_RAGE);
+            if (GetPowerType() != POWER_RAGE)
+                SetPowerType(POWER_RAGE);
             break;
         }
         case FORM_SPIRITED_CRANE:
         case FORM_WISE_SERPENT:
         case FORM_GHOSTWOLF:
         {
-            if (getPowerType() != POWER_MANA)
-                setPowerType(POWER_MANA);
+            if (GetPowerType() != POWER_MANA)
+                SetPowerType(POWER_MANA);
             break;
         }
         default:                                            // 0, for example

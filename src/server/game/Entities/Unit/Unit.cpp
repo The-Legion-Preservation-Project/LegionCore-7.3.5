@@ -1020,7 +1020,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     }
 
     // Rage from Damage made (only from direct weapon damage)
-    if (cleanDamage && damagetype == DIRECT_DAMAGE && this != victim && getPowerType() == POWER_RAGE)
+    if (cleanDamage && damagetype == DIRECT_DAMAGE && this != victim && GetPowerType() == POWER_RAGE)
     {
         if (cleanDamage->hitOutCome == MELEE_HIT_NORMAL || cleanDamage->hitOutCome == MELEE_HIT_CRIT)
         {
@@ -1108,7 +1108,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     if (!damage)
     {
         // Rage from absorbed damage
-        if (cleanDamage && cleanDamage->absorbed_damage && victim->getPowerType() == POWER_RAGE)
+        if (cleanDamage && cleanDamage->absorbed_damage && victim->GetPowerType() == POWER_RAGE)
             victim->RewardRage(cleanDamage->absorbed_damage + cleanDamage->mitigated_damage, false);
 
         return 0;
@@ -1195,7 +1195,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         }
 
         // Rage from damage received
-        if (this != victim && victim->getPowerType() == POWER_RAGE)
+        if (this != victim && victim->GetPowerType() == POWER_RAGE)
             victim->RewardRage(damage + (cleanDamage ? (cleanDamage->absorbed_damage + cleanDamage->mitigated_damage) : 0), false);
 
         if (IsPlayer())
@@ -11144,19 +11144,19 @@ bool Unit::HandleOverrideClassScriptAuraProc(Unit* victim, DamageInfo* /*dmgInfo
     return true;
 }
 
-void Unit::setPowerType(Powers fieldPower)
+void Unit::SetPowerType(Powers power)
 {
-    if (getPowerType() == fieldPower)
+    if (GetPowerType() == power)
         return;
 
     //! For expl. Vehicle power POWER_TYPE_VAULT_CRACKING_PROGRESS = 82 has field = 0;
     //! Maybe it's index? but for vehicle send power category.
-    SetFieldPowerType(fieldPower);
+    SetFieldPowerType(power);
 
     if (IsPlayer())
         ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POWER_TYPE);
 
-    Powers new_powertype = fieldPower;
+    Powers new_powertype = power;
     switch (new_powertype)
     {
         case POWER_MANA:
@@ -15489,7 +15489,7 @@ Powers Unit::GetPowerTypeBySpecId(uint32 specID)
     }
     if (ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(getClass()))
         return Powers(cEntry->DisplayPower);
-    return getPowerType();
+    return GetPowerType();
 }
 
 void Unit::AddComboPoints(int8 count)

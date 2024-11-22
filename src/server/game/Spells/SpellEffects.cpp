@@ -2323,7 +2323,7 @@ void Spell::EffectPowerDrain(SpellEffIndex effIndex)
 
     auto powerType = Powers(m_spellInfo->GetEffect(effIndex, m_diffMode)->MiscValue);
 
-    if (!unitTarget || !unitTarget->IsAlive() || unitTarget->getPowerType() != powerType || damage < 0)
+    if (!unitTarget || !unitTarget->IsAlive() || unitTarget->GetPowerType() != powerType || damage < 0)
         return;
 
     // add spell damage bonus
