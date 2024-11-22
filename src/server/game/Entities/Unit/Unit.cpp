@@ -11178,7 +11178,7 @@ void Unit::SetInitialPowerValue(Powers powerType)
     if ((powerTypeEntry->Flags & PowerTypeFlags::UnitsUseDefaultPowerOnInit) != 0)
         SetPower(powerType, powerTypeEntry->DefaultPower);
     else
-        SetPower(powerType, GetMaxPower(powerType));
+        SetFullPower(powerType);
 }
 
 FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
@@ -17175,7 +17175,7 @@ void Unit::ResetPowers(float perc, bool duel)
         {
             case POWER_MANA:
                 if (duel)
-                    SetPower(power, GetMaxPower(POWER_MANA));
+                    SetFullPower(POWER_MANA);
                 break;
             case POWER_ALTERNATE:
                 break;

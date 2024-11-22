@@ -819,7 +819,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     {
         case POWER_MANA:
             UpdateMaxPower(POWER_MANA);                         // Update max Mana (for add bonus from intellect)
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+            SetFullPower(POWER_MANA);
             break;
         default:
             break;
@@ -2696,14 +2696,15 @@ void Player::ProcessDelayedOperations()
             if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
                 SetPower(POWER_MANA, _resurrectionData->Mana);
             else
-                SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+                SetFullPower(POWER_MANA);
 
             SetPower(POWER_RAGE, 0);
-            SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
-            SetPower(POWER_FURY, GetMaxPower(POWER_FURY));
-            SetPower(POWER_PAIN, GetMaxPower(POWER_PAIN));
-            SetPower(POWER_LUNAR_POWER, 0, false);
-            SetPower(POWER_RUNES, GetMaxPower(POWER_RUNES));
+            SetFullPower(POWER_ENERGY);
+            SetFullPower(POWER_FURY);
+            SetFullPower(POWER_PAIN);
+            SetPower(POWER_LUNAR_POWER, 0);
+            SetFullPower(POWER_RUNES);
+            SetPower(POWER_RUNIC_POWER, 0);
 
             if (uint32 aura = _resurrectionData->Aura)
                 CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
@@ -3182,7 +3183,7 @@ void Player::ResetAllPowers()
     switch (GetPowerType())
     {
         case POWER_MANA:
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+            SetFullPower(POWER_MANA);
             break;
         default:
             break;
@@ -3886,10 +3887,10 @@ void Player::GiveLevel(uint8 level)
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
-    SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+    SetFullPower(POWER_MANA);
+    SetFullPower(POWER_ENERGY);
     if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
+        SetFullPower(POWER_RAGE);
     SetPower(POWER_FOCUS, 0);
 
     // update level to hunter/summon pet
@@ -4581,7 +4582,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetFullHealth();
 
     if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
+        SetFullPower(POWER_RAGE);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
@@ -25426,15 +25427,8 @@ void Player::ResurectUsingRequestData()
 
     ResurrectPlayer(0.0f, false);
 
-    if (GetMaxHealth() > _resurrectionData->Health)
-        SetHealth(_resurrectionData->Health);
-    else
-        SetFullHealth();
-
-    if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
-        SetPower(POWER_MANA, _resurrectionData->Mana);
-    else
-        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+    SetHealth(_resurrectionData->Health);
+    SetPower(POWER_MANA, _resurrectionData->Mana);
 
     ResetPowers();
 
@@ -26618,7 +26612,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
     pet->SetUInt32Value(UNIT_FIELD_PET_EXPERIENCE, 0);
     pet->SetUInt32Value(UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE, 1000);
     pet->SetFullHealth();
-    pet->SetPower(GetPowerType(), GetMaxPower(GetPowerType()));
+    pet->SetFullPower(GetPowerType());
     pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(GameTime::GetGameTime())); // cast can't be helped in this case
 
     // after SetPetNumber

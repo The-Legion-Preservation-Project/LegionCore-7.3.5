@@ -2310,7 +2310,7 @@ bool Creature::LoadCreatureFromDB(ObjectGuid::LowType guid, Map* map, bool addTo
                 SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
                 break;
             default:
-                SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+                SetFullPower(POWER_MANA);
                 break;
         }
     }

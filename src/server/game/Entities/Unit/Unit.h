@@ -1287,6 +1287,7 @@ class Unit : public WorldObject
         void InitialPowers(bool maxpower = false);
         void ResetPowers(float perc = 0.0f, bool duel = false);
         void SetMaxPower(Powers power, int32 val);
+        inline void SetFullPower(Powers power) { SetPower(power, GetMaxPower(power)); }
         int32 GetPowerForReset(Powers power, uint16 powerDisplayID = 0) const;
         void VisualForPower(Powers power, int32 curentVal, int32 modVal = 0, int32 maxPower = 0, bool generate = false, SpellInfo const* spellInfo = nullptr);
         void UpdatePowerState(bool inCombat = true);
@@ -2724,8 +2725,8 @@ namespace Trinity
             PowerPctOrderPred(Powers power, bool ascending = true) : m_power(power), m_ascending(ascending) {}
             bool operator() (const Unit* a, const Unit* b) const
             {
-                float rA = a->GetMaxPower(m_power) ? float(a->GetPower(m_power)) / float(a->GetMaxPower(m_power)) : 0.0f;
-                float rB = b->GetMaxPower(m_power) ? float(b->GetPower(m_power)) / float(b->GetMaxPower(m_power)) : 0.0f;
+                float rA = a ? a->GetPowerPct(m_power) : 0.0f;
+                float rB = b ? b->GetPowerPct(m_power) : 0.0f;
                 return m_ascending ? rA < rB : rA > rB;
             }
         private:

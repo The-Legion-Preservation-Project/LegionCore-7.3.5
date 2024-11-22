@@ -339,7 +339,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
     SetCanModifyStats(true);
 
     if (getPetType() == SUMMON_PET && !current)
-        SetPower(GetPowerType(), GetMaxPower(GetPowerType()));
+        SetFullPower(GetPowerType());
     else
     {
         uint32 savedhealth = petInfo->Health;
@@ -986,7 +986,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
         SetCreateHealth(stats->BaseHealth[cinfo->HealthScalingExpansion]);
         SetCreateMana(stats->GenerateMana(cinfo));
-        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+        SetFullPower(POWER_MANA);
     }
 
     if(owner && (owner->getClass() == CLASS_HUNTER || owner->getClass() == CLASS_WARLOCK))
