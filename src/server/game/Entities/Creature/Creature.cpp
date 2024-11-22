@@ -1870,25 +1870,15 @@ void Creature::SelectLevel(const CreatureTemplate* cInfo)
 
     switch (getClass())
     {
-        case CLASS_WARRIOR:
-            SetPowerType(POWER_RAGE);
-            //SetMaxPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
-            //SetPower(POWER_RAGE, GetCreatePowers(POWER_RAGE));
-            break;
-        case CLASS_ROGUE:
-            SetPowerType(POWER_ENERGY);
-            SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
-            SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
-            break;
-        default:
-            SetPowerType(POWER_MANA);
+        case CLASS_PALADIN:
+        case CLASS_MAGE:
             SetMaxPower(POWER_MANA, mana);
-            SetPower(POWER_MANA, mana);
+            SetFullPower(POWER_MANA);
+        default: // We don't set max power here, 0 makes power bar hidden
             break;
     }
 
     SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, static_cast<float>(health));
-    SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, static_cast<float>(mana));
 
     //damage
     float maxDmgMod = 1.5f;

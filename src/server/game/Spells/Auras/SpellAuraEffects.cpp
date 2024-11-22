@@ -9063,7 +9063,7 @@ void AuraEffect::HandleAuraeEablePowerType(AuraApplication const* aurApp, uint8 
         return;
 
     Unit* target = aurApp->GetTarget();
-    if (target->GetPowerIndex(powerDisplay->ActualType) == MAX_POWERS)
+    if (target->GetPowerIndex(Powers(powerDisplay->ActualType)) == MAX_POWERS)
         return;
 
     if (apply)

@@ -11157,16 +11157,22 @@ void Unit::SetPowerType(Powers power)
         ToPlayer()->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POWER_TYPE);
 
     Powers new_powertype = power;
+
+    UpdateMaxPower(new_powertype);
+
     switch (new_powertype)
     {
-        case POWER_MANA:
+        case POWER_MANA: // Keep the same (druid form switching...)
+        case POWER_ENERGY:
+            break;
+        case POWER_RAGE: // Reset to zero
+            SetPower(POWER_RAGE, 0);
+        case POWER_FOCUS: // Make it full
+            SetFullPower(new_powertype);
             break;
         default:
-            SetMaxPower(new_powertype, GetCreatePowers(new_powertype));
-            SetPower(new_powertype, GetPowerForReset(new_powertype));
             break;
     }
-    UpdateMaxPower(new_powertype);
 }
 
 void Unit::SetInitialPowerValue(Powers powerType)
@@ -17039,15 +17045,6 @@ void Unit::SetMaxHealth(uint64 val)
 
     if (val < health)
         SetHealth(val);
-}
-
-uint32 Unit::GetPowerIndex(uint32 powerType) const
-{
-    uint32 classId = getClass();
-    if (ToPet() && ToPet()->getPetType() == HUNTER_PET)
-        classId = CLASS_HUNTER;
-
-    return sDB2Manager.GetPowerIndexByClass(powerType, classId);
 }
 
 uint32 Unit::GetAttackTime(WeaponAttackType att) const

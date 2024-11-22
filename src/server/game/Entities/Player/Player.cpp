@@ -980,6 +980,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
     UpdateMaxHealth();                                      // Update max Health (for add bonus from stamina)
     SetFullHealth();
+    SetFullPower(POWER_MANA);
 
     // Add item to collection
     AddNonVisibleItemToCollect();
@@ -3885,13 +3886,9 @@ void Player::GiveLevel(uint8 level)
     UpdateAllStats();
     SendOperationsAfterDelay(OAD_RECALC_ITEMS);
 
-    // set current level health and mana/energy to maximum after applying all mods.
+    // Only health and mana are set to maximum
     SetFullHealth();
     SetFullPower(POWER_MANA);
-    SetFullPower(POWER_ENERGY);
-    if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
-        SetFullPower(POWER_RAGE);
-    SetPower(POWER_FOCUS, 0);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())

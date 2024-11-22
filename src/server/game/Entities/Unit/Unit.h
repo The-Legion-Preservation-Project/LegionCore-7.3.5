@@ -1303,7 +1303,6 @@ class Unit : public WorldObject
         int32 GetPowerCost(int8 power);
         int32 ModifyPower(Powers power, int32 val, bool set = false, SpellInfo const* spellInfo = nullptr);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
-        uint32 GetPowerIndex(uint32 powerType) const;
 
         uint32 GetAttackTime(WeaponAttackType att) const;
         void SetAttackTime(WeaponAttackType att, uint32 val);
@@ -2008,6 +2007,7 @@ class Unit : public WorldObject
         virtual void UpdateArmor() = 0;
         virtual void UpdateMaxHealth() = 0;
         virtual void UpdateMaxPower(Powers power) = 0;
+        virtual uint32 GetPowerIndex(Powers power) const = 0;
         virtual void UpdateAttackPowerAndDamage(bool ranged = false) = 0;
         virtual void UpdateDamagePhysical(WeaponAttackType attType) = 0;
         float GetTotalAttackPowerValue(WeaponAttackType attType) const;
