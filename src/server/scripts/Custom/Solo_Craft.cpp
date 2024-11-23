@@ -310,7 +310,7 @@ class spell_solocraft_aura_167349 : public AuraScript
 		player->SetFullHealth();
 
 		// Filling up the mana if the player has
-		if (player->getPowerType() == POWER_MANA)
+		if (player->GetPowerType() == POWER_MANA)
 			player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
 
 		// Cooldown Cheat (be careful)
