@@ -2667,7 +2667,7 @@ void ObjectMgr::LoadGameobjects()
             WorldDatabase.PExecute("UPDATE gameobject SET spawnMask = " UI64FMTD " WHERE guid = %u", spawnMasks[data.mapid], guid);
         }
 
-        data.phaseMask      = fields[18].GetUInt16();
+        data.phaseMask      = fields[18].GetInt32();
         int16 gameEvent     = fields[19].GetInt16();
         uint32 PoolId        = fields[20].GetUInt32();
 

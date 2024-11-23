@@ -577,10 +577,10 @@ public:
 };
 
 // Chi Ji - 59653
-class npc_chi_ji : public CreatureScript
+class npc_chi_ji_1 : public CreatureScript
 {
 public:
-    npc_chi_ji() : CreatureScript("npc_chi_ji") {}
+    npc_chi_ji_1() : CreatureScript("npc_chi_ji_1") {}
 
     bool OnGossipHello(Player* player, Creature* creature) override
     {
@@ -2466,7 +2466,7 @@ void AddSC_krasarang_wilds()
     new spell_chi_torpedo_periodic();
     new mob_anduin_wrynn();
     new mob_anduin_wrynn_escort();
-    new npc_chi_ji();
+    new npc_chi_ji_1();
     new mob_sha_of_despair();
     new npc_thelonius();
     new mob_ellia_ravenmane();

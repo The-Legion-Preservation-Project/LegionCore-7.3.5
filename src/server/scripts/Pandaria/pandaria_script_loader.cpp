@@ -111,7 +111,11 @@ void AddSC_boss_garrosh_hellscream();
 void AddSC_valley_of_the_four_winds();
 void AddSC_krasarang_wilds();
 void AddSC_kun_lai_summit();
-
+void AddSC_dread_wastes();
+void AddSC_jade_forest();
+void AddSC_the_veiled_stair();
+void AddSC_townlong_steppes();
+void AddSC_vale_of_eternal_blossoms();
 void AddSC_WanderingIsland();
 void AddSC_timeless_isle();
 
@@ -212,10 +216,14 @@ void AddPandariaScripts()
     AddSC_boss_paragons_of_the_klaxxi();
     AddSC_boss_garrosh_hellscream();
 
-    AddSC_valley_of_the_four_winds();
-    AddSC_krasarang_wilds();
-    AddSC_kun_lai_summit();
-
-    AddSC_WanderingIsland();
-    AddSC_timeless_isle();
+     AddSC_valley_of_the_four_winds();
+     AddSC_krasarang_wilds();
+     AddSC_kun_lai_summit();
+     AddSC_dread_wastes();
+     AddSC_jade_forest();
+     AddSC_the_veiled_stair();
+     AddSC_townlong_steppes();
+     AddSC_vale_of_eternal_blossoms();
+     AddSC_WanderingIsland();
+     AddSC_timeless_isle();
 }
