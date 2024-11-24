@@ -83,7 +83,7 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext* ioContext)
     _port = sConfigMgr->GetIntDefault("LoginREST.Port", 8081);
     if (_port < 0 || _port > 0xFFFF)
     {
-        TC_LOG_ERROR("server.bnetserver", "REST Specified login service port (%d) out of allowed range (1-65535), defaulting to 8081", _port);
+        TC_LOG_ERROR("server.bnetserver", "Specified login service port (%d) out of allowed range (1-65535), defaulting to 8081", _port);
         _port = 8081;
     }
 
@@ -93,7 +93,7 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext* ioContext)
     Optional<boost::asio::ip::tcp::endpoint> externalAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
     if (!externalAddress)
     {
-        TC_LOG_ERROR("server.bnetserver", "REST Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
+        TC_LOG_ERROR("server.bnetserver", "Could not resolve LoginREST.ExternalAddress %s", configuredAddress.c_str());
         return false;
     }
 
@@ -104,7 +104,7 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext* ioContext)
     Optional<boost::asio::ip::tcp::endpoint> localAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
     if (!localAddress)
     {
-        TC_LOG_ERROR("server.bnetserver", "REST Could not resolve LoginREST.LocalAddress %s", configuredAddress.c_str());
+        TC_LOG_ERROR("server.bnetserver", "Could not resolve LoginREST.LocalAddress %s", configuredAddress.c_str());
         return false;
     }
 
@@ -167,11 +167,11 @@ void LoginRESTService::Run()
     soapServer.send_timeout = 5;
     if (!soap_valid_socket(soap_bind(&soapServer, _bindIP.c_str(), _port, 100)))
     {
-        TC_LOG_ERROR("server.bnetserver", "REST Couldn't bind to %s:%d", _bindIP.c_str(), _port);
+        TC_LOG_ERROR("server.rest", "Couldn't bind to %s:%d", _bindIP.c_str(), _port);
         return;
     }
 
-    TC_LOG_INFO("server.bnetserver", "REST Login service bound to http://%s:%d", _bindIP.c_str(), _port);
+    TC_LOG_INFO("server.rest", "Login service bound to http://%s:%d", _bindIP.c_str(), _port);
 
     http_post_handlers handlers[] =
     {
@@ -197,11 +197,11 @@ void LoginRESTService::Run()
         boost::asio::ip::address_v4 address(soapClient->ip);
         if (soap_ssl_accept(soapClient.get()) != SOAP_OK)
         {
-            TC_LOG_DEBUG("server.bnetserver", "REST Failed SSL handshake from IP=%s", address.to_string().c_str());
+            TC_LOG_DEBUG("server.rest", "Failed SSL handshake from IP=%s", address.to_string().c_str());
             continue;
         }
 
-        TC_LOG_DEBUG("server.bnetserver", "REST Accepted connection from IP=%s", address.to_string().c_str());
+        TC_LOG_DEBUG("server.rest", "Accepted connection from IP=%s", address.to_string().c_str());
 
         Trinity::Asio::post(*_ioContext, [soapClient]()
         {
@@ -215,7 +215,7 @@ void LoginRESTService::Run()
     // and release the context handle here - soap does not own it so it should not free it on exit
     soapServer.ctx = nullptr;
 
-    TC_LOG_INFO("server.bnetserver", "REST Login service exiting...");
+    TC_LOG_INFO("server.rest", "Login service exiting...");
 }
 
 int32 LoginRESTService::HandleGet(soap* soapClient)
@@ -223,12 +223,12 @@ int32 LoginRESTService::HandleGet(soap* soapClient)
     boost::asio::ip::address_v4 address(soapClient->ip);
     std::string ip_address = address.to_string();
 
-    TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling GET request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
+    TC_LOG_DEBUG("server.rest", "[%s:%d] Handling GET request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
 
     static std::string const expectedPath = "/bnetserver/login/";
     if (strstr(soapClient->path, expectedPath.c_str()) != &soapClient->path[0])
     {
-        TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling GET 404", ip_address.c_str(), soapClient->port);
+        TC_LOG_DEBUG("server.rest", "[%s:%d] Handling GET 404", ip_address.c_str(), soapClient->port);
         return 404;
     }
 
@@ -240,12 +240,12 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     boost::asio::ip::address_v4 address(soapClient->ip);
     std::string ip_address = address.to_string();
 
-    TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
+    TC_LOG_DEBUG("server.rest", "[%s:%d] Handling POST request path=\"%s\"", ip_address.c_str(), soapClient->port, soapClient->path);
 
     static std::string const expectedPath = "/bnetserver/login/";
     if (strstr(soapClient->path, expectedPath.c_str()) != &soapClient->path[0])
     {
-        TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST 404", ip_address.c_str(), soapClient->port);
+        TC_LOG_DEBUG("server.rest", "[%s:%d] Handling POST 404", ip_address.c_str(), soapClient->port);
         return 404;
     }
 
@@ -258,7 +258,7 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     {
         if (soap_register_plugin_arg(soapClient, &ResponseCodePlugin::Init, nullptr) != SOAP_OK)
         {
-            TC_LOG_DEBUG("server.bnetserver", "REST [%s:%d] Handling POST 500", ip_address.c_str(), soapClient->port);
+            TC_LOG_DEBUG("server.rest", "[%s:%d] Handling POST 500", ip_address.c_str(), soapClient->port);
             return 500;
         }
 
@@ -319,7 +319,7 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
         }
 
         Battlenet::JSON::Login::LoginResult loginResult;
-        loginResult.set_authentication_state(Battlenet::JSON::Login::LOGIN);
+        loginResult.set_authentication_state(Battlenet::JSON::Login::DONE);
         sLoginService.SendResponse(request->GetClient(), loginResult);
     })
          .WithChainingPreparedCallback([request](QueryCallback& callback, PreparedQueryResult characterCountsResult)
@@ -361,11 +361,11 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
         loginResult.set_authentication_state(Battlenet::JSON::Login::DONE);
         loginResult.set_login_ticket("TC-" + ByteArrayToHexStr(ticket.AsByteArray(20).get(), 20));
         sLoginService.SendResponse(request->GetClient(), loginResult);
-        sLoginService.AddLoginTicket(loginResult.login_ticket(), std::move(request->GetResult()));
 
+        sLoginService.AddLoginTicket(loginResult.login_ticket(), std::move(request->GetResult()));
     }));
 
-    Trinity::Asio::post(*_ioContext, std::bind(&LoginRESTService::HandleAsyncRequest, this, std::move(request)));
+    Trinity::Asio::post(*_ioContext, [this, request]() { HandleAsyncRequest(request); });
 
     return SOAP_CUSTOM_STATUS_ASYNC;
 }
@@ -382,7 +382,7 @@ int32 LoginRESTService::SendResponse(soap* soapClient, google::protobuf::Message
 void LoginRESTService::HandleAsyncRequest(std::shared_ptr<AsyncLoginRequest> request)
 {
     if (!request->InvokeIfReady())
-        Trinity::Asio::post(*_ioContext, std::bind(&LoginRESTService::HandleAsyncRequest, this, std::move(request)));
+        Trinity::Asio::post(*_ioContext, [this, request] { HandleAsyncRequest(request); });
 }
 
 std::string LoginRESTService::CalculateShaPassHash(std::string const& name, std::string const& password)
