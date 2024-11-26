@@ -23,10 +23,6 @@ void AddSC_battleground_warsong();
 void AddSC_battleground_kotmogu();
 void AddSC_battleground_shado_pan();
 
-//customs
-void AddSC_CustomStartups();
-void AddSC_solocraft();
-
 //spells
 void AddSC_demonhunter_spell_scripts();
 void AddSC_deathknight_spell_scripts();
@@ -2058,10 +2054,3 @@ void AddBattlegroundScripts()
     AddSC_battleground_shado_pan();
 }
 
-void AddCustomScripts()
-{
-#ifdef SCRIPTS
-    AddSC_CustomStartups();
-    AddSC_solocraft();
-#endif
-}
