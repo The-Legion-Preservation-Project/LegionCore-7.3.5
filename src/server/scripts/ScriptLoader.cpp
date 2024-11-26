@@ -111,7 +111,7 @@ void AddSC_petbattle_abilities();
 void AddSC_PetBattlePlayerScript();
 void AddSC_npc_PetBattleTrainer();
 
-//eastern kingdoms
+//kalimdor
 void AddSC_instance_lost_city_of_the_tolvir(); // Lost City of the Tol'Vir
 void AddSC_lost_city_of_the_tolvir();
 void AddSC_boss_general_husam();
@@ -129,7 +129,6 @@ void AddSC_boss_isiset();
 void AddSC_boss_setesh();
 void AddSC_boss_rajh();
 
-//kalimdor
 void AddSC_boss_adarogg();
 void AddSC_boss_dark_shaman_koranthal();
 void AddSC_boss_slagmaw();
@@ -1038,15 +1037,6 @@ void AddSC_instance_army_training();
 
 void AddSC_instance_temple_of_the_jade_serpent();
 
-void AddSC_brawlers_guild();
-void AddSC_brawlers_guild_bosses_rank_one();
-void AddSC_brawlers_guild_bosses_rank_two();
-void AddSC_brawlers_guild_bosses_rank_three();
-void AddSC_brawlers_guild_bosses_rank_four();
-void AddSC_brawlers_guild_bosses_rank_five();
-void AddSC_brawlers_guild_bosses_rank_six();
-void AddSC_brawlers_guild_bosses_rank_seven();
-
 // outdoor pvp
 void AddSC_outdoorpvp_hp();
 void AddSC_outdoorpvp_na();
@@ -1077,6 +1067,7 @@ void AddScripts()
     AddMaelstromScripts();
     AddPandarieScripts();
     AddOutdoorPvPScripts();
+    AddBrawlersGuildScripts();
     AddCustomScripts();
 #endif
 }
@@ -2113,15 +2104,6 @@ void AddPandarieScripts()
     AddSC_instance_army_training();
     
     AddSC_instance_temple_of_the_jade_serpent();
-    
-    AddSC_brawlers_guild();
-    AddSC_brawlers_guild_bosses_rank_one();
-    AddSC_brawlers_guild_bosses_rank_two();
-    AddSC_brawlers_guild_bosses_rank_three();
-    AddSC_brawlers_guild_bosses_rank_four();
-    AddSC_brawlers_guild_bosses_rank_five();
-    AddSC_brawlers_guild_bosses_rank_six();
-    AddSC_brawlers_guild_bosses_rank_seven();
 #endif
 }
 
