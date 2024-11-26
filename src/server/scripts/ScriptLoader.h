@@ -21,7 +21,7 @@
 void AddScripts();
 void AddBattlePayScripts();
 void AddSpellScripts();
-void AddCommandScripts();
+void AddCommandsScripts();
 void AddWorldScripts();
 void AddKalimdorScripts();
 void AddOutlandScripts();
