@@ -28,6 +28,7 @@ void AddOutlandScripts();
 void AddNorthrendScripts();
 void AddBattlegroundScripts();
 void AddOutdoorPvPScripts();
+void AddScenarioScripts();
 void AddCustomScripts();
 void AddSC_AshranMgr();
 void AddSC_AshranNPCAlliance();
