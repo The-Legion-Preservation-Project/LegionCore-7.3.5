@@ -91,7 +91,7 @@ void AddSC_proving_grounds();
 
 //< Broken Shore
 void AddSC_instance_broken_shore();
-void AddSC_broken_shore();
+void AddSC_paladin_broken_shore();
 
 //< Shield's Reset
 void AddSC_instance_shields_rest();
@@ -253,9 +253,9 @@ void AddScenarioScripts()
     AddSC_instance_proving_grounds();
     AddSC_proving_grounds();
 
-        //< Broken Shore
+    //< Broken Shore
     AddSC_instance_broken_shore();
-    AddSC_broken_shore();
+    AddSC_paladin_broken_shore();
 
     //< Shield's Reset
     AddSC_instance_shields_rest();
