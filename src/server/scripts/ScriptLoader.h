@@ -34,7 +34,7 @@ void AddLegionScripts();
 void AddDraenorScripts();
 void AddEasternKingdomsScripts();
 void AddMaelstromScripts();
-void AddPandarieScripts();
+void AddPandariaScripts();
 void AddBrawlersGuildScripts();
 
 #endif
