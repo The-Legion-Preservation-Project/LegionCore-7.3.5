@@ -27,9 +27,6 @@ void AddSC_battleground_shado_pan();
 void AddSC_CustomStartups();
 void AddSC_solocraft();
 
-//battlepay
-void AddSC_BattlePay_Services();
-
 //spells
 void AddSC_demonhunter_spell_scripts();
 void AddSC_deathknight_spell_scripts();
@@ -1082,11 +1079,6 @@ void AddScripts()
     AddOutdoorPvPScripts();
     AddCustomScripts();
 #endif
-}
-
-void AddBattlePayScripts()
-{
-    AddSC_BattlePay_Services();
 }
 
 void AddSpellScripts()
