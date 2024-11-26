@@ -39,6 +39,7 @@ void AddSC_AshranQuest();
 void AddLegionScripts();
 void AddDraenorScripts();
 void AddEasternKingdomsScripts();
+void AddMaelstromScripts();
 void AddPandarieScripts();
 
 #endif
