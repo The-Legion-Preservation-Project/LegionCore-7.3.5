@@ -421,15 +421,6 @@ void AddSC_instance_army_training();
 
 void AddSC_instance_temple_of_the_jade_serpent();
 
-// outdoor pvp
-void AddSC_outdoorpvp_hp();
-void AddSC_outdoorpvp_na();
-void AddSC_outdoorpvp_tf();
-void AddSC_outdoorpvp_zm();
-void AddSC_outdoorpvp_rg();
-
-void AddSC_Kloaka();
-
 // player
 void AddSC_chat_log();
 #endif
@@ -863,25 +854,6 @@ void AddPandarieScripts()
     AddSC_instance_army_training();
     
     AddSC_instance_temple_of_the_jade_serpent();
-#endif
-}
-
-void AddOutdoorPvPScripts()
-{
-#ifdef SCRIPTS
-    AddSC_outdoorpvp_hp();
-    AddSC_outdoorpvp_na();
-    AddSC_outdoorpvp_tf();
-    AddSC_outdoorpvp_zm();
-    AddSC_outdoorpvp_rg();
-    AddSC_AshranMgr();
-    AddSC_AshranNPCAlliance();
-    AddSC_AshranNPCHorde();
-    AddSC_AshranSpells();
-    AddSC_AshranAreaTrigger();
-    AddSC_AshranNPCNeutral();
-    AddSC_AshranQuest();
-    AddSC_Kloaka();
 #endif
 }
 
