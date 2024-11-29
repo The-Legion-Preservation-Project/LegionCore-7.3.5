@@ -15873,7 +15873,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         }
     }
 
-    if (Player* playerMover = Unit::ToPlayer(GetUnitBeingMoved())) // unit controlled by a player.
+    if (Player* playerMover = GetPlayerMovingMe()) // unit controlled by a player.
     {
         // Send notification to self
         WorldPackets::Movement::MoveSetSpeed selfpacket(moveTypeToOpcode[mtype][1]);
