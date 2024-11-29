@@ -376,7 +376,7 @@ struct npc_westfall_overloaded_harvest_golem : public VehicleAI
 {
     npc_westfall_overloaded_harvest_golem(Creature* creature) : VehicleAI(creature) { }
 
-    void JustRespawned() override
+    void Reset() override
     {
         _events.ScheduleEvent(EVENT_CHECK_AREA, 1s);
     }
