@@ -17495,8 +17495,13 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
 void Unit::SetMovedUnit(Unit* target)
 {
     m_unitMovedByMe->m_playerMovingMe = nullptr;
+    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
+        m_unitMovedByMe->GetMotionMaster()->Initialize();
+
     m_unitMovedByMe = ASSERT_NOTNULL(target);
     m_unitMovedByMe->m_playerMovingMe = ASSERT_NOTNULL(ToPlayer());
+    if (m_unitMovedByMe->GetTypeId() == TYPEID_UNIT)
+        m_unitMovedByMe->GetMotionMaster()->Initialize();
 
     WorldPackets::Movement::MoveSetActiveMover packet;
     packet.MoverGUID = target->GetGUID();
@@ -25431,15 +25436,16 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                 }
 
                 // TOS: The Desolate Host
-                if (dynamicFlags & UNIT_DYNFLAG_NOT_SELECTABLE_MODEL)
-                {
-                    if (target == this
-                        || HasAura(235734) && target->HasAura(235734) || HasAura(235732) && target->HasAura(235732)
-                        || target->HasAura(235734) && HasAura(235113) || target->HasAura(235732) && HasAura(235620))
-                    {
-                        dynamicFlags &= ~UNIT_DYNFLAG_NOT_SELECTABLE_MODEL;
-                    }
-                }
+                // TODO: this dynflag doesn't seem to exist in any other cores
+//                if (dynamicFlags & UNIT_DYNFLAG_NOT_SELECTABLE_MODEL)
+//                {
+//                    if (target == this
+//                        || HasAura(235734) && target->HasAura(235734) || HasAura(235732) && target->HasAura(235732)
+//                        || target->HasAura(235734) && HasAura(235113) || target->HasAura(235732) && HasAura(235620))
+//                    {
+//                        dynamicFlags &= ~UNIT_DYNFLAG_NOT_SELECTABLE_MODEL;
+//                    }
+//                }
 
                 // unit UNIT_DYNFLAG_TRACK_UNIT should only be sent to caster of SPELL_AURA_MOD_STALKED auras
                 if (dynamicFlags & UNIT_DYNFLAG_TRACK_UNIT)

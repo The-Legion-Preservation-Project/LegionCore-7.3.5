@@ -3375,13 +3375,15 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES);
         target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         target->SetFlag(UNIT_FIELD_FLAGS_3, UNIT_FLAG3_FEIGN_DEATH);
+        target->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
         target->AddUnitState(UNIT_STATE_DIED);
 
         if (auto creature = target->ToCreature())
         {
-            creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            creature->StopAttack();
-            creature->RemoveAurasAllDots();
+            //creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            //creature->StopAttack();
+            //creature->RemoveAurasAllDots();
+            creature->SetReactState(REACT_PASSIVE);
         }
     }
     else
@@ -3389,11 +3391,12 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES);
         target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         target->RemoveFlag(UNIT_FIELD_FLAGS_3, UNIT_FLAG3_FEIGN_DEATH);
+        target->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
         target->ClearUnitState(UNIT_STATE_DIED);
 
         if (auto creature = target->ToCreature())
         {
-            creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            //creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             creature->InitializeReactState();
         }
 
