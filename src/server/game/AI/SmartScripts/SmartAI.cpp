@@ -573,13 +573,6 @@ void SmartAI::MoveInLineOfSight(Unit* who)
     }
 }
 
-bool SmartAI::CanAIAttack(const Unit* /*who*/) const
-{
-    if (me->GetReactState() == REACT_PASSIVE)
-        return false;
-    return true;
-}
-
 uint32 SmartAI::GetWPCount()
 {
     return mWayPoints ? mWayPoints->size() : 0;
