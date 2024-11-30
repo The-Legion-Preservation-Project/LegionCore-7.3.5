@@ -16165,29 +16165,9 @@ Unit* Creature::SelectVictim()
 
     if (CanHaveThreatList())
     {
-        if (target && target->GetEntry() == 42601)
-        {
-            TC_LOG_INFO("server.loading", "0 - TARGETING VEHICLE");
-        }
-
-        if (target && target->IsPlayer())
-        {
-            TC_LOG_INFO("server.loading", "0 - TARGETING PLAYER");
-        }
-
         if (!target && !m_ThreatManager.isThreatListEmpty())
             // No taunt aura or taunt aura caster is dead standard target selection
             target = m_ThreatManager.getHostilTarget();
-
-        if (target && target->GetEntry() == 42601)
-        {
-            TC_LOG_INFO("server.loading", "1 - TARGETING VEHICLE");
-        }
-
-        if (target && target->IsPlayer())
-        {
-            TC_LOG_INFO("server.loading", "1 - TARGETING PLAYER");
-        }
 
         //If target in agrolist check onli friend
         if (target && !IsFriendlyTo(target) && canCreatureAttack(target))
@@ -16226,16 +16206,6 @@ Unit* Creature::SelectVictim()
     else
         return nullptr;
 
-    if (target && target->GetEntry() == 42601)
-    {
-        TC_LOG_INFO("server.loading", "2 - TARGETING VEHICLE");
-    }
-
-    if (target && target->IsPlayer())
-    {
-        TC_LOG_INFO("server.loading", "2 - TARGETING PLAYER");
-    }
-
     if (target && _IsTargetAcceptable(target) && canCreatureAttack(target))
     {
         SetInFront(target);
@@ -16257,16 +16227,6 @@ Unit* Creature::SelectVictim()
     if (HasReactState(REACT_AGGRESSIVE))
     {
         target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
-
-        if (target && target->GetEntry() == 42601)
-        {
-            TC_LOG_INFO("server.loading", "3 - TARGETING VEHICLE");
-        }
-
-        if (target && target->IsPlayer())
-        {
-            TC_LOG_INFO("server.loading", "3 - TARGETING PLAYER");
-        }
 
         if (target && _IsTargetAcceptable(target) && canCreatureAttack(target))
             return target;

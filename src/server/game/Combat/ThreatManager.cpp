@@ -196,15 +196,6 @@ void ThreatContainer::remove(HostileReference* hostileRef)
 
 void ThreatContainer::addReference(HostileReference* hostileRef)
 {
-    if (hostileRef->getUnitGuid().IsPlayer())
-    {
-        TC_LOG_INFO("server.loading", "ADDING PLAYER THREAT");
-    }
-    else
-    {
-        TC_LOG_INFO("server.loading", "ADDING NON-PLAYER THREAT");
-    }
-
     std::lock_guard<std::recursive_mutex> guard(i_threat_lock);
     iThreatList.push_back(hostileRef);
 }
@@ -388,11 +379,6 @@ void ThreatManager::clearReferences()
 
 void ThreatManager::addThreat(Unit* victim, float threat, SpellSchoolMask schoolMask, SpellInfo const* threatSpell)
 {
-    if (victim->IsPlayer())
-    {
-        TC_LOG_INFO("server.loading", "ADD_THREAT: PLAYER");
-    }
-
     if (!ThreatCalcHelper::isValidProcess(victim, getOwner(), threatSpell))
         return;
 
