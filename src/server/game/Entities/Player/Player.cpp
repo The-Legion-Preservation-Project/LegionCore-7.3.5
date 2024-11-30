@@ -17925,6 +17925,10 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
             if (!(GossipMenu::GetRequiredNpcFlagForOption(optionNpc) & npcflags))
                 continue;
 
+            // HACK: disable dual spec
+            if (itr->second.OptionBroadcastTextID == 33765)
+                continue;
+
             switch (optionNpc)
             {
                 case GossipOptionNpc::TaxiNode:
@@ -17983,9 +17987,14 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     if (_garrison)
                         canTalk = _garrison->canStartUpgrade();
                     break;
+                case GossipOptionNpc::Trainer:
+                    // this seems to be needed to hide trainer options
+                    // on creatures that have no npc_trainer records
+                    if (!creature->isCanTrainingOf(this, false))
+                        canTalk = false;
+                    break;
                 case GossipOptionNpc::None:
                 case GossipOptionNpc::Vendor:
-                case GossipOptionNpc::Trainer:
                 case GossipOptionNpc::Binder:
                 case GossipOptionNpc::Banker:
                 case GossipOptionNpc::PetitionVendor:
