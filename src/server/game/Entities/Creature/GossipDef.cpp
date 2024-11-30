@@ -39,7 +39,7 @@ GossipMenu::~GossipMenu()
     ClearMenu();
 }
 
-void GossipMenu::AddMenuItem(int32 menuItemId, uint8 icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded /*= false*/)
+void GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionNpc optionNpc, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded /*= false*/)
 {
     ASSERT(_menuItems.size() <= GOSSIP_MAX_MENU_ITEMS);
 
@@ -61,11 +61,11 @@ void GossipMenu::AddMenuItem(int32 menuItemId, uint8 icon, std::string const& me
 
     GossipMenuItem menuItem;
 
-    menuItem.MenuItemIcon = icon;
+    menuItem.OptionNpc = optionNpc;
     menuItem.Message = message;
     menuItem.IsCoded = coded;
     menuItem.Sender = sender;
-    menuItem.OptionType = action;
+    menuItem.Action = action;
     menuItem.BoxMessage = boxMessage;
     menuItem.BoxMoney = boxMoney;
 
@@ -100,7 +100,7 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
                 ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
         }
 
-        AddMenuItem(-1, itr->second.OptionIcon, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+        AddMenuItem(-1, itr->second.OptionNpc, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
     }
 }
 
@@ -147,7 +147,7 @@ uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
     if (itr == _menuItems.end())
         return 0;
 
-    return itr->second.OptionType;
+    return itr->second.Action;
 }
 
 bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
@@ -230,7 +230,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID) const
 
         WorldPackets::NPC::ClientGossipOptions opt;
         opt.ClientOption = itr.first;
-        opt.OptionNPC = item.MenuItemIcon;
+        opt.OptionNPC = item.OptionNpc;
         opt.OptionFlags = item.IsCoded;
         opt.OptionCost = item.BoxMoney;
         opt.Text = item.Message;
