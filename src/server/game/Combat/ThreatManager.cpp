@@ -99,16 +99,18 @@ void HostileReference::fireStatusChanged(ThreatRefStatusChangeEvent& threatRefSt
 
 void HostileReference::addThreat(float modThreat)
 {
+    if (!modThreat)
+        return;
+
     iThreat += modThreat;
+
     if (!isOnline())
         updateOnlineStatus();
-    if (modThreat != 0.0f)
-    {
-        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, modThreat);
-        fireStatusChanged(event);
-    }
 
-    if (isValid() && modThreat >= 0.0f)
+    ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, modThreat);
+    fireStatusChanged(event);
+
+    if (isValid() && modThreat > 0.0f)
     {
         Unit* victimOwner = getTarget()->GetCharmerOrOwner();
         if (victimOwner && victimOwner->IsAlive())
@@ -116,57 +118,9 @@ void HostileReference::addThreat(float modThreat)
     }
 }
 
-void HostileReference::setThreat(float threat)
-{
-    addThreat(threat - getThreat());
-}
-
 void HostileReference::addThreatPercent(int32 percent)
 {
-    float tmpThreat = iThreat;
-    AddPct(tmpThreat, percent);
-    addThreat(tmpThreat - iThreat);
-}
-
-float HostileReference::getThreat() const
-{
-    return iThreat;
-}
-
-bool HostileReference::isOnline() const
-{
-    return iOnline;
-}
-
-bool HostileReference::isAccessible() const
-{
-    return iAccessible;
-}
-
-void HostileReference::setTempThreat(float threat)
-{
-    addTempThreat(threat - getThreat());
-}
-
-void HostileReference::addTempThreat(float threat)
-{
-    iTempThreatModifier = threat;
-    if (iTempThreatModifier != 0.0f)
-        addThreat(iTempThreatModifier);
-}
-
-void HostileReference::resetTempThreat()
-{
-    if (iTempThreatModifier != 0.0f)
-    {
-        addThreat(-iTempThreatModifier);
-        iTempThreatModifier = 0.0f;
-    }
-}
-
-float HostileReference::getTempThreatModifier()
-{
-    return iTempThreatModifier;
+    addThreat(CalculatePct(iThreat, percent));
 }
 
 void HostileReference::updateOnlineStatus()
@@ -192,6 +146,7 @@ void HostileReference::updateOnlineStatus()
                 accessible = true;
         }
     }
+
     setAccessibleState(accessible);
     setOnlineOfflineState(online);
 }
@@ -215,19 +170,9 @@ void HostileReference::setAccessibleState(bool isAccessible)
     {
         iAccessible = isAccessible;
 
-        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_ASSECCIBLE_STATUS, this);
+        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_ACCESSIBLE_STATUS, this);
         fireStatusChanged(event);
     }
-}
-
-bool HostileReference::operator==(const HostileReference& hostileRef) const
-{
-    return hostileRef.getUnitGuid() == getUnitGuid();
-}
-
-ObjectGuid HostileReference::getUnitGuid() const
-{
-    return iUnitGuid;
 }
 
 void HostileReference::removeReference()
@@ -236,11 +181,6 @@ void HostileReference::removeReference()
 
     ThreatRefStatusChangeEvent event(UEV_THREAT_REF_REMOVE_FROM_LIST, this);
     fireStatusChanged(event);
-}
-
-HostileReference* HostileReference::next()
-{
-    return dynamic_cast<HostileReference*>(Reference<Unit, ThreatManager>::next());
 }
 
 Unit* HostileReference::getSourceUnit()
@@ -256,6 +196,15 @@ void ThreatContainer::remove(HostileReference* hostileRef)
 
 void ThreatContainer::addReference(HostileReference* hostileRef)
 {
+    if (hostileRef->getUnitGuid().IsPlayer())
+    {
+        TC_LOG_INFO("server.loading", "ADDING PLAYER THREAT");
+    }
+    else
+    {
+        TC_LOG_INFO("server.loading", "ADDING NON-PLAYER THREAT");
+    }
+
     std::lock_guard<std::recursive_mutex> guard(i_threat_lock);
     iThreatList.push_back(hostileRef);
 }
@@ -439,6 +388,11 @@ void ThreatManager::clearReferences()
 
 void ThreatManager::addThreat(Unit* victim, float threat, SpellSchoolMask schoolMask, SpellInfo const* threatSpell)
 {
+    if (victim->IsPlayer())
+    {
+        TC_LOG_INFO("server.loading", "ADD_THREAT: PLAYER");
+    }
+
     if (!ThreatCalcHelper::isValidProcess(victim, getOwner(), threatSpell))
         return;
 
@@ -499,12 +453,16 @@ void ThreatManager::_addThreat(Unit* victim, float threat)
 
     if (!ref) // there was no ref => create a new one
     {
+        bool isFirst = iThreatContainer.empty();
+
         // threat has to be 0 here
         auto hostileRef = new HostileReference(victim, this, 0);
         iThreatContainer.addReference(hostileRef);
         hostileRef->addThreat(threat); // now we add the real threat
         if (victim->IsPlayer() && victim->ToPlayer()->isGameMaster())
             hostileRef->setOnlineOfflineState(false); // GM is always offline
+        else if (isFirst)
+            setCurrentVictim(hostileRef);
     }
 }
 
