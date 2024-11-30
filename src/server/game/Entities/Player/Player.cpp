@@ -17901,11 +17901,9 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
         menuItemBounds = sGossipDataStore->GetGossipMenuItemsMapBounds(0);
 
     uint32 npcflags = 0;
-    uint32 npcflags2 = 0;
     if (source->IsCreature())
     {
         npcflags = source->GetUInt32Value(UNIT_FIELD_NPC_FLAGS);
-        npcflags2 = source->GetUInt32Value(UNIT_FIELD_NPC_FLAGS2);
 
         if (npcflags & UNIT_NPC_FLAG_QUESTGIVER && showQuests)
             PrepareQuestMenu(source->GetGUID());
@@ -17923,10 +17921,11 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
 
         if (Creature* creature = source->ToCreature())
         {
-            if (!(itr->second.OptionNpcFlag & npcflags))
+            GossipOptionNpc optionNpc = itr->second.OptionNpc;
+            if (!(GossipMenu::GetRequiredNpcFlagForOption(optionNpc) & npcflags))
                 continue;
 
-            switch (itr->second.OptionNpc)
+            switch (optionNpc)
             {
                 case GossipOptionNpc::TaxiNode:
                     if (GetSession()->SendLearnNewTaxiNode(creature))

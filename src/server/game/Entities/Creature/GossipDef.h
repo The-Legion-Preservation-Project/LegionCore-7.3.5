@@ -44,8 +44,8 @@ enum class GossipOptionNpc : uint8
     TalentMaster                    = 11,                   // white chat bubble
     StableMaster                    = 12,                   // white chat bubble
     PetSpecializationMaster         = 13,                   /*DEPRECATED*/ // White chat bubble
-    GOSSIP_ICON_UNK_14              = 14,                   // INVALID - DO NOT USE
-    GOSSIP_ICON_UNK_15              = 15,                   // INVALID - DO NOT USE
+    GuildBanker                     = 14,                   /*NYI*/ // White chat bubble
+    SpellClick                      = 15,                   /*NYI*/ // White chat bubble
     DisableXPGain                   = 16,                   // White chat bubble
     EnableXPGain                    = 17,                   // White chat bubble
     Mailbox                         = 18,                   // white chat bubble
@@ -54,8 +54,11 @@ enum class GossipOptionNpc : uint8
     ArtifactRespec                  = 21,
     SpecializationMaster            = 23,                   /*DEPRECATED*/ // White chat bubble
     GlyphMaster                     = 24,                   /*DEPRECATED*/ // White chat bubble
+    GarrisonArchitect               = 26,
+    GarrisonMission                 = 27,
     ShipmentCrafter                 = 28,                   // auto-click?
     GarrisonTradeskill              = 29,
+    GarrisonRecruitment             = 30,
     AdventureMap                    = 31,
     GarrisonTalent                  = 32,                   //UNIT_NPC_FLAG2_CLASS_HALL_UPGRADE
     Transmogrify                    = 34,                   // transmogrifier
@@ -171,6 +174,8 @@ public:
 
     void ClearMenu();
     GossipMenuItemContainer const& GetMenuItems() const;
+
+    static uint64 GetRequiredNpcFlagForOption(GossipOptionNpc optionNpc);
 };
 
 class QuestMenu

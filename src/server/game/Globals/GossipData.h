@@ -12,7 +12,6 @@ struct GossipMenuItems
     uint32          OptionBroadcastTextID;
     uint32          BoxBroadcastTextID;
     GossipOptionNpc OptionNpc;
-    uint32          OptionNpcFlag;
     uint32          ActionMenuID;
     uint32          ActionPoiID;
     uint32          BoxMoney;

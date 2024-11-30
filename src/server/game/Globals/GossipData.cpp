@@ -81,9 +81,9 @@ void GossipDataStoreMgr::LoadGossipMenuItems()
 
     _gossipMenuItemsStore.clear();
 
-        //                                                0       1         2           3           4              5             6           7         8         9
-    auto result = WorldDatabase.Query("SELECT MenuID, OptionID, OptionNpc, OptionText, OptionNpcFlag, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, "
-        //10                    11
+        //                                                0       1         2           3          4             5            6         7         8
+    auto result = WorldDatabase.Query("SELECT MenuID, OptionID, OptionNpc, OptionText, ActionMenuID, ActionPoiID, BoxCoded, BoxMoney, BoxText, "
+        //9                     10
         "OptionBroadcastTextID, BoxBroadcastTextID FROM gossip_menu_option ORDER BY MenuID, OptionID");
 
     if (!result)
@@ -103,14 +103,13 @@ void GossipDataStoreMgr::LoadGossipMenuItems()
         gMenuItem.OptionIndex = fields[1].GetUInt16();
         gMenuItem.OptionNpc = GossipOptionNpc(fields[2].GetUInt8());
         gMenuItem.OptionText = fields[3].GetString();
-        gMenuItem.OptionNpcFlag = fields[4].GetUInt32();
-        gMenuItem.ActionMenuID = fields[5].GetUInt32();
-        gMenuItem.ActionPoiID = fields[6].GetUInt32();
-        gMenuItem.BoxCoded = fields[7].GetBool();
-        gMenuItem.BoxMoney = fields[8].GetUInt32();
-        gMenuItem.BoxText = fields[9].GetString();
-        gMenuItem.OptionBroadcastTextID = fields[10].GetUInt32();
-        gMenuItem.BoxBroadcastTextID = fields[11].GetUInt32();
+        gMenuItem.ActionMenuID = fields[4].GetUInt32();
+        gMenuItem.ActionPoiID = fields[5].GetUInt32();
+        gMenuItem.BoxCoded = fields[6].GetBool();
+        gMenuItem.BoxMoney = fields[7].GetUInt32();
+        gMenuItem.BoxText = fields[8].GetString();
+        gMenuItem.OptionBroadcastTextID = fields[9].GetUInt32();
+        gMenuItem.BoxBroadcastTextID = fields[10].GetUInt32();
 
         if (gMenuItem.OptionNpc >= GossipOptionNpc::Count)
         {
