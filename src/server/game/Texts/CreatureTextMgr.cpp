@@ -283,7 +283,7 @@ void CreatureTextMgr::SendText(Creature* source, CreatureTextEntry const* text, 
             if (gender == GENDER_NONE)
                 gender = source->getGender();
 
-            if (uint32 broadcastTextSoundId = bct->SoundEntriesID[gender == GENDER_MALE ? 0 : 1])
+            if (uint32 broadcastTextSoundId = bct->SoundEntriesID[gender == GENDER_FEMALE ? 1 : 0])
                 finalSound = broadcastTextSoundId;
         }
 
