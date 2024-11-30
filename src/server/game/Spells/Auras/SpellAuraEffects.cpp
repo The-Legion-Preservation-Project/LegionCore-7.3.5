@@ -6158,28 +6158,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 break;
             switch (GetId())
             {
-                // Permanent Feign Death
-                case 96733: //Permanent Feign Death (Stun)
-                // Use it every time when we have port spawn
-                //DELETE FROM creature_template_addon WHERE entry in(SELECT id FROM `creature` WHERE guid in(SELECT guid FROM `creature_addon` WHERE `auras` LIKE '%29266%'));
-                //UPDATE creature_template SET `unit_flags` = `unit_flags` & ~(256 | 512 | 262144 | 536870912) where entry in(SELECT id FROM `creature` WHERE guid in(SELECT guid FROM `creature_addon` WHERE `auras` LIKE '%29266%'));
-                case 29266:
-                    if (!target)
-                        break;
-                    
-                    if (apply)
-                    {
-                        target->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 0x64);
-                        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES | UNIT_FLAG_UNK_15 | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
-                        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                    }
-                    else
-                    {
-                        target->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 0);
-                        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES | UNIT_FLAG_UNK_15 | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
-                        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                    }
-                    break;
                 // Recently Bandaged
                 case 11196:
                     target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, GetMiscValue(), apply);

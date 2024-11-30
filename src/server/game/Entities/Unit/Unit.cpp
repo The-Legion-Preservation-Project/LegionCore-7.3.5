@@ -1208,7 +1208,6 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             if (victim != this && victim->IsPlayer() && (!spellProto || !(spellProto->HasAttribute(SPELL_ATTR7_NO_PUSHBACK_ON_DAMAGE) || spellProto->IsTargetingArea() || (cleanDamage ? cleanDamage->isAoe : false))))
             {
                 if (damagetype != DOT)
-                {
                     if (Spell* spell = victim->m_currentSpells[CURRENT_GENERIC_SPELL])
                         if (spell->getState() == SPELL_STATE_PREPARING)
                         {
@@ -1218,7 +1217,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                             else if (interruptFlags & SPELL_INTERRUPT_FLAG_PUSH_BACK)
                                 spell->Delayed();
                         }
-                }
+
+                if (Spell* spell = victim->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                    if (spell->getState() == SPELL_STATE_CASTING && spell->m_spellInfo->HasChannelInterruptFlag(CHANNEL_INTERRUPT_FLAG_FLAG_DELAY) && damagetype != DOT)
+                        spell->DelayedChannel();
             }
         }
 
@@ -16246,7 +16248,6 @@ Unit* Creature::SelectVictim()
         return nullptr;
     }
 
-    TC_LOG_INFO("server.loading", "EVADING");
     // enter in evade mode in other case
     AI()->EnterEvadeMode();
 
