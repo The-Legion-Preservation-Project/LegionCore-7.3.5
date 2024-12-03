@@ -28,6 +28,7 @@ Script Data End */
 enum RedridgeCreature
 {
     NPC_CANYON_ETTIN = 43094,
+    NPC_SUBDUED_CANYON_ETTIN = 43197,
     NPC_FOREMAN_OSLOW = 341,
     NPC_BRIDGE_WORKER_TRENT = 648,
     NPC_BRIDGE_WORKER_DMITRI = 649,
@@ -39,7 +40,10 @@ enum RedridgeCreature
 
 enum RedridgeSpell
 {
-    SPELL_CONTROL_ETTIN_2 = 80702
+    SPELL_CONTROL_ETTIN = 80704,
+    SPELL_CONTROL_ETTIN_2 = 80702,
+    SPELL_LIFT_HUGE_BOULDER = 80739,
+    SPELL_EJECT_PASSENGER_1 = 80743
 };
 
 class spell_redridge_control_ettin : public SpellScript
@@ -87,12 +91,17 @@ enum HugeBoulderEvents
     EVENT_BRIDGE_WORKER_ALEX_IDLE_TALK = 3,
     EVENT_BRIDGE_WORKER_ALEX_HARDER = 4,
     EVENT_BRIDGE_WORKER_MATTHEW_HARDER_RESPONSE = 5,
-    EVENT_BRIDGE_WORKERS_RESPONSE = 6
+    EVENT_BRIDGE_WORKERS_RESPONSE = 6,
+    EVENT_REPOSITION = 7,
+    EVENT_LIFT_BOULDER = 8,
+
+    EVENT_DEBUG_RESET = 99
 };
 
 enum HugeBoulderPhases
 {
-    PHASE_IDLE = 0
+    PHASE_IDLE = 0,
+    PHASE_REMOVE_ROCK = 1
 };
 
 class npc_redridge_huge_boulder : public CreatureScript
@@ -119,6 +128,26 @@ public:
         void JustSummoned(Creature* summoned) override
         {
             Reset();
+        }
+
+        void SpellHit(Unit* caster, SpellInfo const* spell) override
+        {
+            if (!caster || !caster->IsPlayer())
+                return;
+
+            if (spell->Id != SPELL_CONTROL_ETTIN)
+                return;
+
+            if (!_events.IsInPhase(PHASE_IDLE))
+                return;
+
+            if (Creature* ettin = me->FindNearestCreature(NPC_SUBDUED_CANYON_ETTIN, 20.0f))
+            {
+                _ettinGUID = ettin->GetGUID();
+                _events.Reset();
+                _events.SetPhase(PHASE_REMOVE_ROCK);
+                _events.ScheduleEvent(EVENT_REPOSITION, 1s, 0, PHASE_REMOVE_ROCK);
+            }
         }
 
         void UpdateAI(uint32 diff) override
@@ -188,6 +217,57 @@ public:
                             sCreatureTextMgr->SendChat(daniel, 0, _foremanGUID);
                         _events.ScheduleEvent(EVENT_BRIDGE_WORKER_ALEX_IDLE_TALK, 20s, 30s, 0, PHASE_IDLE);
                         break;
+                    case EVENT_REPOSITION:
+                        if (GetEttin())
+                            GetEttin()->GetMotionMaster()->MovePoint(0, me->GetPosition());
+                        if (GetTrent())
+                            GetTrent()->GetMotionMaster()->MovePoint(0, -9281.44, -2285.27, 67.5123);
+                        if (GetDmitri())
+                            GetDmitri()->GetMotionMaster()->MovePoint(0, -9282.8, -2293.28, 67.5089);
+                        if (GetJess())
+                            GetJess()->GetMotionMaster()->MovePoint(0, -9282.27, -2290.95, 67.5319);
+                        if (GetDaniel())
+                            GetDaniel()->GetMotionMaster()->MovePoint(0, -9281.77, -2287.55, 67.5869);
+                        if (GetMatthew())
+                            GetMatthew()->GetMotionMaster()->MovePoint(0, -9280.71, -2283.21, 67.5747);
+                        if (GetAlex())
+                            GetAlex()->GetMotionMaster()->MovePoint(0, -9279.86, -2281.42, 67.5854);
+                        _events.ScheduleEvent(EVENT_LIFT_BOULDER, 200ms, 0, PHASE_REMOVE_ROCK);
+                        break;
+                    case EVENT_LIFT_BOULDER:
+                        if (GetEttin())
+                        {
+                            if (!GetEttin()->IsStopped() ||
+                                !GetTrent()   || !GetTrent()->IsStopped()   ||
+                                !GetDmitri()  || !GetDmitri()->IsStopped()  ||
+                                !GetJess()    || !GetJess()->IsStopped()    ||
+                                !GetDaniel()  || !GetDaniel()->IsStopped()  ||
+                                !GetMatthew() || !GetMatthew()->IsStopped() ||
+                                !GetAlex()    || !GetAlex()->IsStopped())
+                            {
+                                _events.Repeat(200ms);
+                            }
+                            else
+                            {
+                                GetTrent()->SetFacingTo(GetEttin());
+                                GetDmitri()->SetFacingTo(GetEttin());
+                                GetJess()->SetFacingTo(GetEttin());
+                                GetDaniel()->SetFacingTo(GetEttin());
+                                GetMatthew()->SetFacingTo(GetEttin());
+                                GetAlex()->SetFacingTo(GetEttin());
+                                me->CastSpell(GetEttin(), SPELL_LIFT_HUGE_BOULDER, false);
+                                _events.ScheduleEvent(EVENT_DEBUG_RESET, 5s, 0, PHASE_REMOVE_ROCK);
+                            }
+                        }
+                        break;
+                    case EVENT_DEBUG_RESET:
+                        if (GetEttin())
+                        {
+                            GetEttin()->CastSpell(me, SPELL_EJECT_PASSENGER_1, false);
+                            GetEttin()->DisappearAndDie();
+                        }
+                        _events.ScheduleEvent(EVENT_START_PHASE_IDLE, 1s, 0, PHASE_REMOVE_ROCK);
+                        break;
                 }
             }
         }
@@ -250,6 +330,11 @@ public:
             return me->GetMap()->GetCreature(_danielGUID);
         }
 
+        Creature* GetEttin()
+        {
+            return me->GetMap()->GetCreature(_ettinGUID);
+        }
+
     private:
         EventMap _events;
         ObjectGuid _foremanGUID;
@@ -259,6 +344,7 @@ public:
         ObjectGuid _dmitriGUID;
         ObjectGuid _jessGUID;
         ObjectGuid _danielGUID;
+        ObjectGuid _ettinGUID;
     };
 };
 
