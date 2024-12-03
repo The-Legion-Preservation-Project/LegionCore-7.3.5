@@ -26,6 +26,33 @@ DELETE FROM `spell_area` WHERE `spell` IN (80696) AND `area` = 44;
 INSERT INTO `spell_area` (`spell`,`area`,`quest_start`,`quest_end`,`aura_spell`,`racemask`,`gender`,`autocast`,`quest_start_status`,`quest_end_status`) VALUES
 (80696,44,26520,0,0,18875469,2,1,64,0); -- Zone Wide
 
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId` = 13 AND `SourceEntry` IN (80704, 80739);
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
+(13, 2, 80704, 0, 0, 31, 0, 3, 43094, 0, 0, 0, '', 'Control Ettin - Target Canyon Ettin'),
+(13, 2, 80704, 0, 1, 31, 0, 3, 43196, 0, 0, 0, '', 'Control Ettin - Target Huge Boulder'),
+(13, 1, 80739, 0, 0, 31, 0, 3, 43197, 0, 0, 0, '', 'Lift Huge Boulder - Target Subdued Canyon Ettin');
+
+DELETE FROM `spell_linked_spell` WHERE `spell_trigger` = 80704;
+UPDATE `creature_template` SET `AIName` = '' WHERE `entry` IN (341, 648, 649, 650, 651, 652, 653, 43196, 43197);
+UPDATE `creature_template` SET `ScriptName` = 'npc_redridge_huge_boulder' WHERE `entry` IN (43196);
+UPDATE `creature_template` SET `VehicleId` = 938 WHERE `entry` = 43197;
+
+UPDATE `creature_template` SET `AIName` = 'SmartAI' WHERE `entry` = 43094;
+DELETE FROM `smart_scripts` WHERE `entryorguid` = 43094 AND `source_type` = 0;
+INSERT INTO `smart_scripts` (`entryorguid`,`source_type`,`id`,`link`,`event_type`,`event_phase_mask`,`event_chance`,`event_flags`,`event_param1`,`event_param2`,`event_param3`,`event_param4`,`action_type`,`action_param1`,`action_param2`,`action_param3`,`action_param4`,`action_param5`,`action_param6`,`target_type`,`target_param1`,`target_param2`,`target_param3`,`target_x`,`target_y`,`target_z`,`target_o`,`comment`) VALUES
+(43094, 0, 0, 0, 8, 0, 100, 0, 80702, 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 'Canyon Ettin - On Spellhit - Despawn');
+
+DELETE FROM `spell_script_names` WHERE `spell_id` IN (80702, 80704, 80739);
+INSERT INTO `spell_script_names` (`spell_id`, `ScriptName`) VALUES
+(80704, 'spell_redridge_control_ettin'),
+(80739, 'spell_redridge_lift_huge_boulder');
+
+DELETE FROM `creature_text` WHERE `CreatureID` = 43197;
+INSERT INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `comment`) VALUES
+(43197, 0, 0, 'ROCK NOT SO HEAVY! PUNY HUMIES!', 12, 0, 100, 0, 0, 0, 43218, ''),
+(43197, 1, 0, 'Where trow? TROW ON BRIDGE??', 12, 0, 100, 0, 0, 0, 43220, ''),
+(43197, 2, 0, 'OK! Me trow in water!', 12, 0, 100, 0, 0, 0, 43222, '');
+
 -- marshall marris should be sitting and drinking
 SET @ENTRY := 382;
 UPDATE `creature_template` SET `AIName`='SmartAI' WHERE `entry`=@ENTRY;
@@ -133,8 +160,8 @@ INSERT INTO `waypoint_data` (`id`,`point`,`position_x`,`position_y`,`position_z`
 (@PATH,2,-9247.676,-2240.278,64.05842,2.583087,42000,0,0,100,0),
 (@PATH,3,-9250.197,-2244.496,64.05842,0,42000,0,0,100,0);
 
--- remove duplicate ettins
-DELETE FROM `creature` WHERE `guid` IN (38740, 38849);
+-- remove duplicate ettins, duplicate master pet tamer
+DELETE FROM `creature` WHERE `guid` IN (38740, 38849, 261577);
 
 -- Pathing for Canyon Ettin Entry: 43094
 SET @NPC := 38410;
