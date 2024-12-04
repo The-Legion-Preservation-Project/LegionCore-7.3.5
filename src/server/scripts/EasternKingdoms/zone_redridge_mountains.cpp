@@ -463,19 +463,56 @@ public:
                             }
                         break;
                     case EVENT_BRIDGE_WORKERS_COWER:
+                    {
+                        uint32 a = urand(0, 5);
+                        uint32 b = urand(0, 5);
+                        if (a == b)
+                            b = (a + 2) % 6;
+
                         if (Creature* alex = GetAlex())
+                        {
                             alex->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 0 || b == 0)
+                                alex->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         if (Creature* matthew = GetMatthew())
+                        {
                             matthew->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 1 || b == 1)
+                                matthew->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         if (Creature* trent = GetTrent())
+                        {
                             trent->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 2 || b == 2)
+                                trent->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         if (Creature* dmitri = GetDmitri())
+                        {
                             dmitri->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 3 || b == 3)
+                                dmitri->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         if (Creature* jess = GetJess())
+                        {
                             jess->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 4 || b == 4)
+                                jess->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         if (Creature* daniel = GetDaniel())
+                        {
                             daniel->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
+                            if (a == 5 || b == 5)
+                                daniel->MonsterSay(int32(43230 + urand(0, 2)), LANG_UNIVERSAL, ObjectGuid::Empty);
+                        }
+
                         break;
+                    }
                     case EVENT_FOREMAN_GET_UP:
                         if (Creature* foreman = GetForeman())
                             foreman->SetStandState(UNIT_STAND_STATE_STAND);
