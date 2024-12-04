@@ -34,7 +34,8 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 
 DELETE FROM `spell_linked_spell` WHERE `spell_trigger` = 80704;
 UPDATE `creature_template` SET `AIName` = '' WHERE `entry` IN (341, 648, 649, 650, 651, 652, 653, 43196, 43197);
-UPDATE `creature_template` SET `ScriptName` = 'npc_redridge_huge_boulder' WHERE `entry` IN (43196);
+UPDATE `creature_template` SET `ScriptName` = 'npc_redridge_huge_boulder' WHERE `entry` = 43196;
+UPDATE `creature_template` SET `ScriptName` = 'npc_redridge_subdued_ettin' WHERE `entry` = 43197;
 UPDATE `creature_template` SET `VehicleId` = 938 WHERE `entry` = 43197;
 
 UPDATE `creature_template` SET `AIName` = 'SmartAI' WHERE `entry` = 43094;
