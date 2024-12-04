@@ -3,7 +3,7 @@ DELETE FROM `creature_template_addon` WHERE `entry` IN (341,382,43194,43196);
 DELETE FROM `creature_template_addon` WHERE `entry` BETWEEN 648 AND 653;
 INSERT INTO `creature_template_addon` (`entry`,`path_id`,`mount`,`bytes1`,`bytes2`,`emote`,`auras`) VALUES
 (341,0,0,65543,1,0,'80694'),
-(382,0,0,65536,1,0, '80699'),
+(382,0,0,65536,1,0, '80698'),
 (648,0,0,65536,1,0,'80698'),
 (649,0,0,65536,1,0,'80698'),
 (650,0,0,65536,1,0,'80698'),

@@ -287,6 +287,7 @@ public:
 
             if (Creature* ettin = me->FindNearestCreature(NPC_SUBDUED_CANYON_ETTIN, 20.0f))
             {
+                _playerGUID = caster->GetGUID();
                 _ettinGUID = ettin->GetGUID();
                 _events.Reset();
                 _events.ScheduleEvent(EVENT_REPOSITION, 1s);
@@ -523,6 +524,10 @@ public:
                             foreman->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 64);
                         break;
                     case EVENT_DONE:
+                        // quest credit
+                        if (Player* player = ObjectAccessor::FindPlayer(me->GetMap(), _playerGUID))
+                            player->RewardPlayerAndGroupAtEvent(NPC_FOREMAN_OSLOW, player);
+
                         if (Creature* alex = GetAlex())
                             alex->DisappearAndDie();
                         if (Creature* matthew = GetMatthew())
@@ -618,6 +623,7 @@ public:
 
     private:
         EventMap _events;
+        ObjectGuid _playerGUID;
         ObjectGuid _foremanGUID;
         ObjectGuid _alexGUID;
         ObjectGuid _matthewGUID;
