@@ -168,6 +168,14 @@ INSERT INTO `waypoint_data` (`id`,`point`,`position_x`,`position_y`,`position_z`
 -- remove duplicate ettins, duplicate master pet tamer
 DELETE FROM `creature` WHERE `guid` IN (38740, 38849, 261577);
 
+-- insert second marshal marris
+INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `PhaseId`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `unit_flags3`) VALUES
+(38740, 382, 0, 0, 0, 1, 1, '',0, 1, -9276.96, -2242.86, 64.1778, 1.13446, 120, 0, 0, 1, 0, 0, 0, 0, 0);
+
+DELETE FROM `creature_addon` WHERE `guid` = 38740;
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`) VALUES
+(38740, 0, 0, 0, 0, 0, '80699');
+
 -- Pathing for Canyon Ettin Entry: 43094
 SET @NPC := 38410;
 SET @PATH := @NPC * 10;
