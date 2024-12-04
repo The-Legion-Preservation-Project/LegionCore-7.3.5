@@ -67,7 +67,6 @@ struct ItemTemplate;
 struct MovementInfo;
 struct PetBattleRequest;
 struct Position;
-struct CharacterTemplate;
 
 enum class BattlePetError : uint16;
 
@@ -1034,20 +1033,6 @@ struct CharEnumInfoData
     int32 MapId = 0;
 }; 
 
-struct CharacterTemplateData
-{
-    CharacterTemplate const* charTemplate = nullptr;
-    uint32 id = 0;
-    uint32 iLevel = 0;
-    uint32 money = 0;
-    uint32 templateId = 0;
-    uint8 level = 0;
-    bool artifact = true;
-    bool active = true;
-}; 
-
-typedef std::map<uint32, CharacterTemplateData> CharacterTemplateDataMap;
-
 /// Player session in the World
 class WorldSession
 {
@@ -1170,7 +1155,6 @@ class WorldSession
         void SetAccountData(AccountDataType type, time_t tm = time_t(0), std::string const& data = "");
         void SendSetTimeZoneInformation();
         void LoadAccountData(PreparedQueryResult const& result, uint32 mask);
-        void LoadCharacterTemplates(PreparedQueryResult const& result);
 
         void LoadTutorialsData(PreparedQueryResult const& result);
         void SendTutorialsData();
@@ -2043,8 +2027,6 @@ class WorldSession
         uint64 _hwid;
         int32 _countPenaltiesHwid;
 
-        CharacterTemplateData* GetCharacterTemplateData(uint32 id);
-
         BattlepayManager* GetBattlePayMgr() const { return _battlePayMgr.get(); }
 
         std::vector<bool> m_achievement;
@@ -2140,7 +2122,6 @@ class WorldSession
         AuthFlags atAuthFlag = AT_AUTH_FLAG_NONE;
 
         ConnectToKey _instanceConnectKey;
-        CharacterTemplateDataMap charTemplateData;
 
         bool canLogout;
         float PersonalXPRate = 0;

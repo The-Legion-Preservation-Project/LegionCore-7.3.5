@@ -41,7 +41,6 @@ EndScriptData */
 #include "GuildMgr.h"
 #include "WordFilterMgr.h"
 #include "BattlegroundMgr.h"
-#include "CharacterData.h"
 #include "AreaTriggerData.h"
 #include "ConversationData.h"
 #include "QuestData.h"
@@ -836,7 +835,6 @@ public:
     static bool HandleReloadReservedNameCommand(ChatHandler* handler, const char* /*args*/)
     {
         TC_LOG_INFO("misc", "Loading ReservedNames... (`reserved_name`)");
-        sCharacterDataStore->LoadReservedPlayersNames();
         handler->SendGlobalGMSysMessage("DB table `reserved_name` (player reserved names) reloaded.");
         return true;
     }

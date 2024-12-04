@@ -23,7 +23,6 @@ Category: commandscripts
 EndScriptData */
 
 #include "AccountMgr.h"
-#include "CharacterData.h"
 #include "Chat.h"
 #include "DatabaseEnv.h"
 #include "GlobalFunctional.h"
@@ -795,13 +794,6 @@ public:
             name = nameStr;
             // normalize the name if specified and check if it exists
             if (!normalizePlayerName(name))
-            {
-                handler->PSendSysMessage(LANG_INVALID_CHARACTER_NAME);
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (sCharacterDataStore->CheckPlayerName(name, handler->GetSessionDbcLocale(), true) != CHAR_NAME_SUCCESS)
             {
                 handler->PSendSysMessage(LANG_INVALID_CHARACTER_NAME);
                 handler->SetSentErrorMessage(true);

@@ -20,7 +20,6 @@
 #include "QueryPackets.h"
 #include "CharmInfo.h"
 #include "Group.h"
-#include "CharacterData.h"
 #include "DatabaseEnv.h"
 #include "SpellPackets.h"
 #include "CreatureAI.h"
@@ -244,19 +243,6 @@ void WorldSession::HandlePetRename(WorldPackets::PetPackets::PetRename& packet)
         !petStable || !petStable->GetCurrentPet() || petStable->GetCurrentPet()->PetNumber != pet->GetCharmInfo()->GetPetNumber())
         return;
 
-    PetNameInvalidReason res = sCharacterDataStore->CheckPetName(packet.RenameData.NewName);
-    if (res != PET_NAME_SUCCESS)
-    {
-        SendPetNameInvalid(res, petguid, packet.RenameData.NewName, {});
-        return;
-    }
-
-    if (sCharacterDataStore->IsReservedName(packet.RenameData.NewName))
-    {
-        SendPetNameInvalid(PET_NAME_RESERVED, petguid, packet.RenameData.NewName, {});
-        return;
-    }
-
     pet->SetName(packet.RenameData.NewName);
 
     pet->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET_NAME);
@@ -271,12 +257,6 @@ void WorldSession::HandlePetRename(WorldPackets::PetPackets::PetRename& packet)
         std::wstring wname;
         if (!Utf8toWStr(packet.RenameData.NewName, wname))
             return;
-
-        if (!sCharacterDataStore->CheckDeclinedNames(wname, *declinedname))
-        {
-            SendPetNameInvalid(PET_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME, petguid, packet.RenameData.NewName, declinedname);
-            return;
-        }
     }
 
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();

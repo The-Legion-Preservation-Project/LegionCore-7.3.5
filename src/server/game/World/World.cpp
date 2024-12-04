@@ -40,7 +40,6 @@
 #include "CellImpl.h"
 #include "ChallengeMgr.h"
 #include "Channel.h"
-#include "CharacterData.h"
 #include "CharacterDatabaseCleaner.h"
 #include "Chat.h"
 #include "ChatPackets.h"
@@ -2036,8 +2035,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Groups...");
     sGroupMgr->LoadGroups();
 
-    sCharacterDataStore->LoadReservedPlayersNames();
-
     sQuestDataStore->LoadGameObjectForQuests();
 
     TC_LOG_INFO("server.loading", "Loading BattleMasters...");
@@ -2082,12 +2079,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Conditions...");
     sConditionMgr->LoadConditions();
-
-    sCharacterDataStore->LoadFactionChangeAchievements();
-    sCharacterDataStore->LoadFactionChangeSpells();
-    sCharacterDataStore->LoadFactionChangeItems();
-    sCharacterDataStore->LoadFactionChangeReputations();
-    sCharacterDataStore->LoadFactionChangeTitles();
 
     CollectionMgr::LoadMountDefinitions();
 
@@ -2245,7 +2236,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("misc", "Loading race and class expansion requirements...");
     sObjectMgr->LoadRaceAndClassExpansionRequirements();
-    sCharacterDataStore->LoadCharacterTemplates();
 
     TC_LOG_INFO("misc", "Loading realm names...");
     sObjectMgr->LoadRealmNames();

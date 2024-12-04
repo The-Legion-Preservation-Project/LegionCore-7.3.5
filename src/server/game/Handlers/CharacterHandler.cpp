@@ -23,7 +23,6 @@
 #include "BattlePayMgr.h"
 #include "BattlegroundPackets.h"
 #include "CalendarPackets.h"
-#include "CharacterData.h"
 #include "CharacterPackets.h"
 #include "Chat.h"
 #include "ClientConfigPackets.h"
@@ -255,14 +254,8 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateChar& c
     //}
 
     // check name limitations
-    ResponseCodes res = sCharacterDataStore->CheckPlayerName(charCreate.CreateInfo->Name, GetSessionDbcLocale(), true);
-    if (res != CHAR_NAME_SUCCESS)
-    {
-        SendCharCreate(res);
-        return;
-    }
 
-    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sCharacterDataStore->IsReservedName(charCreate.CreateInfo->Name))
+    if (AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         SendCharCreate(CHAR_NAME_RESERVED);
         return;
@@ -460,17 +453,6 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateChar& c
             stmt->setUInt32(1, GetAccountId());
             stmt->setUInt32(2, realm.Id.Realm);
             trans->Append(stmt);
-
-            if (createInfo->TemplateSet)
-            {
-                if (CharacterTemplateData* charTemplateData = GetCharacterTemplateData(*createInfo->TemplateSet))
-                {
-                    stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ACCOUNT_CHARACTER_TEMPLATE);
-                    stmt->setUInt32(0, newChar.GetGUIDLow());
-                    stmt->setUInt32(1, charTemplateData->id);
-                    trans->Append(stmt);
-                }
-            }
 
             LoginDatabase.CommitTransaction(trans);
 
@@ -1051,17 +1033,7 @@ void WorldSession::HandleCharacterRenameRequest(WorldPackets::Character::Charact
         return;
     }
 
-    uint8 res = sCharacterDataStore->CheckPlayerName(packet.RenameInfo->NewName, GetSessionDbcLocale(), true);
-    if (res != CHAR_NAME_SUCCESS)
-    {
-        WorldPackets::Character::CharacterRenameResult result;
-        result.Result = res;
-        result.Name = packet.RenameInfo->NewName;
-        SendPacket(result.Write());
-        return;
-    }
-
-    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sCharacterDataStore->IsReservedName(packet.RenameInfo->NewName))
+    if (AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         WorldPackets::Character::CharacterRenameResult result;
         result.Result = CHAR_NAME_RESERVED;
@@ -1139,13 +1111,6 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPackets::Character::SetPlay
         SendSetPlayerDeclinedNamesResult(DECLINED_NAMES_RESULT_ERROR, packet.Player);
         return;
     }
-
-    if (!sCharacterDataStore->CheckDeclinedNames(wname, packet.DeclinedNames))
-    {
-        SendSetPlayerDeclinedNamesResult(DECLINED_NAMES_RESULT_ERROR, packet.Player);
-        return;
-    }
-
     for (auto& i : packet.DeclinedNames.name)
         if (!normalizePlayerName(i))
         {
@@ -1314,14 +1279,7 @@ void WorldSession::HandleCharCustomizeCallback(std::shared_ptr<WorldPackets::Cha
         return;
     }
 
-    ResponseCodes res = sCharacterDataStore->CheckPlayerName(customizeInfo->CharName, GetSessionDbcLocale(), true);
-    if (res != CHAR_NAME_SUCCESS)
-    {
-        SendCharCustomize(res, customizeInfo.get());
-        return;
-    }
-
-    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sCharacterDataStore->IsReservedName(customizeInfo->CharName))
+    if (AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         SendCharCustomize(CHAR_NAME_RESERVED, customizeInfo.get());
         return;
@@ -1467,15 +1425,8 @@ void WorldSession::HandleCharRaceOrFactionChange(WorldPackets::Character::CharRa
         return;
     }
 
-    ResponseCodes res = sCharacterDataStore->CheckPlayerName(info->Name, GetSessionDbcLocale(), true);
-    if (res != CHAR_NAME_SUCCESS)
-    {
-        SendCharFactionChange(res, info);
-        return;
-    }
-
     // check name limitations
-    if (AccountMgr::IsPlayerAccount(GetSecurity()) && sCharacterDataStore->IsReservedName(info->Name))
+    if (AccountMgr::IsPlayerAccount(GetSecurity()))
     {
         SendCharFactionChange(CHAR_NAME_RESERVED, info);
         return;
@@ -1730,78 +1681,6 @@ void WorldSession::HandleCharRaceOrFactionChange(WorldPackets::Character::CharRa
 
         TC_LOG_DEBUG("entities.unit", "Account: %d faction change, HOME BIND success", GetAccountId());
 
-        // Achievement conversion
-        for (auto it : sCharacterDataStore->GetFactionChangeAchievements())
-        {
-            uint32 achiev_alliance = it.first;
-            uint32 achiev_horde = it.second;
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENT_BY_ACHIEVEMENT);
-            stmt->setUInt16(0, uint16(team == TEAM_ALLIANCE ? achiev_alliance : achiev_horde));
-            stmt->setUInt64(1, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_ACHIEVEMENT);
-            stmt->setUInt16(0, uint16(team == TEAM_ALLIANCE ? achiev_alliance : achiev_horde));
-            stmt->setUInt16(1, uint16(team == TEAM_ALLIANCE ? achiev_horde : achiev_alliance));
-            stmt->setUInt64(2, lowGuid);
-            trans->Append(stmt);
-        }
-
-        TC_LOG_DEBUG("entities.unit", "Account: %d faction change Achievements success", GetAccountId());
-        // Item conversion
-        for (auto it : sCharacterDataStore->GetFactionChangeItems())
-        {
-            uint32 item_alliance = it.first;
-            uint32 item_horde = it.second;
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_INVENTORY_FACTION_CHANGE);
-            stmt->setUInt32(0, (team == TEAM_ALLIANCE ? item_alliance : item_horde));
-            stmt->setUInt32(1, (team == TEAM_ALLIANCE ? item_horde : item_alliance));
-            stmt->setUInt64(2, lowGuid);
-            trans->Append(stmt);
-        }
-
-        TC_LOG_DEBUG("entities.unit", "Account: %d faction change Items success", GetAccountId());
-
-        // Spell conversion
-        for (auto it : sCharacterDataStore->GetFactionChangeSpells())
-        {
-            uint32 spell_alliance = it.first;
-            uint32 spell_horde = it.second;
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_SPELL_BY_SPELL);
-            stmt->setUInt32(0, (team == TEAM_ALLIANCE ? spell_alliance : spell_horde));
-            stmt->setUInt64(1, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_SPELL_FACTION_CHANGE);
-            stmt->setUInt32(0, (team == TEAM_ALLIANCE ? spell_alliance : spell_horde));
-            stmt->setUInt32(1, (team == TEAM_ALLIANCE ? spell_horde : spell_alliance));
-            stmt->setUInt64(2, lowGuid);
-            trans->Append(stmt);
-        }
-
-        TC_LOG_DEBUG("entities.unit", "Account: %d faction change spells success", GetAccountId());
-
-        // Reputation conversion
-        for (auto it : sCharacterDataStore->GetFactionChangeReputation())
-        {
-            uint32 reputation_alliance = it.first;
-            uint32 reputation_horde = it.second;
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_REP_BY_FACTION);
-            stmt->setUInt32(0, uint16(team == TEAM_ALLIANCE ? reputation_alliance : reputation_horde));
-            stmt->setUInt64(1, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_REP_FACTION_CHANGE);
-            stmt->setUInt16(0, uint16(team == TEAM_ALLIANCE ? reputation_alliance : reputation_horde));
-            stmt->setUInt16(1, uint16(team == TEAM_ALLIANCE ? reputation_horde : reputation_alliance));
-            stmt->setUInt64(2, lowGuid);
-            trans->Append(stmt);
-        }
-
         TC_LOG_DEBUG("entities.unit", "Account: %d faction change reputation success", GetAccountId());
         // Title conversion
         if (!knownTitlesStr.empty())
@@ -1818,107 +1697,55 @@ void WorldSession::HandleCharRaceOrFactionChange(WorldPackets::Character::CharRa
             for (uint32 index = 0; index < ktcount; ++index)
                 knownTitles[index] = atol(tokens[index]);
 
-            for (auto it : sCharacterDataStore->GetFactionChangeTitles())
+            if (level >= 101)
             {
-                uint32 title_alliance = it.first;
-                uint32 title_horde = it.second;
+                // Unload map if exist
+                sMapMgr->SetUnloadGarrison(lowGuid);
 
-                CharTitlesEntry const* atitleInfo = sCharTitlesStore.LookupEntry(title_alliance);
-                CharTitlesEntry const* htitleInfo = sCharTitlesStore.LookupEntry(title_horde);
-                // new team
-                if (team == TEAM_ALLIANCE)
-                {
-                    uint32 bitIndex = htitleInfo->MaskID;
-                    uint32 index = bitIndex / 32;
-                    uint32 old_flag = 1 << (bitIndex % 32);
-                    uint32 new_flag = 1 << (atitleInfo->MaskID % 32);
-                    if (knownTitles[index] & old_flag)
-                    {
-                        knownTitles[index] &= ~old_flag;
-                        // use index of the new title
-                        knownTitles[atitleInfo->MaskID / 32] |= new_flag;
-                    }
-                }
-                else
-                {
-                    uint32 bitIndex = atitleInfo->MaskID;
-                    uint32 index = bitIndex / 32;
-                    uint32 old_flag = 1 << (bitIndex % 32);
-                    uint32 new_flag = 1 << (htitleInfo->MaskID % 32);
-                    if (knownTitles[index] & old_flag)
-                    {
-                        knownTitles[index] &= ~old_flag;
-                        // use index of the new title
-                        knownTitles[htitleInfo->MaskID / 32] |= new_flag;
-                    }
-                }
-
-                std::ostringstream ss;
-                for (auto knownTitle : knownTitles)
-                    ss << knownTitle << ' ';
-
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_TITLES_FACTION_CHANGE);
-                stmt->setString(0, ss.str());
-                stmt->setUInt64(1, lowGuid);
-                trans->Append(stmt);
-
-                // unset any currently chosen title
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_RES_CHAR_TITLES_FACTION_CHANGE);
+                // delete info about garrison
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_ONLY);
                 stmt->setUInt64(0, lowGuid);
                 trans->Append(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BLUEPRINTS);
+                stmt->setUInt64(0, lowGuid);
+                trans->Append(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BUILDINGS);
+                stmt->setUInt64(0, lowGuid);
+                trans->Append(stmt);
+
+                /*
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_FOLLOWERS);
+                stmt->setUInt64(0, lowGuid);
+                trans->Append(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS);
+                stmt->setUInt64(0, lowGuid);
+                trans->Append(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_SHIPMENTS);
+                stmt->setUInt64(0, lowGuid);
+                trans->Append(stmt);
+
+                // stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_TALENTS);
+                // stmt->setUInt64(0, lowGuid);
+                // trans->Append(stmt);
+                */
+
+                trans->PAppend("insert into `character_reward` (`id`, `type`, `owner_guid`)value ('%u','10', '%u')", (team == TEAM_HORDE ? 71 : 2), lowGuid); // for recreate new garrison
             }
+            TC_LOG_DEBUG("entities.unit", "Account: %d faction change actions 110 success", GetAccountId());
         }
 
-        TC_LOG_DEBUG("entities.unit", "Account: %d faction change titles success", GetAccountId());
+        CharacterDatabase.CommitTransaction(trans);
+        TC_LOG_DEBUG("entities.unit", "Account: %d faction change commit transaction success", GetAccountId());
 
-        if (level >= 101)
-        {
-            // Unload map if exist
-            sMapMgr->SetUnloadGarrison(lowGuid);
+        TC_LOG_DEBUG("entities.unit", "Account: %d (IP: %s), Character guid: %lu Change Race/Faction to: %s", GetAccountId(), GetRemoteAddress().c_str(), lowGuid, info->Name.c_str());
 
-            // delete info about garrison
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_ONLY);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BLUEPRINTS);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BUILDINGS);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            /*
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_FOLLOWERS);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_SHIPMENTS);
-            stmt->setUInt64(0, lowGuid);
-            trans->Append(stmt);
-
-            // stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_TALENTS);
-            // stmt->setUInt64(0, lowGuid);
-            // trans->Append(stmt);
-            */
-
-            trans->PAppend("insert into `character_reward` (`id`, `type`, `owner_guid`)value ('%u','10', '%u')", (team == TEAM_HORDE ? 71 : 2), lowGuid); // for recreate new garrison
-        }
-        TC_LOG_DEBUG("entities.unit", "Account: %d faction change actions 110 success", GetAccountId());
+        SendCharFactionChange(RESPONSE_SUCCESS, info);
+        TC_LOG_DEBUG("entities.unit", "Account: %d faction change success end", GetAccountId());
     }
-
-    CharacterDatabase.CommitTransaction(trans);
-    TC_LOG_DEBUG("entities.unit", "Account: %d faction change commit transaction success", GetAccountId());
-
-    TC_LOG_DEBUG("entities.unit", "Account: %d (IP: %s), Character guid: %lu Change Race/Faction to: %s", GetAccountId(), GetRemoteAddress().c_str(), lowGuid, info->Name.c_str());
-
-    SendCharFactionChange(RESPONSE_SUCCESS, info);
-    TC_LOG_DEBUG("entities.unit", "Account: %d faction change success end", GetAccountId());
 }
 
 void WorldSession::HandleGenerateRandomCharacterName(WorldPackets::Character::GenerateRandomCharacterName& packet)

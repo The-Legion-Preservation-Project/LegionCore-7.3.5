@@ -28,7 +28,6 @@ unknown errors try using DTT_CHAR_TABLE.
 #include "ObjectMgr.h"
 #include "AccountMgr.h"
 #include "GarrisonMgr.h"
-#include "CharacterData.h"
 #include "GlobalFunctional.h"
 
 #define DUMP_TABLE_COUNT 31
@@ -428,18 +427,6 @@ DumpReturn PlayerDumpReader::LoadDump(std::string const& file, uint32 account, s
     if (!normalizePlayerName(name))
         name = "";
 
-    if (sCharacterDataStore->CheckPlayerName(name, sWorld->GetDefaultDbcLocale(), true) == CHAR_NAME_SUCCESS)
-    {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
-        stmt->setString(0, name);
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-
-        if (result)
-            name = "";                                      // use the one from the dump
-    }
-    else
-        name = "";
-
     // name encoded or empty
 
     snprintf(newguid, 20, "%lu", guid);
@@ -724,17 +711,6 @@ DumpReturn PlayerDumpReader::LoadDump(uint32 account, std::string& dump, std::st
 
     // normalize the name if specified and check if it exists
     if (!normalizePlayerName(name))
-        name = "";
-
-    if (sCharacterDataStore->CheckPlayerName(name, sWorld->GetDefaultDbcLocale(), true) == CHAR_NAME_SUCCESS)
-    {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
-        stmt->setString(0, name);
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-        if (result)
-            name = "";                                      // use the one from the dump
-    }
-    else
         name = "";
 
     // name encoded or empty

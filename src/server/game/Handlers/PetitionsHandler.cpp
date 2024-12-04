@@ -17,7 +17,6 @@
  */
 
 #include "Guild.h"
-#include "CharacterData.h"
 #include "GuildMgr.h"
 #include "WordFilterMgr.h"
 #include "ObjectMgr.h"
@@ -58,7 +57,7 @@ void WorldSession::HandlePetitionBuy(WorldPackets::Petition::PetitionBuy& packet
         return;
     }
 
-    if (sCharacterDataStore->IsReservedName(packet.Title) || !sCharacterDataStore->IsValidCharterName(packet.Title, GetSessionDbLocaleIndex()) || (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.Title).empty()))
+    if (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.Title).empty())
     {
         Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, packet.Title);
         return;
@@ -253,7 +252,7 @@ void WorldSession::HandlePetitionRenameGuild(WorldPackets::Petition::PetitionRen
         return;
     }
 
-    if (sCharacterDataStore->IsReservedName(packet.NewGuildName) || !sCharacterDataStore->IsValidCharterName(packet.NewGuildName, GetSessionDbLocaleIndex()) || (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.NewGuildName).empty()))
+    if (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.NewGuildName).empty())
     {
         Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_INVALID, packet.NewGuildName);
         return;

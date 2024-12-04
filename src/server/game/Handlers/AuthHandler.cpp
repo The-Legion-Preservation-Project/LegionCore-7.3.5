@@ -18,7 +18,6 @@
 #include "AuthenticationPackets.h"
 #include "BattlenetRpcErrorCodes.h"
 #include "ObjectMgr.h"
-#include "CharacterData.h"
 #include "ClientConfigPackets.h"
 #include "SystemPackets.h"
 #include "CharacterPackets.h"
@@ -55,28 +54,6 @@ void WorldSession::SendAuthResponse(uint8 code, bool queued /*= false*/, uint32 
         response.SuccessInfo->VirtualRealms.emplace_back(GetVirtualRealmAddress(), true, false, sObjectMgr->GetRealmName(realm.Id.Realm), sObjectMgr->GetNormalizedRealmName(realm.Id.Realm));
         response.SuccessInfo->AvailableClasses = &sObjectMgr->GetClassExpansionRequirements();
         response.SuccessInfo->Time = int32(GameTime::GetGameTime());
-
-
-            for (auto& templ : charTemplateData)
-            {
-                if (!templ.second.active)
-                    continue;
-
-                auto charTemplate = sCharacterDataStore->GetCharacterTemplate(templ.second.templateId);
-                if (!charTemplate)
-                    continue;
-
-                WorldPackets::Auth::AuthResponse::CharacterTemplateData templateData;
-                templateData.TemplateSetID = templ.second.id;
-                for (auto x : charTemplate->Classes)
-                    templateData.Classes.emplace_back(x.FactionGroup, x.ClassID);
-                for (auto z : charTemplate->Items)
-                    templateData.Items.emplace_back(z.ItemID, z.Count, z.ClassID, z.FactionGroup);
-                templateData.Name = { std::to_string(templ.second.level) + " level " + std::to_string(templ.second.iLevel) + " ilevel" };
-                templateData.Description = { "Create character with " + std::to_string(templ.second.level) + " level and " + std::to_string(templ.second.iLevel) + "ilvl items" };
-                response.SuccessInfo->Templates.emplace_back(templateData);
-            }
-        
     }
 
     if (queued)

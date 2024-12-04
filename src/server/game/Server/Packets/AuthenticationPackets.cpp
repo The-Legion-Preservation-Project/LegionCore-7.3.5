@@ -16,11 +16,10 @@
  */
 
 #include "AuthenticationPackets.h"
- #include <utility>
+#include <utility>
 #include "HmacHash.h"
 #include "Util.h"
 #include "RSA.h"
-#include "CharacterData.h"
 
 bool WorldPackets::Auth::EarlyProcessClientPacket::ReadNoThrow()
 {
@@ -91,14 +90,6 @@ void WorldPackets::Auth::AuthSession::Read()
         RealmJoinTicket.resize(std::min(realmJoinTicketSize, uint32(_worldPacket.size() - _worldPacket.rpos())));
         _worldPacket.read(reinterpret_cast<uint8*>(&RealmJoinTicket[0]), RealmJoinTicket.size());
     }
-}
-
-WorldPackets::Auth::AuthResponse::CharcterTemplateClass::CharcterTemplateClass(uint8 factionGroup, uint8 classID) : FactionGroup(factionGroup), ClassID(classID)
-{
-}
-
-WorldPackets::Auth::AuthResponse::CharacterTemplateItemStruct::CharacterTemplateItemStruct(uint32 itemID, uint32 count, uint8 classID, uint8 factionGroup) : ItemID{ itemID }, Count{ count }, ClassID{ classID }, FactionGroup{ factionGroup }
-{
 }
 
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Auth::AuthWaitInfo const& waitInfo)

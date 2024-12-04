@@ -31,7 +31,6 @@
 #include "BattlenetPackets.h"
 #include "BattlenetRpcErrorCodes.h"
 #include "BattlePayMgr.h"
-#include "CharacterData.h"
 #include "CharacterPackets.h"
 #include "ChatPackets.h"
 #include "Common.h"
@@ -925,28 +924,6 @@ void WorldSession::LoadTutorialsData(PreparedQueryResult const& result)
     _tutorialsChanged &= ~TUTORIALS_FLAG_CHANGED;
 }
 
-void WorldSession::LoadCharacterTemplates(PreparedQueryResult const& result)
-{
-    if (!result)
-        return;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        uint32 id = fields[0].GetUInt32();
-        CharacterTemplateData& templateData = charTemplateData[id];
-
-        templateData.id = id;
-        templateData.level = fields[1].GetUInt8();
-        templateData.iLevel = fields[2].GetUInt32();
-        templateData.money = fields[3].GetUInt32();
-        templateData.artifact = fields[4].GetBool();
-        templateData.templateId = fields[6].GetUInt32();
-        templateData.charTemplate = sCharacterDataStore->GetCharacterTemplate(templateData.templateId);
-    }
-    while (result->NextRow());
-}
-
 void WorldSession::SendTutorialsData()
 {
     WorldPackets::Misc::TutorialFlags packet;
@@ -1167,7 +1144,6 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
 {
     LoadAccountData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
     LoadTutorialsData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
-    LoadCharacterTemplates(holder.GetPreparedResult(AccountInfoQueryHolder::GLOBAL_REALM_CHARACTER_TEMPLATE));
     LoadAchievement(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::ACHIEVEMENTS));
 
     if (!m_inQueue)
@@ -1214,11 +1190,6 @@ void WorldSession::SetPersonalXPRate(float rate)
         LoginDatabase.PExecute("REPLACE INTO `account_rates` (`account`, `realm`, `rate`) VALUES ('%u', '%u', '%f');", GetAccountId(), sWorld->GetRealmId(), rate);
     
     PersonalXPRate = rate;
-}
-
-CharacterTemplateData* WorldSession::GetCharacterTemplateData(uint32 id)
-{
-    return Trinity::Containers::MapGetValuePtr(charTemplateData, id);
 }
 
 bool WorldSession::HasAchievement(uint32 achievementId)

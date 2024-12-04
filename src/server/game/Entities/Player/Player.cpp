@@ -39,7 +39,6 @@
 #include "ChallengeMgr.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
-#include "CharacterData.h"
 #include "CharacterDatabaseCleaner.h"
 #include "CharacterPackets.h"
 #include "CharmInfo.h"
@@ -628,39 +627,6 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
     uint64 money = sWorld->getIntConfig(CONFIG_START_PLAYER_MONEY) * 10000;
 
     WorldLocation loc(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
-
-    bool loadoutItem = false;
-    bool addArtifact = true;
-    uint32 itemIlevel = 0;
-    auto charTemplate = static_cast<CharacterTemplate const*>(nullptr);
-    if (createInfo->TemplateSet.has_value())
-    {
-            if (CharacterTemplateData* charTemplateData = GetSession()->GetCharacterTemplateData(*createInfo->TemplateSet))
-            {
-                if (charTemplateData->active)
-                {
-                    charTemplate = charTemplateData->charTemplate;
-                    startLevel = charTemplateData->level;
-                    money = charTemplateData->money;
-                    itemIlevel = charTemplateData->iLevel;
-                    if (createInfo->Class != CLASS_DEMON_HUNTER)
-                        loadoutItem = true;
-                    addArtifact = charTemplateData->artifact;
-                    charTemplateData->active = false;
-
-                    if (charTemplate)
-                        for (auto v : charTemplate->Classes)
-                            if (v.ClassID == createInfo->Class)
-                            {
-                                Relocate(charTemplate->Pos);
-                                loc = WorldLocation(charTemplate->MapID, charTemplate->Pos);
-                                break;
-                            }
-                }
-            }
-        
-    }
-
     Relocate(loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), loc.GetOrientation());
     SetHomebind(loc, 0);
 
@@ -856,99 +822,6 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
         for (PlayerCreateInfoActions::const_iterator action_itr = allInfo->action.begin(); action_itr != allInfo->action.end(); ++action_itr)
             AddActionButton(action_itr->button, action_itr->action, action_itr->type);
 
-    uint8 FactionGroup = GetTeamId() == TEAM_HORDE ? FACTION_MASK_HORDE : FACTION_MASK_ALLIANCE;
-    if (charTemplate && !charTemplate->Items.empty())
-    {
-        for (CharacterTemplateItem const& v : charTemplate->Items)
-            if ((!v.ClassID || v.ClassID == createInfo->Class) && (!v.FactionGroup || (v.FactionGroup & FactionGroup)) && (!v.RaceMask || v.RaceMask & getRaceMask()))
-            {
-                if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(v.ItemID))
-                {
-                    if (!addArtifact && pProto->GetArtifactID())
-                        continue;
-
-                    std::vector<uint32> bonusListIDs = sObjectMgr->GetItemBonusForLevel(v.ItemID, GetMap()->GetDifficultyLootItemContext(), getLevel(), itemIlevel);
-                    StoreNewItemInBestSlots(v.ItemID, v.Count, true, bonusListIDs);
-                }
-            }
-    }
-    else if (loadoutItem)
-    {
-        std::array<std::vector<uint32>, 2> itemsArray = sDB2Manager.GetItemLoadOutItemsByClassID(getClass(), 4);
-        for (uint32 itemID : itemsArray[0])
-            if (ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemID))
-                StoreNewItemInBestSlots(itemID, pProto->GetInventoryType() != INVTYPE_BAG  ? 1 : 4);
-    }
-    else
-    {
-        CharStartOutfitEntry const* oEntry = nullptr;
-        for (CharStartOutfitEntry const* entry : sCharStartOutfitStore)
-            if (entry->RaceID == createInfo->Race && entry->ClassID == createInfo->Class && entry->SexID == createInfo->Sex)
-            {
-                oEntry = entry;
-                break;
-            }
-
-        if (oEntry)
-        {
-            for (int j = 0; j < MAX_OUTFIT_ITEMS; ++j)
-            {
-                if (oEntry->ItemID[j] <= 0)
-                    continue;
-
-                uint32 itemId = oEntry->ItemID[j];
-                ItemTemplate const* iProto = sObjectMgr->GetItemTemplate(itemId);
-                if (!iProto)
-                    continue;
-
-                uint32 count = iProto->VendorStackCount;
-                if (iProto->GetClass() == ITEM_CLASS_CONSUMABLE && iProto->GetSubClass() == ITEM_SUBCLASS_FOOD_DRINK)
-                {
-                    switch (iProto->Effects[0]->SpellCategoryID)
-                    {
-                        case SPELL_CATEGORY_FOOD:
-                            count = getClass() == CLASS_DEATH_KNIGHT ? 10 : 4;
-                            break;
-                        case SPELL_CATEGORY_DRINK:
-                            count = 2;
-                            break;
-                    }
-
-                    if (iProto->GetMaxStackSize() < count)
-                        count = iProto->GetMaxStackSize();
-                }
-
-                switch (itemId)
-                {
-                    // Pandaren start weapons, they are given with the first quest
-                    case 73207:
-                    case 73208:
-                    case 73209:
-                    case 73210:
-                    case 73211:
-                    case 73212:
-                    case 73213:
-                    case 76390:
-                    case 76391:
-                    case 76392:
-                    case 76393:
-                        continue;
-                    default:
-                        break;
-                }
-
-                StoreNewItemInBestSlots(itemId, count);
-            }
-        }
-
-        for (auto const& itr : info->item)
-            StoreNewItemInBestSlots(itr.item_id, itr.item_amount, true, itr.item_bonusListIDs);
-
-        if (PlayerInfo const* allInfo = sObjectMgr->GetPlayerInfo(RACE_NONE, CLASS_NONE))
-            for (auto const& itr : allInfo->item)
-                StoreNewItemInBestSlots(itr.item_id, itr.item_amount, true, itr.item_bonusListIDs);
-    }
-
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < GetInventoryEndSlot(); ++i)
     {
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
@@ -1006,37 +879,6 @@ bool Player::Create(ObjectGuid::LowType guidlow, WorldPackets::Character::Charac
             }
         }
     }
-
-    if (charTemplate && !charTemplate->Quests.empty())
-    {
-        for (CharacterTemplateQuest const& v : charTemplate->Quests)
-            if ((!v.ClassID || v.ClassID == createInfo->Class) && (!v.FactionGroup || (v.FactionGroup & FactionGroup)) && (!v.RaceMask || v.RaceMask & getRaceMask()))
-            {
-                if (Quest const* quest = quest = sQuestDataStore->GetQuestTemplate(v.QuestID))
-                {
-                    AddQuest(quest, NULL);
-                    CompleteQuest(quest->Id);
-                    RewardQuest(quest, 0, this);
-                }
-            }
-    }
-
-    if (charTemplate && !charTemplate->Spells.empty())
-    {
-        for (CharacterTemplateSpell const& v : charTemplate->Spells)
-            if ((!v.ClassID || v.ClassID == createInfo->Class) && (!v.FactionGroup || (v.FactionGroup & FactionGroup)) && (!v.RaceMask || v.RaceMask & getRaceMask()))
-                learnSpell(v.SpellID, false);
-    }
-
-    if (charTemplate && !charTemplate->Titles.empty())
-    {
-        for (CharacterTemplateTitle const& v : charTemplate->Titles)
-            if ((!v.ClassID || v.ClassID == createInfo->Class) && (!v.FactionGroup || (v.FactionGroup & FactionGroup)) && (!v.RaceMask || v.RaceMask & getRaceMask()))
-                if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(v.TitleID))
-                    SetTitle(titleEntry);
-    }
-
-    return true;
 }
 
 bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount, bool not_loading/*=true*/, std::vector<uint32> const& bonusListIDs/* = std::vector<uint32>()*/)
@@ -21802,19 +21644,6 @@ bool Player::LoadFromDB(ObjectGuid guid, CharacterDatabaseQueryHolder const& hol
     Object::_Create(guid);
 
     m_name = fields[f_name].GetString();
-
-    // check name limitations
-    if (sCharacterDataStore->CheckPlayerName(m_name, GetSession()->GetSessionDbcLocale()) != CHAR_NAME_SUCCESS || (AccountMgr::IsPlayerAccount(GetSession()->GetSecurity()) && sCharacterDataStore->IsReservedName(m_name)))
-    {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
-
-        stmt->setUInt16(0, uint16(AT_LOGIN_RENAME));
-        stmt->setUInt64(1, guid.GetCounter());
-
-        CharacterDatabase.Execute(stmt);
-
-        return false;
-    }
 
     // overwrite possible wrong/corrupted guid
     SetGuidValue(OBJECT_FIELD_GUID, guid);

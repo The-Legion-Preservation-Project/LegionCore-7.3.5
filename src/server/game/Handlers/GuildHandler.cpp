@@ -17,7 +17,6 @@
  */
 
 #include "GuildMgr.h"
-#include "CharacterData.h"
 #include "GuildMgr.h"
 #include "WordFilterMgr.h"
 #include "GuildPackets.h"
@@ -599,7 +598,7 @@ void WorldSession::HandleGuildChangeNameRequest(WorldPackets::Guild::GuildChange
             return;
 
         bool success = true;
-        if (guild->GetName() == packet.NewName || sCharacterDataStore->IsReservedName(packet.NewName) || !sCharacterDataStore->IsValidCharterName(packet.NewName, GetSessionDbLocaleIndex()) || (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.NewName).empty()))
+        if (guild->GetName() == packet.NewName || (sWorld->getBoolConfig(CONFIG_WORD_FILTER_ENABLE) && !sWordFilterMgr->FindBadWord(packet.NewName).empty()))
             success = false;
 
         WorldPackets::Guild::GuildChangeNameResult result;

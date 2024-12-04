@@ -18,7 +18,6 @@
 
 #include "BattlePetPackets.h"
 #include "WildBattlePet.h"
-#include "CharacterData.h"
 #include "GridNotifiers.h"
 #include "ObjectVisitors.hpp" 
 #include "PlayerDefines.h"
@@ -80,13 +79,6 @@ void WorldSession::HandleBattlePetNameQuery(WorldPackets::BattlePet::Query& pack
 
 void WorldSession::HandleModifyName(WorldPackets::BattlePet::ModifyName& packet)
 {
-    auto nameInvalidReason = sCharacterDataStore->CheckPetName(packet.Name);
-    if (nameInvalidReason != PET_NAME_SUCCESS)
-    {
-        SendPetNameInvalid(nameInvalidReason, packet.BattlePetGUID, packet.Name, packet.DeclinedNames);
-        return;
-    }
-
     uint32 timeStamp = packet.Name.empty() ? 0 : GameTime::GetGameTime();
 
     if (auto battlePet = _player->GetBattlePet(packet.BattlePetGUID))
