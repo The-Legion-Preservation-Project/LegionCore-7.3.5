@@ -105,6 +105,8 @@ enum HugeBoulder
     EVENT_PATH_AWAY = 14,
     EVENT_DONE = 15,
     EVENT_BRIDGE_WORKERS_COWER = 16,
+    EVENT_FOREMAN_GET_UP = 17,
+    EVENT_FOREMAN_STUN = 18,
 
     POINT_NEAR_ROCK = 1,
     POINT_NEAR_WATER = 2,
@@ -165,6 +167,7 @@ public:
                         {
                             _boulderGUID = boulder->GetGUID();
                             boulder->CastSpell(me, SPELL_LIFT_HUGE_BOULDER, false);
+                            boulder->GetAI()->SetData(0, 0);
                         }
                         _events.ScheduleEvent(EVENT_ETTIN_LINE_1, 1s);
                         break;
@@ -194,6 +197,9 @@ public:
                         break;
                     case EVENT_PATH_AWAY:
                     {
+                        if (Creature* boulder = me->GetMap()->GetCreature(_boulderGUID))
+                            boulder->GetAI()->SetData(0, 1);
+
                         // run up path
                         Movement::MoveSplineInit init(*me);
                         Movement::PointsArray path(EttinPathUpHill, EttinPathUpHill + EttinPathUpHillSize);
@@ -205,9 +211,6 @@ public:
                         break;
                     }
                     case EVENT_DONE:
-                        if (Creature* boulder = me->GetMap()->GetCreature(_boulderGUID))
-                            boulder->DisappearAndDie();
-
                         me->DisappearAndDie();
                         break;
                 }
@@ -472,8 +475,15 @@ public:
                             jess->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
                         if (Creature* daniel = GetDaniel())
                             daniel->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 431);
-
-                        _events.ScheduleEvent(EVENT_DONE, 18s);
+                        break;
+                    case EVENT_FOREMAN_GET_UP:
+                        if (Creature* foreman = GetForeman())
+                            foreman->SetStandState(UNIT_STAND_STATE_STAND);
+                        _events.ScheduleEvent(EVENT_FOREMAN_STUN, 2s);
+                        break;
+                    case EVENT_FOREMAN_STUN:
+                        if (Creature* foreman = GetForeman())
+                            foreman->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 64);
                         break;
                     case EVENT_DONE:
                         if (Creature* alex = GetAlex())
@@ -488,11 +498,22 @@ public:
                             jess->DisappearAndDie();
                         if (Creature* daniel = GetDaniel())
                             daniel->DisappearAndDie();
+                        if (Creature* foreman = GetForeman())
+                            foreman->DisappearAndDie();
 
                         _events.Reset();
+                        me->DisappearAndDie();
                         break;
                 }
             }
+        }
+
+        void SetData(uint32 /*id*/, uint32 value) override
+        {
+            if (value == 0)
+                _events.ScheduleEvent(EVENT_FOREMAN_GET_UP, 3s);
+            else
+                _events.ScheduleEvent(EVENT_DONE, 0);
         }
 
         bool LocateGUIDs()
