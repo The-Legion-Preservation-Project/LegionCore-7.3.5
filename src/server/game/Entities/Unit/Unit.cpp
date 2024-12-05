@@ -639,6 +639,9 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
     {
         waitOnSeat = false;
         DisableSpline();
+
+        if (Optional<AnimTier> animTier = movespline->GetAnimation())
+            SetAnimTier(*animTier);
     }
 
     m_movesplineTimer.Update(t_diff);
@@ -21850,12 +21853,17 @@ void Unit::SendDurabilityLoss(Player* receiver, uint32 percent)
     receiver->SendDirectMessage(durabilityDamage.Write());
 }
 
-void Unit::SetAnimTier(uint32 tier)
+void Unit::SetAnimTier(AnimTier animTier, bool notifyClient /*=true*/)
 {
-    WorldPackets::Update::SetAnimTimer packet;
-    packet.Tier = tier;
-    packet.Unit = GetGUID();
-    SendMessageToSet(packet.Write(), true);
+    SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, AsUnderlyingType(animTier));
+
+    if (notifyClient)
+    {
+        WorldPackets::Update::SetAnimTimer packet;
+        packet.Tier = AsUnderlyingType(animTier);
+        packet.Unit = GetGUID();
+        SendMessageToSet(packet.Write(), true);
+    }
 }
 
 void Unit::PlayOneShotAnimKit(uint16 animKitID)
@@ -24904,25 +24912,19 @@ bool Unit::SetWalk(bool enable)
     return true;
 }
 
-bool Unit::SetDisableGravity(bool disable)
+bool Unit::SetDisableGravity(bool disable, bool updateAnimationTier /*= true*/)
 {
     if (disable == IsLevitating())
         return false;
 
-    if (!IsPlayer())
+    if (disable)
     {
-        if (disable)
-        {
-            AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-            RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_SPLINE_ELEVATION);
-            SetFall(false);
-        }
-        else
-        {
-            RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-            if (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
-                SetFall(true);
-        }
+        AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_SPLINE_ELEVATION);
+    }
+    else
+    {
+        RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
     }
 
     static OpcodeServer const gravityOpcodeTable[2][2] =
@@ -24944,6 +24946,16 @@ bool Unit::SetDisableGravity(bool disable)
         WorldPackets::Movement::MoveSplineSetFlag packet(gravityOpcodeTable[disable][0]);
         packet.MoverGUID = GetGUID();
         SendMessageToSet(packet.Write(), true);
+    }
+
+    if (IsCreature() && updateAnimationTier && IsAlive() && !HasUnitState(UNIT_STATE_ROOT) && !ToCreature()->GetMovementTemplate().IsRooted())
+    {
+        if (IsLevitating())
+            SetAnimTier(AnimTier::Fly);
+        else if (IsHovering())
+            SetAnimTier(AnimTier::Hover);
+        else
+            SetAnimTier(AnimTier::Ground);
     }
 
     return true;
@@ -25106,45 +25118,41 @@ bool Unit::SetFeatherFall(bool enable)
     return true;
 }
 
-bool Unit::SetHover(bool enable)
+bool Unit::SetHover(bool enable, bool updateAnimationTier /*= true*/)
 {
     if (enable == HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
         return false;
 
     float hoverHeight = GetFloatValue(UNIT_FIELD_HOVER_HEIGHT);
 
-    //! Unconfirmed for players:
-    if (!IsPlayer())
+    if (enable)
     {
-        if (enable)
-        {
-            if (!IsLevitating())
-                m_updateFlag |= UPDATEFLAG_PLAY_HOVER_ANIM;
-            // SetMiscStandFlags(UNIT_BYTE1_FLAG_HOVER);
-            if (hoverHeight)
-                UpdateHeight(GetPositionZ() + hoverHeight);
-        }
-        else
-        {
-            if (!IsLevitating())
-                m_updateFlag &= ~UPDATEFLAG_PLAY_HOVER_ANIM;
-            // RemoveMiscStandFlags(UNIT_BYTE1_FLAG_HOVER);
-            if (hoverHeight)
-            {
-                float newZ = GetPositionZ() - hoverHeight;
-                UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
-                UpdateHeight(newZ);
-            }
-        }
-
         if (!IsLevitating())
+            m_updateFlag |= UPDATEFLAG_PLAY_HOVER_ANIM;
+        // SetMiscStandFlags(UNIT_BYTE1_FLAG_HOVER);
+        if (hoverHeight)
+            UpdateHeight(GetPositionZ() + hoverHeight);
+    }
+    else
+    {
+        if (!IsLevitating())
+            m_updateFlag &= ~UPDATEFLAG_PLAY_HOVER_ANIM;
+        // RemoveMiscStandFlags(UNIT_BYTE1_FLAG_HOVER);
+        if (hoverHeight)
         {
-            WorldPackets::Misc::SetPlayHoverAnim playHoverAnim;
-            playHoverAnim.UnitGUID = GetGUID();
-            playHoverAnim.PlayHoverAnim = enable;
-            SendMessageToSet(playHoverAnim.Write(), true);
+            float newZ = GetPositionZ() - hoverHeight;
+            UpdateAllowedPositionZ(GetPositionX(), GetPositionY(), newZ);
+            UpdateHeight(newZ);
         }
     }
+
+//    if (!IsLevitating())
+//    {
+//        WorldPackets::Misc::SetPlayHoverAnim playHoverAnim;
+//        playHoverAnim.UnitGUID = GetGUID();
+//        playHoverAnim.PlayHoverAnim = enable;
+//        SendMessageToSet(playHoverAnim.Write(), true);
+//    }
 
     if (enable)
     {
@@ -25188,6 +25196,16 @@ bool Unit::SetHover(bool enable)
         WorldPackets::Movement::MoveSplineSetFlag packet(hoverOpcodeTable[enable][0]);
         packet.MoverGUID = GetGUID();
         SendMessageToSet(packet.Write(), true);
+    }
+
+    if (IsCreature() && updateAnimationTier && IsAlive() && !HasUnitState(UNIT_STATE_ROOT) && !ToCreature()->GetMovementTemplate().IsRooted())
+    {
+        if (IsLevitating())
+            SetAnimTier(AnimTier::Fly);
+        else if (IsHovering())
+            SetAnimTier(AnimTier::Hover);
+        else
+            SetAnimTier(AnimTier::Ground);
     }
 
     return true;

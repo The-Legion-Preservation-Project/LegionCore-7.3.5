@@ -2563,7 +2563,7 @@ void Creature::setDeathState(DeathState s)
 
         bool needsFalling = (IsFlying() || IsHovering()) && !IsUnderWater() && !HasUnitState(UNIT_STATE_ROOT);
         SetHover(false);
-        SetDisableGravity(false); //, false);
+        SetDisableGravity(false, false);
 
         if (needsFalling)
             GetMotionMaster()->MoveFall();
