@@ -1559,8 +1559,8 @@ class Unit : public WorldObject
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);}
         bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER);}
         bool SetWalk(bool enable);
-        bool SetDisableGravity(bool disable, bool isPlayer = false);
-        bool SetFall(bool enable, bool isPlayer = false);
+        bool SetDisableGravity(bool disable);
+        bool SetFall(bool enable);
         bool SetSwim(bool enable);
         bool SetCanFly(bool apply);
         bool SetWaterWalking(bool enable);

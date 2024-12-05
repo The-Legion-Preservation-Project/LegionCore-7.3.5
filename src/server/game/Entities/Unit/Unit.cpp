@@ -24394,7 +24394,6 @@ void Unit::_ExitVehicle(Position const* exitPosition)
     // This should be done before dismiss, because there may be some aura removal
     m_vehicle = nullptr;
 
-    SetDisableGravity(false, true);
     SetControlled(false, UNIT_STATE_ROOT);      // SMSG_MOVE_FORCE_UNROOT, ~MOVEMENTFLAG_ROOT
 
     Position pos;
@@ -24905,28 +24904,32 @@ bool Unit::SetWalk(bool enable)
     return true;
 }
 
-bool Unit::SetDisableGravity(bool disable, bool isPlayer)
+bool Unit::SetDisableGravity(bool disable)
 {
     if (disable == IsLevitating())
         return false;
 
-    if (!IsPlayer() || isPlayer)
+    if (!IsPlayer())
     {
         if (disable)
         {
             AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_SPLINE_ELEVATION);
-            SetFall(false, isPlayer);
+            SetFall(false);
         }
         else
         {
             RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             if (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
-                SetFall(true, isPlayer);
+                SetFall(true);
         }
     }
 
-    static OpcodeServer const gravityOpcodeTable[2][2] = {{SMSG_MOVE_SPLINE_ENABLE_GRAVITY, SMSG_MOVE_ENABLE_GRAVITY}, {SMSG_MOVE_SPLINE_DISABLE_GRAVITY, SMSG_MOVE_DISABLE_GRAVITY}};
+    static OpcodeServer const gravityOpcodeTable[2][2] =
+    {
+        { SMSG_MOVE_SPLINE_ENABLE_GRAVITY, SMSG_MOVE_ENABLE_GRAVITY },
+        { SMSG_MOVE_SPLINE_DISABLE_GRAVITY, SMSG_MOVE_DISABLE_GRAVITY }
+    };
 
     if (Player* playerMover = Unit::ToPlayer(GetUnitBeingMoved()))
     {
@@ -24946,7 +24949,7 @@ bool Unit::SetDisableGravity(bool disable, bool isPlayer)
     return true;
 }
 
-bool Unit::SetFall(bool enable, bool isPlayer)
+bool Unit::SetFall(bool enable)
 {
     if (enable && IsLevitating()) // If disable gravity not use Feather Fall
         return false;
@@ -24954,7 +24957,7 @@ bool Unit::SetFall(bool enable, bool isPlayer)
     if (enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
         return false;
 
-    if (!IsPlayer() || isPlayer)
+    if (!IsPlayer())
     {
         if (enable)
         {
