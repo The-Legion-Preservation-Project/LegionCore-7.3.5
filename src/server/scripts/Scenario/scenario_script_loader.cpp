@@ -160,7 +160,7 @@ void AddSC_instance_army_training();
 
 void AddSC_instance_temple_of_the_jade_serpent();
 
-void AddScenariosScripts()
+void AddScenarioScripts()
 {
     AddSC_brokenIslands();
     AddSC_instance_broken_islands();
