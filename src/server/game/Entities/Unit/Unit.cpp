@@ -362,7 +362,6 @@ playerDamageTaken_(), npcDamageTaken_()
     ClearMirrorImageData();
 
     memset(m_modAuras, 0, sizeof(m_modAuras));
-    memset(m_auraTypeCount, 0, sizeof(m_auraTypeCount));
 
     m_powerCost.assign(MAX_POWERS + 1, 0);
 
@@ -4812,15 +4811,12 @@ void Unit::_RegisterAuraEffect(AuraEffect* aurEff, bool apply)
             m_modMapAuras[auraType] = m_modAuras[auraType];
         }
 
-        if (m_modAuras[auraType]->insert(aurEff))
-            m_auraTypeCount[auraType]++;
+        m_modAuras[auraType]->push_back(aurEff);
     }
     else if (m_modAuras[auraType])
     {
         RecursiveGuard guard(i_auraEff_lock);
-        if (m_modAuras[auraType]->erase(aurEff))
-            if (m_auraTypeCount[auraType])
-                m_auraTypeCount[auraType]--;
+        m_modAuras[auraType]->remove(aurEff);
     }
 }
 
@@ -5963,12 +5959,12 @@ bool Unit::HasAura(uint32 spellId, ObjectGuid casterGUID, ObjectGuid itemCasterG
 
 bool Unit::HasAuraType(AuraType auraType) const
 {
-    return m_auraTypeCount[auraType] > 0;
+    return (m_modAuras[auraType] && !m_modAuras[auraType]->empty());
 }
 
 uint32 Unit::GetAuraTypeCount(AuraType auraType) const
 {
-    return m_auraTypeCount[auraType];
+    return m_modAuras[auraType] ? m_modAuras[auraType]->size() : 0;
 }
 
 bool Unit::HasAuraTypeWithCaster(AuraType auratype, ObjectGuid caster) const
@@ -6211,12 +6207,12 @@ void Unit::GetTotalNotStuckAuraEffectByType(AuraType auratype, AuraEffectList& E
         {
             if (AuraEffect* eff = (*i))
                 if (!sSpellMgr->AddSameEffectStackRuleSpellGroups(eff->GetSpellInfo(), eff, SameEffectSpellGroup))
-                    EffectList.insert(eff);
+                    EffectList.push_back(eff);
         }
     }
 
     for (std::map<SpellGroup, AuraEffect*>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
-        EffectList.insert(itr->second);
+        EffectList.push_back(itr->second);
 }
 
 void Unit::GetAuraEffectsByListType(std::list<AuraType>* auratypelist, AuraEffectList& EffectList)
@@ -6225,7 +6221,7 @@ void Unit::GetAuraEffectsByListType(std::list<AuraType>* auratypelist, AuraEffec
     {
         if (AuraEffectList const* swaps = GetAuraEffectsByType(*auratype))
             for (AuraEffectList::const_iterator i = swaps->begin(); i != swaps->end(); ++i)
-                EffectList.insert(*i);
+                EffectList.push_back(*i);
     }
 }
 
@@ -6329,7 +6325,7 @@ int32 Unit::GetTotalForAurasModifier(std::list<AuraType> *auratypelist) const
     {
         if (AuraEffectList const* swaps = GetAuraEffectsByType(*auratype))
         for (AuraEffectList::const_iterator i = swaps->begin(); i != swaps->end(); ++i)
-            mTotalAuraList.insert(*i);
+            mTotalAuraList.push_back(*i);
     }
 
     if (!mTotalAuraList.empty())
@@ -6356,7 +6352,7 @@ float Unit::GetTotalForAurasMultiplier(std::list<AuraType> *auratypelist) const
     {
         if (AuraEffectList const* swaps = GetAuraEffectsByType(*auratype))
         for (AuraEffectList::const_iterator i = swaps->begin(); i != swaps->end(); ++i)
-            mTotalAuraList.insert(*i);
+            mTotalAuraList.push_back(*i);
     }
 
     for (AuraEffectList::iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
@@ -11599,7 +11595,7 @@ void Unit::RemoveAllAttackers()
         if (!(*iter) || !(*iter)->AttackStop())
         {
             TC_LOG_ERROR("entities.unit", "WORLD: Unit has an attacker that isn't attacking it!");
-            m_attackers.erase_at(iter);
+            m_attackers.erase(iter);
         }
     }
 }
@@ -14310,14 +14306,14 @@ void Unit::ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply)
         {
             if (itr->spellId == spellId && itr->type == type)
             {
-                m_spellImmune[op].erase(*itr);
+                m_spellImmune[op].erase(itr);
                 itr = m_spellImmune[op].begin();
             }
         }
         SpellImmune Immune;
         Immune.spellId = spellId;
         Immune.type = type;
-        m_spellImmune[op].insert(Immune);
+        m_spellImmune[op].push_back(Immune);
     }
     else
     {
@@ -14325,7 +14321,7 @@ void Unit::ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply)
         {
             if (itr->spellId == spellId && itr->type == type)
             {
-                m_spellImmune[op].erase(*itr);
+                m_spellImmune[op].erase(itr);
                 break;
             }
         }
@@ -27727,7 +27723,7 @@ void Unit::_addAttacker(Unit* pAttacker)                  // must be called only
 
 void Unit::_removeAttacker(Unit* pAttacker)               // must be called only from Unit::AttackStop()
 {
-    m_attackers.erase(UnitHashGen(pAttacker));
+    m_attackers.erase(pAttacker);
 }
 
 Unit* Unit::getAttackerForHelper() const                 // If someone wants to help, who to give them

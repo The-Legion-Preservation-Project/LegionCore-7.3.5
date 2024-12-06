@@ -2327,21 +2327,22 @@ bool Player::SafeTeleport(uint32 mapid, float x, float y, float z, float orienta
                         transferPending.Ship.emplace();
                         transferPending.Ship->OriginMapID = -1;
 
-                        switch (GetBGTeamId())
-                        {
-                        case TEAM_ALLIANCE:
-                            transferPending.Ship->ID = 278407;
-                            if (auto gunship = sTransportMgr->GetTransport(bg->GetBgMap(), 278407))
-                                gunship->CalculatePassengerPosition(x, y, z);
-                            break;
-                        case TEAM_HORDE:
-                            transferPending.Ship->ID = 279254;
-                            if (auto gunship = sTransportMgr->GetTransport(bg->GetBgMap(), 279254))
-                                gunship->CalculatePassengerPosition(x, y, z);
-                            break;
-                        default:
-                            break;
-                        }
+                        // TODO: fix this
+//                        switch (GetBGTeamId())
+//                        {
+//                        case TEAM_ALLIANCE:
+//                            transferPending.Ship->ID = 278407;
+//                            if (auto gunship = sTransportMgr->GetTransport(bg->GetBgMap(), 278407))
+//                                gunship->CalculatePassengerPosition(x, y, z);
+//                            break;
+//                        case TEAM_HORDE:
+//                            transferPending.Ship->ID = 279254;
+//                            if (auto gunship = sTransportMgr->GetTransport(bg->GetBgMap(), 279254))
+//                                gunship->CalculatePassengerPosition(x, y, z);
+//                            break;
+//                        default:
+//                            break;
+//                        }
                         break;
                     }
                     default:
@@ -4866,18 +4867,16 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     bool disabled_case = false;
     bool superceded_old = false;
 
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spellId);
+    PlayerSpellMap::iterator itr = m_spells.find(spellId);
 
     // Remove temporary spell if found to prevent conflicts
-    if (itr && itr->second.state == PLAYERSPELL_TEMPORARY)
+    if (itr != m_spells.end() && itr->second.state == PLAYERSPELL_TEMPORARY)
     {
-        itr.release();
         RemoveTemporarySpell(spellId);
     }
-    else if (itr)
+    else if (itr != m_spells.end())
     {
         PlayerSpell* spellPtr = &itr->second;
-        itr.release();
 
         uint32 next_active_spell_id = 0;
         // fix activate state for non-stackable low rank (and find next spell for !active case)
@@ -5048,12 +5047,8 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         }
 
         bool _disable = newspell.disabled;
-        uint8 __state = newspell.state;
-        bool __active = newspell.active;
-        bool __dependent = newspell.dependent;
-        bool __disabled = newspell.disabled;
         m_spells.erase(spellId);
-        m_spells.emplace(spellId, __state, __active, __dependent, __disabled);
+        m_spells.emplace(spellId, newspell);
         HandleExcludeCasterSpellList(spellId, true);
         HandleCasterAuraStateSpellList(spellId, true);
 
@@ -5186,16 +5181,16 @@ void Player::AddTemporarySpell(uint32 spellId)
     // spell already added - do not do anything
     if (m_spells.contains(spellId))
         return;
-    m_spells.emplace(spellId, PLAYERSPELL_TEMPORARY, true, false, false);
+    m_spells.emplace(spellId, PlayerSpell(PLAYERSPELL_TEMPORARY, true, false, false));
     HandleExcludeCasterSpellList(spellId, true);
     HandleCasterAuraStateSpellList(spellId, true);
 }
 
 void Player::RemoveTemporarySpell(uint32 spellId)
 {
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spellId);
+    PlayerSpellMap::iterator itr = m_spells.find(spellId);
     // spell already not in list - do not do anything
-    if (!itr)
+    if (itr == m_spells.end())
         return;
     // spell has other state than temporary - do not change it
     if (itr->second.state != PLAYERSPELL_TEMPORARY)
@@ -5219,12 +5214,11 @@ bool Player::IsNeedCastPassiveSpellAtLearn(SpellInfo const* spellInfo) const
 
 void Player::learnSpell(uint32 spell_id, bool dependent, uint32 fromSkill, bool sendMessage)
 {
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spell_id);
+    PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
-    bool disabled = itr ? (itr->second.disabled) : false;
+    bool disabled = (itr != m_spells.end()) ? itr->second.disabled : false;
     bool active = disabled ? (itr->second.active) : true;
 
-    itr.release();
     bool learning = addSpell(spell_id, active, true, dependent, false);
 
     // prevent duplicated entires in spell book, also not send if not in world (loading)
@@ -5245,15 +5239,15 @@ void Player::learnSpell(uint32 spell_id, bool dependent, uint32 fromSkill, bool 
     {
         if (uint32 nextSpell = sSpellMgr->GetNextSpellInChain(spell_id))
         {
-            PlayerSpellMap::guarded_ptr iter = m_spells.get(nextSpell);
-            if (iter && iter->second.disabled)
+            PlayerSpellMap::iterator iter = m_spells.find(nextSpell);
+            if (iter != m_spells.end() && iter->second.disabled)
                 learnSpell(nextSpell, false, fromSkill);
         }
 
         for (auto const& pair : sSpellMgr->GetSpellsRequiringSpellBounds(spell_id))
         {
-            PlayerSpellMap::guarded_ptr iter2 = m_spells.get(pair.second);
-            if (iter2 && iter2->second.disabled)
+            PlayerSpellMap::iterator iter2 = m_spells.find(pair.second);
+            if (iter2 != m_spells.end() && iter2->second.disabled)
                 learnSpell(pair.second, false, fromSkill);
         }
     }
@@ -5342,11 +5336,10 @@ void Player::learnSpell(uint32 spell_id, bool dependent, uint32 fromSkill, bool 
 
 void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank, bool sendMessage)
 {
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spell_id);
-    if (!itr)
+    PlayerSpellMap::iterator itr = m_spells.find(spell_id);
+    if (itr == m_spells.end())
         return;
     PlayerSpell* removeSpellPtr = &itr->second;
-    itr.release();
 
     if (removeSpellPtr->state == PLAYERSPELL_REMOVED || (disabled && removeSpellPtr->disabled) || removeSpellPtr->state == PLAYERSPELL_TEMPORARY)
         return;
@@ -5521,11 +5514,10 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank, bo
         if (cur_active && spellInfo->IsRanked())
         {
             // need manually update dependence state (learn spell ignore like attempts)
-            PlayerSpellMap::guarded_ptr prev_itr = m_spells.get(prev_id);
-            if (prev_itr)
+            PlayerSpellMap::iterator prev_itr = m_spells.find(prev_id);
+            if (prev_itr != m_spells.end())
             {
                 PlayerSpell* prevRemoveSpellPtr = &prev_itr->second;
-                prev_itr.release();
                 if (prevRemoveSpellPtr->dependent != cur_dependent)
                 {
                     prevRemoveSpellPtr->dependent = cur_dependent;
@@ -6385,12 +6377,11 @@ bool Player::HasSpell(uint32 spell)
     if (!m_spells.contains(spell))
         return false;
 
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spell);
-    if (!itr)
+    PlayerSpellMap::const_iterator itr = m_spells.find(spell);
+    if (itr == m_spells.end())
         return false;
 
-    PlayerSpell* spellPtr = &itr->second;
-    itr.release();
+    PlayerSpell const* spellPtr = &itr->second;
 
     return (spellPtr && spellPtr->state != PLAYERSPELL_REMOVED && !spellPtr->disabled);
 }
@@ -6418,12 +6409,11 @@ bool Player::HasActiveSpell(uint32 spell)
     if (!m_spells.contains(spell))
         return false;
 
-    PlayerSpellMap::guarded_ptr itr = m_spells.get(spell);
-    if (!itr)
+    PlayerSpellMap::const_iterator itr = m_spells.find(spell);
+    if (itr == m_spells.end())
         return false;
 
-    PlayerSpell* spellPtr = &itr->second;
-    itr.release();
+    PlayerSpell const* spellPtr = &itr->second;
 
     return (spellPtr && spellPtr->state != PLAYERSPELL_REMOVED && spellPtr->active && !spellPtr->disabled);
 }
@@ -26001,7 +25991,7 @@ void Player::_SaveSpells(CharacterDatabaseTransaction& trans)
         }
 
         if (itr->second.state == PLAYERSPELL_REMOVED)
-            m_spells.erase_at(itr);
+            m_spells.erase(itr);
         else
             itr->second.state = PLAYERSPELL_UNCHANGED;
     }
