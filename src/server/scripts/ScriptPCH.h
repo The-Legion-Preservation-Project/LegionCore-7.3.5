@@ -15,9 +15,24 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SC_SCRIPTLOADER_H
-#define SC_SCRIPTLOADER_H
-
-void AddScripts();
-
-#endif
+#include "Cell.h"
+#include "CellImpl.h"
+#include "Chat.h"
+#include "CombatAI.h"
+#include "DB2Stores.h"
+#include "Define.h"
+#include "GameEventMgr.h"
+#include "GameObject.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "InstanceScript.h"
+#include "ObjectMgr.h"
+#include "PassiveAI.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "ScriptMgr.h"
+#include "SharedDefines.h"
+#include "SpellAuraEffects.h"
+#include "SpellScript.h"
+#include "Unit.h"
+#include "Vehicle.h"
