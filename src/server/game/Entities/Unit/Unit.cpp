@@ -5288,29 +5288,24 @@ void Unit::RemoveAurasDueToItemSpell(Item* castItem, uint32 spellId)
 
 void Unit::RemoveAurasByType(AuraType auraType, ObjectGuid casterGUID, Aura* except, bool negative, bool positive)
 {
-    if (!HasAuraType(auraType))
+    if (!m_modAuras[auraType])
         return;
 
-    if (AuraEffectList const* auras = GetAuraEffectsByType(auraType))
-    for (Unit::AuraEffectList::const_iterator itr = auras->begin(); itr != auras->end(); ++itr)
+    for (AuraEffectList::iterator iter = m_modAuras[auraType]->begin(); iter != m_modAuras[auraType]->end();)
     {
-        AuraEffect const* auraEff = *itr;
-        if (!auraEff)
-            continue;
+        Aura* aura = (*iter)->GetBase();
+        AuraApplication* aurApp = aura->GetApplicationOfTarget(GetGUID());
+        ASSERT(aurApp);
 
-        Aura* aura = auraEff->GetBase();
-        if (!aura)
-            continue;
-
-        AuraApplication * aurApp = aura->GetApplicationOfTarget(GetGUID());
-        if (!aurApp)
+        ++iter;
+        if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID)
+            && ((negative && !aurApp->IsPositive()) || (positive && aurApp->IsPositive())))
         {
-            printf("CRASH ALERT : Unit::RemoveAurasByType no AurApp pointer for Aura Id %u\n", aura->GetId());
-            continue;
-        }
-
-        if (aura != except && (!casterGUID || aura->GetCasterGUID() == casterGUID) && ((negative && !aurApp->IsPositive()) || (positive && aurApp->IsPositive())))
+            uint32 removedAuras = m_removedAurasCount;
             RemoveAura(aurApp);
+            if (m_removedAurasCount > removedAuras + 1)
+                iter = m_modAuras[auraType]->begin();
+        }
     }
 }
 
@@ -5323,8 +5318,7 @@ void Unit::RemoveAurasByType(AuraType auraType, std::function<bool(AuraApplicati
     {
         Aura* aura = (*iter)->GetBase();
         AuraApplication * aurApp = aura->GetApplicationOfTarget(GetGUID());
-        if(!aurApp)
-            continue;
+        ASSERT(aurApp);
 
         ++iter;
         if (check(aurApp))
