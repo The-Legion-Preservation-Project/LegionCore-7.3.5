@@ -57,6 +57,18 @@ set_target_properties(proto
     FOLDER
       "server")
 
+if( BUILD_SHARED_LIBS )
+  if( UNIX )
+    install(TARGETS proto
+      LIBRARY
+        DESTINATION lib)
+  elseif( WIN32 )
+    install(TARGETS proto
+      RUNTIME
+        DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  endif()
+endif()
+
 # Generate precompiled header
 if (USE_COREPCH)
   add_cxx_pch(proto ${PRIVATE_PCH_HEADER})
