@@ -489,7 +489,7 @@ struct ItemSpecStats
     void AddModStat(int32 itemStatType);
 };
 
-class ObjectMgr
+class TC_GAME_API ObjectMgr
 {
     friend class PlayerDumpReader;
 

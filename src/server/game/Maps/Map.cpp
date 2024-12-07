@@ -3886,12 +3886,67 @@ uint16 Map::GetMapMaxPlayers() const
     return 0;
 }
 
+bool Map::Instanceable() const
+{
+    return i_mapEntry && i_mapEntry->Instanceable();
+}
+
+bool Map::IsDungeon() const
+{
+    return i_mapEntry && i_mapEntry->IsDungeon();
+}
+
+bool Map::IsDungeonOrRaid() const
+{
+    return i_mapEntry && i_mapEntry->Is5pplDungeonOrRaid() && !i_mapEntry->IsContinent();
+}
+
+bool Map::IsNonRaidDungeon() const
+{
+    return i_mapEntry && i_mapEntry->IsNonRaidDungeon();
+}
+
+bool Map::IsRaid() const
+{
+    return i_mapEntry && i_mapEntry->IsRaid();
+}
+
+bool Map::IsScenario() const
+{
+    return i_mapEntry && i_mapEntry->IsScenario();
+}
+
 bool Map::IsHeroic() const
 {
     if (DifficultyEntry const* difficulty = sDifficultyStore.LookupEntry(i_difficulty))
         return difficulty->Flags & (DIFFICULTY_FLAG_HEROIC | DIFFICULTY_FLAG_DISPLAY_HEROIC);
 
     return false;
+}
+
+bool Map::IsBattleground() const
+{
+    return i_mapEntry && i_mapEntry->IsBattleground();
+}
+
+bool Map::IsBattleArena() const
+{
+    return i_mapEntry && i_mapEntry->IsBattleArena();
+}
+
+bool Map::IsBattlegroundOrArena() const
+{
+    return i_mapEntry && i_mapEntry->IsBattlegroundOrArena();
+}
+
+bool Map::IsGarrison() const
+{
+    return i_mapEntry && i_mapEntry->IsGarrison();
+}
+
+bool Map::IsContinent() const
+{
+    return i_mapEntry && i_mapEntry->IsContinent();
 }
 
 bool Map::IsNeedRecalc() const

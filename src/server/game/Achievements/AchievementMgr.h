@@ -341,7 +341,7 @@ enum CriteriaSort
 };
 
 template<class T>
-class AchievementMgr
+class TC_GAME_API AchievementMgr
 {
     public:
         AchievementMgr(T* owner);

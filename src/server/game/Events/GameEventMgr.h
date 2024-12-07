@@ -196,8 +196,8 @@ public:
 
 #define sGameEventMgr GameEventMgr::instance()
 
-bool IsHolidayActive(HolidayIds id);
-bool IsEventActive(uint16 event_id);
+TC_GAME_API bool IsHolidayActive(HolidayIds id);
+TC_GAME_API bool IsEventActive(uint16 event_id);
 
 #endif
 

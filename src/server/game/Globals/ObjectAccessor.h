@@ -149,7 +149,7 @@ private:
     static std::atomic<bool> _checkLock;
 };
 
-class ObjectAccessor
+class TC_GAME_API ObjectAccessor
 {
     ObjectAccessor();
     ~ObjectAccessor();

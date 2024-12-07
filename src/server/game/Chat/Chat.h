@@ -47,7 +47,7 @@ class ChatCommand
         std::vector<ChatCommand> ChildCommands;
 };
 
-class ChatHandler
+class TC_GAME_API ChatHandler
 {
     public:
         WorldSession* GetSession() { return m_session; }

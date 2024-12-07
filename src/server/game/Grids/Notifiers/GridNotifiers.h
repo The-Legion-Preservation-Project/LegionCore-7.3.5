@@ -33,7 +33,7 @@
 
 namespace Trinity
 {
-    struct VisibleNotifier
+    struct TC_GAME_API VisibleNotifier
     {
         Player &i_player;
         UpdateData i_data;
@@ -601,7 +601,7 @@ namespace Trinity
 
     // WorldObject check classes
 
-    class AnyDeadUnitObjectInRangeCheck
+    class TC_GAME_API AnyDeadUnitObjectInRangeCheck
     {
     public:
         AnyDeadUnitObjectInRangeCheck(Unit* searchObj, float range);
@@ -614,7 +614,7 @@ namespace Trinity
         float i_range;
     };
 
-    class AnyDeadUnitSpellTargetInRangeCheck : public AnyDeadUnitObjectInRangeCheck
+    class TC_GAME_API AnyDeadUnitSpellTargetInRangeCheck : public AnyDeadUnitObjectInRangeCheck
     {
     public:
         AnyDeadUnitSpellTargetInRangeCheck(Unit* searchObj, float range, SpellInfo const* spellInfo, SpellTargetCheckTypes check);
@@ -799,7 +799,7 @@ namespace Trinity
         float i_range;
     };
 
-    class AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck
     {
     public:
         AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck(Unit const* funit, float range, bool checkin);
@@ -819,7 +819,7 @@ namespace Trinity
         ObjectGuid::LowType i_lowguid;
     };
 
-    class AnyFriendlyUnitInObjectRangeCheck
+    class TC_GAME_API AnyFriendlyUnitInObjectRangeCheck
     {
     public:
         AnyFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range);
@@ -830,7 +830,7 @@ namespace Trinity
         float i_range;
     };
 
-    class AnyUnitHavingBuffInObjectRangeCheck
+    class TC_GAME_API AnyUnitHavingBuffInObjectRangeCheck
     {
     public:
         AnyUnitHavingBuffInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, uint32 spellid, bool isfriendly);
@@ -855,7 +855,7 @@ namespace Trinity
         bool _raid;
     };
 
-    class AnyUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnitInObjectRangeCheck
     {
     public:
         AnyUnitInObjectRangeCheck(WorldObject const* obj, float range, bool aliveOnly = true);
@@ -1029,7 +1029,7 @@ namespace Trinity
         NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&) = delete;
     };
 
-    class AnyPlayerInObjectRangeCheck
+    class TC_GAME_API AnyPlayerInObjectRangeCheck
     {
     public:
         AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range, bool reqAlive = true);
@@ -1198,7 +1198,7 @@ namespace Trinity
         ObjectGuid _GUID;
     };
 
-    class UnitAuraCheck
+    class TC_GAME_API UnitAuraCheck
     {
     public:
         UnitAuraCheck(bool present, uint32 spellId, ObjectGuid casterGUID = ObjectGuid::Empty);
@@ -1282,7 +1282,7 @@ namespace Trinity
         const bool m_ascending;
     };
 
-    class UnitHealthState
+    class TC_GAME_API UnitHealthState
     {
     public:
         UnitHealthState(bool sortlow);
@@ -1327,7 +1327,7 @@ namespace Trinity
         uint32 _typeMask;
     };
 
-    class UnitSortDistance
+    class TC_GAME_API UnitSortDistance
     {
     public:
         UnitSortDistance(bool sortlow, WorldObject* caster);
@@ -1371,7 +1371,7 @@ namespace Trinity
         Unit* _caster;
     };
 
-    class UnitCheckInLos
+    class TC_GAME_API UnitCheckInLos
     {
     public:
         UnitCheckInLos(bool present, Unit* caster);

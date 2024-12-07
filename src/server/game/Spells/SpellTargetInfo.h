@@ -69,7 +69,7 @@ enum TargetInfoMask
     TARGET_INFO_IS_JUMP_TARGET = 0x00000004,
 };
 
-struct TargetInfo
+struct TC_GAME_API TargetInfo
 {
     TargetInfo(ObjectGuid tGUID, uint32  effMask);
     TargetInfo();
@@ -125,7 +125,7 @@ struct ArchaeologyWeight
 
 typedef std::vector<ArchaeologyWeight> ArchaeologyWeights;
 
-class SpellCastTargets
+class TC_GAME_API SpellCastTargets
 {
     friend class Spell;
     friend class WorldSession;

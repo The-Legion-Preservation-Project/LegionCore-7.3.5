@@ -458,11 +458,30 @@ class BrawlersBossAI : public ScriptedAI
 };
 
 // SD2 grid searchers.
-Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
-GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
-void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
-void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
-void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange);
+inline Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true)
+{
+    return source->FindNearestCreature(entry, maxSearchRange, alive);
+}
+
+inline GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    return source->FindNearestGameObject(entry, maxSearchRange);
+}
+
+inline void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetCreatureListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+inline void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetGameObjectListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+inline void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange)
+{
+    source->GetPlayerListInGrid(list, maxSearchRange);
+}
 
 void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y);
 void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float &y);

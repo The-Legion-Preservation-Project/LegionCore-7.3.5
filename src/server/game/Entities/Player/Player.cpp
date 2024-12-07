@@ -27096,11 +27096,11 @@ void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T& basevalue, Spell* s
     basevalue = T(float(basevalue + totalflat) * totalmul);
 }
 
-template void Player::ApplySpellMod(uint32 spellId, SpellModOp op, int32& basevalue, Spell* spell) const;
-template void Player::ApplySpellMod(uint32 spellId, SpellModOp op, uint32& basevalue, Spell* spell) const;
-template void Player::ApplySpellMod(uint32 spellId, SpellModOp op, float& basevalue, Spell* spell) const;
-template void Player::ApplySpellMod(uint32 spellId, SpellModOp op, double& basevalue, Spell* spell) const;
-template void Player::ApplySpellMod(uint32 spellId, SpellModOp op, int16& basevalue, Spell* spell) const;
+template TC_GAME_API void Player::ApplySpellMod(uint32 spellId, SpellModOp op, int32& basevalue, Spell* spell) const;
+template TC_GAME_API void Player::ApplySpellMod(uint32 spellId, SpellModOp op, uint32& basevalue, Spell* spell) const;
+template TC_GAME_API void Player::ApplySpellMod(uint32 spellId, SpellModOp op, float& basevalue, Spell* spell) const;
+template TC_GAME_API void Player::ApplySpellMod(uint32 spellId, SpellModOp op, double& basevalue, Spell* spell) const;
+template TC_GAME_API void Player::ApplySpellMod(uint32 spellId, SpellModOp op, int16& basevalue, Spell* spell) const;
 
 void Player::AddSpellMod(SpellModifier* mod, bool apply)
 {

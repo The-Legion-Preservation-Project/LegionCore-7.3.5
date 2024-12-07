@@ -132,7 +132,7 @@ struct CreatureLevelScaling
 };
 
 // from `creature_template` table
-struct CreatureTemplate
+struct TC_GAME_API CreatureTemplate
 {
     CreatureTemplate();
 
@@ -535,7 +535,7 @@ typedef std::map<uint32, time_t> CreatureSpellCooldowns;
 
 #define MAX_VENDOR_ITEMS 150                                // Limitation in 4.x.x item count in SMSG_VENDOR_INVENTORY
 
-class Creature : public Unit, public GridObject<Creature>, public MapObject
+class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
 {
     public:
 

@@ -1173,7 +1173,7 @@ struct SpellInfoLoadHelper
     SpellTotemsEntry const* Totems = nullptr;
 };
 
-class SpellMgr
+class TC_GAME_API SpellMgr
 {
     // Constructors
         SpellMgr();

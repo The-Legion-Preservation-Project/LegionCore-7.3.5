@@ -754,7 +754,7 @@ struct TriggerCastData
 struct CalcDamageInfo;
 struct SpellNonMeleeDamage;
 
-class DamageInfo
+class TC_GAME_API DamageInfo
 {
 private:
     Unit* const m_attacker;
@@ -954,7 +954,7 @@ struct GlobalCooldown
 
 typedef std::unordered_map<uint32 /*category*/, GlobalCooldown> GlobalCooldownList;
 
-class GlobalCooldownMgr                                     // Shared by Player and CharmInfo
+class TC_GAME_API GlobalCooldownMgr                                     // Shared by Player and CharmInfo
 {
 public:
     GlobalCooldownMgr() {}
@@ -1086,7 +1086,7 @@ enum class DisplayToastMethod : uint8
 typedef std::set<Unit*> UnitSet;
 typedef std::set<AuraEffect*> AuraEffectSet;
 
-class Unit : public WorldObject
+class TC_GAME_API Unit : public WorldObject
 {
     enum DamageTrackingInfo
     {

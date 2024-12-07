@@ -169,7 +169,7 @@ private:
 
 float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
 
-class Object
+class TC_GAME_API Object
 {
     public:
         virtual ~Object();
@@ -444,7 +444,7 @@ class Object
 
 typedef cyber_ptr<WorldObject> C_PTR;
 
-class WorldObject : public Object, public WorldLocation
+class TC_GAME_API WorldObject : public Object, public WorldLocation
 {
     protected:
         explicit WorldObject(bool isWorldObject); //note: here it means if it is in grid object list or world object list

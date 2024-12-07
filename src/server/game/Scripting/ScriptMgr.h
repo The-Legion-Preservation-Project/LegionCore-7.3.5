@@ -103,7 +103,7 @@ public:
     virtual void OnUpdate(TObject* /*obj*/, uint32 /*diff*/) { }
 };
 
-class SpellScriptLoader : public ScriptObject
+class TC_GAME_API SpellScriptLoader : public ScriptObject
 {
     protected:
 
@@ -120,7 +120,7 @@ class SpellScriptLoader : public ScriptObject
         virtual AuraScript* GetAuraScript() const { return nullptr; }
 };
 
-class WorldScript : public ScriptObject
+class TC_GAME_API WorldScript : public ScriptObject
 {
     protected:
 
@@ -153,7 +153,7 @@ class WorldScript : public ScriptObject
         virtual void OnShutdown() { }
 };
 
-class FormulaScript : public ScriptObject
+class TC_GAME_API FormulaScript : public ScriptObject
 {
     protected:
 
@@ -188,7 +188,7 @@ namespace Battlepay
     struct Product;
 }
 
-class BattlePayProductScript : public ScriptObject
+class TC_GAME_API BattlePayProductScript : public ScriptObject
 {
 protected:
     explicit BattlePayProductScript(std::string scriptName);
@@ -202,7 +202,7 @@ public:
 };
 
 template<class TMap>
-class MapScript : public UpdatableScript<TMap>
+class TC_GAME_API MapScript : public UpdatableScript<TMap>
 {
     MapEntry const* _mapEntry;
 
@@ -345,7 +345,7 @@ CreatureAI* GetAIForInstance(Creature* creature, const char *Name)
     return nullptr;
 }
 
-class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
+class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
 {
     protected:
 
@@ -392,7 +392,7 @@ class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
         virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return nullptr; }
 };
 
-class AreaTriggerScript : public ScriptObject
+class TC_GAME_API AreaTriggerScript : public ScriptObject
 {
     protected:
 
@@ -607,7 +607,7 @@ class TransportScript : public ScriptObject, public UpdatableScript<Transport>
         virtual void OnRelocate(Transport* /*transport*/, uint32 /*waypointId*/, uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) { }
 };
 
-class AchievementCriteriaScript : public ScriptObject
+class TC_GAME_API AchievementCriteriaScript : public ScriptObject
 {
     protected:
 
@@ -621,7 +621,7 @@ class AchievementCriteriaScript : public ScriptObject
         virtual bool OnCheck(Player* source, Unit* target) = 0;
 };
 
-class AchievementRewardScript : public ScriptObject
+class TC_GAME_API AchievementRewardScript : public ScriptObject
 {
     protected:
 
