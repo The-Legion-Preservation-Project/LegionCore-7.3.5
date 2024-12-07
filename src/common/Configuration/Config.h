@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 
-class ConfigMgr
+class TC_COMMON_API ConfigMgr
 {
     ConfigMgr() = default;
     ~ConfigMgr() = default;

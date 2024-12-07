@@ -75,8 +75,8 @@ add_dependencies(common revision_data.h)
 
 set_target_properties(common
     PROPERTIES
-      FOLDER
-        "server")
+      DEFINE_SYMBOL TRINITY_API_EXPORT_COMMON
+      FOLDER "server")
 
 if( BUILD_SHARED_LIBS )
   if( UNIX )

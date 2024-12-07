@@ -3663,7 +3663,7 @@ void Player::RemoveFromGroup(Group* group, ObjectGuid guid, RemoveMethod method 
         {
             if (Challenge* _challenge = progress->GetChallenge())
             {
-                if (guid == group->m_challengeOwner && !_challenge->_complete && _challenge->_run && !m_worldCrashChecker)
+                if (guid == group->m_challengeOwner && !_challenge->_complete && _challenge->_run)
                 {
                     if (Player* keyOwner = ObjectAccessor::FindPlayer(guid))
                         keyOwner->ChallengeKeyCharded(keyOwner->GetItemByEntry(138019, true), keyOwner->m_challengeKeyInfo.Level, false);

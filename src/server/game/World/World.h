@@ -662,7 +662,7 @@ struct GlobalMessageData
 };
 
 /// The World
-class World
+class TC_GAME_API World
 {
     public:
         static std::atomic<uint32> m_worldLoopCounter;
@@ -919,7 +919,8 @@ class World
     private:
         World();
         ~World();
-
+        
+        static std::atomic<bool> m_stopEvent;
         static uint8 m_ExitCode;
         uint32 m_ShutdownTimer;
         uint32 m_ShutdownMask;

@@ -3785,8 +3785,7 @@ bool InstanceHasScript(WorldObject const* obj, char const* scriptName)
 
 void InstanceMap::UnloadAll()
 {
-    if (!m_worldCrashChecker)
-        ASSERT(!HavePlayers());
+    ASSERT(!HavePlayers());
 
     if (m_resetAfterUnload == true)
         DeleteRespawnTimes();
@@ -4672,15 +4671,6 @@ void Map::UpdateLoop(uint32 _mapID)
 
     while (!b_isMapStop)
     {
-        if (m_worldCrashChecker) // Crashing detected, need stop map
-        {
-            _transports.clear();
-            UnloadAll();
-            b_isMapStop = true;
-            TC_LOG_ERROR("server", "Map::UpdateLoop Crash _mapID %u thread %zu", _mapID, std::hash<std::thread::id>()(std::this_thread::get_id()));
-            break;
-        }
-
         try
         {
             m_mapLoopCounter++;

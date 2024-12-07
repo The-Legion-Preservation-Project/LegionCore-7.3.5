@@ -34,9 +34,6 @@
 #include <arpa/inet.h>
 #endif
 
-bool m_worldCrashChecker;
-std::atomic<bool> m_stopEvent;
-
 uint64 GetThreadID()
 {
     std::stringstream ss;

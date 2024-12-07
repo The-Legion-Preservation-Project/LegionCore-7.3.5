@@ -42,7 +42,7 @@ class TaskContext;
 /// with the same duration or a new one.
 /// It also provides access to the repeat counter which is useful for task that repeat itself often
 /// but behave different every time (spoken event dialogs for example).
-class TaskScheduler
+class TC_COMMON_API TaskScheduler
 {
     friend class TaskContext;
 

@@ -45,8 +45,8 @@ target_link_libraries(game
 
 set_target_properties(game
     PROPERTIES
-      FOLDER
-        "server")
+      DEFINE_SYMBOL TRINITY_API_EXPORT_GAME
+      FOLDER "server")
 
 if( BUILD_SHARED_LIBS )
   if( UNIX )

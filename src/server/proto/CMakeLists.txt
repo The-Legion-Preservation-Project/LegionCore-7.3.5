@@ -54,8 +54,8 @@ endif()
 
 set_target_properties(proto
   PROPERTIES
-    FOLDER
-      "server")
+    DEFINE_SYMBOL TRINITY_API_EXPORT_PROTO
+    FOLDER "server")
 
 if( BUILD_SHARED_LIBS )
   if( UNIX )
