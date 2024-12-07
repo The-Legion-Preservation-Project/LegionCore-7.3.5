@@ -587,7 +587,7 @@ namespace WorldPackets
             ObjectGuid ObjectGUID;
         };
 
-        class PlaySound final : public ServerPacket
+        class TC_GAME_API PlaySound final : public ServerPacket
         {
         public:
             PlaySound(ObjectGuid sourceObjectGuid, int32 soundKitID) : ServerPacket(SMSG_PLAY_SOUND, 20), SourceObjectGuid(sourceObjectGuid), SoundKitID(soundKitID) { }
@@ -988,7 +988,7 @@ namespace WorldPackets
             std::vector<CUFProfile const*> CUFProfiles;
         };
         
-        class OverrideLight final : public ServerPacket
+        class TC_GAME_API OverrideLight final : public ServerPacket
         {
         public:
             OverrideLight() : ServerPacket(SMSG_OVERRIDE_LIGHT, 4 + 4 + 4) { }

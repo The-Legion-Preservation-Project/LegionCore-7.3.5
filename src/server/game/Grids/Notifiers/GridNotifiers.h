@@ -724,7 +724,7 @@ namespace Trinity
 
     // Unit checks
 
-    class MostHPMissingInRange
+    class TC_GAME_API MostHPMissingInRange
     {
     public:
         MostHPMissingInRange(Unit const* obj, float range, uint32 hp);
@@ -1064,7 +1064,7 @@ namespace Trinity
         NearestPlayerNotGMInObjectRangeCheck(NearestPlayerNotGMInObjectRangeCheck const&) = delete;
     };
 
-    class AllFriendlyCreaturesInGrid
+    class TC_GAME_API AllFriendlyCreaturesInGrid
     {
     public:
         AllFriendlyCreaturesInGrid(Unit const* obj);
@@ -1169,7 +1169,7 @@ namespace Trinity
         uint32 entry;
     };
 
-    class AllWorldObjectsInRange
+    class TC_GAME_API AllWorldObjectsInRange
     {
     public:
         AllWorldObjectsInRange(const WorldObject* object, float maxRange);
@@ -1179,7 +1179,7 @@ namespace Trinity
         float m_fRange;
     };
 
-    class ObjectTypeIdCheck
+    class TC_GAME_API ObjectTypeIdCheck
     {
     public:
         ObjectTypeIdCheck(TypeID typeId, bool equals);
@@ -1189,7 +1189,7 @@ namespace Trinity
         bool _equals;
     };
 
-    class ObjectGUIDCheck
+    class TC_GAME_API ObjectGUIDCheck
     {
     public:
         ObjectGUIDCheck(ObjectGuid GUID);
@@ -1292,7 +1292,7 @@ namespace Trinity
         bool _sortlow;
     };
 
-    class UnitDistanceCheck
+    class TC_GAME_API UnitDistanceCheck
     {
     public:
         UnitDistanceCheck(bool checkin, Unit* caster, float dist);
@@ -1316,7 +1316,7 @@ namespace Trinity
         float _dist;
     };
 
-    class UnitTypeCheck
+    class TC_GAME_API UnitTypeCheck
     {
     public:
         UnitTypeCheck(bool checkin, uint32 typeMask);

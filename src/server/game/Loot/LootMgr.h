@@ -149,7 +149,7 @@ class Player;
 class LootStore;
 class ConditionMgr;
 
-struct LootStoreItem
+struct TC_GAME_API LootStoreItem
 {
     std::list<Condition*>  conditions;                      // additional loot condition
     uint32  itemid;                                         // id of the item
@@ -335,7 +335,7 @@ class LootTemplate
         LootGroups        PersonalGroups;
 };
 
-struct Loot
+struct TC_GAME_API Loot
 {
     QuestItemMap const& GetPlayerCurrencies() const { return PlayerCurrencies; }
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }

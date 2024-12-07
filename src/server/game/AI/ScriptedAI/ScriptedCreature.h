@@ -483,8 +483,8 @@ inline void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, f
     source->GetPlayerListInGrid(list, maxSearchRange);
 }
 
-void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y);
-void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float &y);
-void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y);
+TC_GAME_API void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y);
+TC_GAME_API void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float &y);
+TC_GAME_API void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y);
 
 #endif // SCRIPTEDCREATURE_H_

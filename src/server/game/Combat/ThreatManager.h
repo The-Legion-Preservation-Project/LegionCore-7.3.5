@@ -118,7 +118,7 @@ private:
 
 class ThreatManager;
 
-class ThreatContainer
+class TC_GAME_API ThreatContainer
 {
     std::list<HostileReference*> iThreatList;
     bool iDirty;

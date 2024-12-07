@@ -778,7 +778,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 namespace Trinity
 {
     // Binary predicate to sort WorldObjects based on the distance to a reference WorldObject
-    class ObjectDistanceOrderPred
+    class TC_GAME_API ObjectDistanceOrderPred
     {
             const WorldObject* m_refObj;
             const bool m_ascending;

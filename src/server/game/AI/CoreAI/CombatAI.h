@@ -28,7 +28,7 @@ class Creature;
 
 typedef std::map<ObjectGuid, EventMap> PlayerEventMap;
 
-class AggressorAI : public CreatureAI
+class TC_GAME_API AggressorAI : public CreatureAI
 {
     public:
         explicit AggressorAI(Creature* c) : CreatureAI(c), m_checkTimer(0), CreatureTexts(nullptr), CreatureCombatTexts(nullptr) {}
@@ -99,7 +99,7 @@ class TC_GAME_API CasterAI : public CombatAI
         float m_attackDist;
 };
 
-struct ArcherAI : public CreatureAI
+struct TC_GAME_API ArcherAI : public CreatureAI
 {
     public:
         explicit ArcherAI(Creature* c);
@@ -111,7 +111,7 @@ struct ArcherAI : public CreatureAI
         float m_minRange;
 };
 
-struct TurretAI : public CreatureAI
+struct TC_GAME_API TurretAI : public CreatureAI
 {
     public:
         explicit TurretAI(Creature* c);

@@ -894,7 +894,7 @@ struct CalcDamageInfo
 };
 
 // Spell damage info structure based on structure sending in SMSG_SPELL_NON_MELEE_DAMAGE_LOG opcode
-struct SpellNonMeleeDamage
+struct TC_GAME_API SpellNonMeleeDamage
 {
     SpellNonMeleeDamage(Unit* _attacker, Unit* _target, uint32 spellID, uint32 spellXSpellVisualID, uint32 _schoolMask, ObjectGuid castGuid = ObjectGuid::Empty);
 
@@ -2686,7 +2686,7 @@ class TC_GAME_API Unit : public WorldObject
         FunctionProcessor m_CombatFunctions;
 };
 
-class DelayCastEvent : public BasicEvent
+class TC_GAME_API DelayCastEvent : public BasicEvent
 {
     friend class EffectMovementGenerator;
     friend class Spell;

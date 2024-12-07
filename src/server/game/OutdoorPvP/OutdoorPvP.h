@@ -107,7 +107,7 @@ class OutdoorGraveyard;
 typedef std::set<Player*> PlayerSet;
 typedef std::vector<OutdoorGraveyard*> GraveyardVector;
 
-class OPvPCapturePoint
+class TC_GAME_API OPvPCapturePoint
 {
     public:
 
@@ -357,7 +357,7 @@ class TC_GAME_API OutdoorPvP : public ZoneScript
         bool m_sendUpdate;
 };
 
-class OutdoorGraveyard
+class TC_GAME_API OutdoorGraveyard
 {
     public:
         explicit OutdoorGraveyard(OutdoorPvP* p_OutdoorPvP);
