@@ -1000,7 +1000,7 @@ Aura::ApplicationMap const& Aura::GetApplicationMap()
 AuraApplication* Aura::GetApplicationOfTarget(ObjectGuid const& guid)
 {
     auto itr = m_applications.find(guid);
-    if (itr != m_applications.end())
+    if (itr != m_applications.end() && itr->second)
         return itr->second.get();
 
     return nullptr;

@@ -1110,6 +1110,8 @@ class Unit : public WorldObject
         struct VisibleAuraSlotCompare { bool operator()(AuraApplication* left, AuraApplication* right) const; };
         typedef std::set<AuraApplication*, VisibleAuraSlotCompare> VisibleAuraContainer;
 
+        static std::vector<AuraEffect*> CopyAuraEffectList(AuraEffectList const& list);
+
         virtual ~Unit();
 
         void Clear() override;
@@ -1735,10 +1737,9 @@ class Unit : public WorldObject
         void _RemoveAllAuraStatMods();
         void _ApplyAllAuraStatMods();
 
-        AuraEffectList const* GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
+        AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
         void GetAuraEffectsByMechanic(uint32 mechanic_mask, AuraList& auraList, ObjectGuid casterGUID = ObjectGuid::Empty);
         void GetTotalNotStuckAuraEffectByType(AuraType auratype, AuraEffectList& EffectList, std::vector<uint32>& ExcludeAuraList);
-        AuraEffectList* GetAuraEffectsByType(AuraType type) { return m_modAuras[type]; }
         void GetAuraEffectsByListType(std::list<AuraType> *auratypelist, AuraEffectList& EffectList);
 
         AuraList& GetSingleCastAuras() { return m_scAuras; }
@@ -2530,7 +2531,7 @@ class Unit : public WorldObject
         AuraMap::iterator m_auraUpdateIterator;
         uint32 m_removedAurasCount;
 
-        AuraEffectList* m_modAuras[TOTAL_AURAS];
+        AuraEffectList m_modAuras[TOTAL_AURAS];
         AuraEffectListMap m_modMapAuras;
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_gbAuras;                        // casted singlecast auras
