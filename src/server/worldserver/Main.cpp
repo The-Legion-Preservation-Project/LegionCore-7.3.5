@@ -123,7 +123,6 @@ extern int main(int argc, char **argv)
 {
     signal(SIGABRT, &Trinity::AbortHandler);
 
-    m_stopEvent = false;
     std::string configFile = _TRINITY_CORE_CONFIG;
     std::string configService;
 

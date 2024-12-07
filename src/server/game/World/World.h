@@ -617,7 +617,7 @@ enum ServerWorldStates
 };
 
 /// Storage class for commands issued for delayed execution
-struct CliCommandHolder
+struct TC_GAME_API CliCommandHolder
 {
     typedef void Print(void*, const char*);
     typedef void CommandFinished(void*, bool success);
