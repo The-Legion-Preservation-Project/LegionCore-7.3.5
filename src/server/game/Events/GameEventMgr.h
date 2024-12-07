@@ -52,7 +52,7 @@ struct GameEventQuestToEventConditionNum
 
 typedef std::map<uint32 /*condition id*/, GameEventFinishCondition> GameEventConditionMap;
 
-struct GameEventData
+struct TC_GAME_API GameEventData
 {
     GameEventData();
     time_t start;           // occurs after this time
@@ -99,7 +99,7 @@ class Player;
 class Creature;
 class Quest;
 
-class GameEventMgr
+class TC_GAME_API GameEventMgr
 {
     GameEventMgr();
     ~GameEventMgr() {};

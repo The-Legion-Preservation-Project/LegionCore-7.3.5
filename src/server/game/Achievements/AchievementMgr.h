@@ -424,7 +424,7 @@ class TC_GAME_API AchievementMgr
         std::vector<uint32*> _timeCriteriaTreesArr;
 };
 
-class AchievementGlobalMgr
+class TC_GAME_API AchievementGlobalMgr
 {
         AchievementGlobalMgr() { }
         ~AchievementGlobalMgr() { }

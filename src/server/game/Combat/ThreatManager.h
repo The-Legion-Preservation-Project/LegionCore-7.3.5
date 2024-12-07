@@ -37,7 +37,7 @@ struct ThreatCalcHelper
     static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = nullptr);
 };
 
-class HostileReference : public Reference<Unit, ThreatManager>
+class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
 {
 public:
     HostileReference(Unit* refUnit, ThreatManager* threatManager, float threat);
@@ -150,7 +150,7 @@ public:
     std::list<HostileReference*>& getThreatList();
 };
 
-class ThreatManager
+class TC_GAME_API ThreatManager
 {
 public:
     friend class HostileReference;

@@ -32,7 +32,7 @@ struct FormationInfo
 
 typedef std::unordered_map<ObjectGuid::LowType/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
 
-class FormationMgr
+class TC_GAME_API FormationMgr
 {
         FormationMgr() { }
         ~FormationMgr();

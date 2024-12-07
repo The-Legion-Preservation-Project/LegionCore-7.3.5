@@ -517,7 +517,7 @@ namespace WorldPackets
             Personal = 0x2
         };
 
-        struct PhaseShiftDataPhase
+        struct TC_GAME_API PhaseShiftDataPhase
         {
             PhaseShiftDataPhase(uint16 id, EnumClassFlag<PhaseShiftFlags> flags);
             PhaseShiftDataPhase(uint16 id);
@@ -687,7 +687,7 @@ namespace WorldPackets
             uint16 AnimKitID = 0;
         };
 
-        class SetPlayHoverAnim final : public ServerPacket
+        class TC_GAME_API SetPlayHoverAnim final : public ServerPacket
         {
         public:
             SetPlayHoverAnim() : ServerPacket(SMSG_SET_PLAY_HOVER_ANIM, 16 + 1) { }
@@ -800,7 +800,7 @@ namespace WorldPackets
             std::vector<TaskProgress> Progress;
         };
 
-        class StreamingMovie final : public ServerPacket
+        class TC_GAME_API StreamingMovie final : public ServerPacket
         {
         public:
             StreamingMovie() : ServerPacket(SMSG_STREAMING_MOVIES, 4) { }

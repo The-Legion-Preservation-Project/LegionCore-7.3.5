@@ -102,7 +102,7 @@ struct TankTargetSelector
         bool _playerOnly;
 };
 
-class UnitAI
+class TC_GAME_API UnitAI
 {
     protected:
         Unit* const me;

@@ -1140,7 +1140,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
     return  IsProfessionSkill(skill) || skill == SKILL_RIDING;
 }
 
-bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
+TC_GAME_API bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
 
 // spell diminishing returns
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered);

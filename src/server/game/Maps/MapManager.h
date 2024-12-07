@@ -26,7 +26,7 @@
 class WorldLocation;
 class ChatHandler;
 
-class MapManager
+class TC_GAME_API MapManager
 {
     typedef std::vector<Map*> MapMapType;
 

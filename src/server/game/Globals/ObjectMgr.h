@@ -478,7 +478,7 @@ typedef std::vector<uint32> DungeonEncounterToCreatureMap;
 
 class PlayerDumpReader;
 
-struct ItemSpecStats
+struct TC_GAME_API ItemSpecStats
 {
     uint32 ItemType;
     uint32 ItemSpecStatTypes[MAX_ITEM_PROTO_STATS];

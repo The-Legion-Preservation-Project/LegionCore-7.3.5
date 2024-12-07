@@ -155,7 +155,7 @@ static uint32 const InCombatResurrectionTimer = 90 * IN_MILLISECONDS;
 static uint32 const ChallengeModeOrb = 246779;
 static uint32 const ChallengeModeDoor = 239323;
 
-class InstanceScript : public ZoneScript
+class TC_GAME_API InstanceScript : public ZoneScript
 {
     public:
         explicit InstanceScript(InstanceMap* map);

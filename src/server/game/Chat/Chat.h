@@ -168,7 +168,7 @@ class CliHandler : public ChatHandler
         Print* m_print;
 };
 
-class CommandArgs
+class TC_GAME_API CommandArgs
 {
 public:
     enum CommandArgsType

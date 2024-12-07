@@ -748,7 +748,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class InstanceMap : public Map
+class TC_GAME_API InstanceMap : public Map
 {
 public:
     InstanceMap(uint32 id, time_t, uint32 InstanceId, Difficulty difficulty, Map* _parent);

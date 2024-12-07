@@ -172,7 +172,7 @@ namespace WorldPackets
             bool Extended = false;
         };
 
-        class ChangePlayerDifficultyResult final : public ServerPacket
+        class TC_GAME_API ChangePlayerDifficultyResult final : public ServerPacket
         {
         public:
             ChangePlayerDifficultyResult() : ServerPacket(SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT, 1 + 1 + 4 + 4 + 4 + 4 + 16) { }

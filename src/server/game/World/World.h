@@ -1022,7 +1022,7 @@ class TC_GAME_API World
         sf::contention_free_shared_mutex< > _messageQueueLock;
 };
 
-extern Realm realm;
+TC_GAME_API extern Realm realm;
 uint32 GetVirtualRealmAddress();
 
 #define sWorld World::instance()

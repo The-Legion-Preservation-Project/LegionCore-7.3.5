@@ -138,26 +138,26 @@ int32 GetPlayerFromArea(uint16 areaId)
     return playerCountInArea[areaId];
 }
 
-template<> ObjectGuidGenerator<HighGuid::Player>* ObjectMgr::GetGenerator() { return &_playerGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Creature>* ObjectMgr::GetGenerator() { return &_creatureGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Pet>* ObjectMgr::GetGenerator() { return &_petGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Vehicle>* ObjectMgr::GetGenerator() { return &_vehicleGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Item>* ObjectMgr::GetGenerator() { return &_itemGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::GameObject>* ObjectMgr::GetGenerator() { return &_gameObjectGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::DynamicObject>* ObjectMgr::GetGenerator() { return &_dynamicObjectGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Corpse>* ObjectMgr::GetGenerator() { return &_corpseGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::AreaTrigger>* ObjectMgr::GetGenerator() { return &_areaTriggerGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::LootObject>* ObjectMgr::GetGenerator() { return &_lootObjectGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Transport>* ObjectMgr::GetGenerator() { return &_moTransportGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::BattlePet>* ObjectMgr::GetGenerator() { return &_BattlePetGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::PetBattle>* ObjectMgr::GetGenerator() { return &_PetBattleGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::LFGList>* ObjectMgr::GetGenerator() { return &_LFGListGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::LFGObject>* ObjectMgr::GetGenerator() { return &_LFGObjectGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Conversation>* ObjectMgr::GetGenerator() { return &_conversationGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Cast>* ObjectMgr::GetGenerator() { return &_castGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::EventObject>* ObjectMgr::GetGenerator() { return &_EventObjectGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Scenario>* ObjectMgr::GetGenerator() { return &_scenarioGuidGenerator; }
-template<> ObjectGuidGenerator<HighGuid::Vignette>* ObjectMgr::GetGenerator() { return &_vignetteGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Player>* ObjectMgr::GetGenerator() { return &_playerGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Creature>* ObjectMgr::GetGenerator() { return &_creatureGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Pet>* ObjectMgr::GetGenerator() { return &_petGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Vehicle>* ObjectMgr::GetGenerator() { return &_vehicleGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Item>* ObjectMgr::GetGenerator() { return &_itemGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::GameObject>* ObjectMgr::GetGenerator() { return &_gameObjectGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::DynamicObject>* ObjectMgr::GetGenerator() { return &_dynamicObjectGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Corpse>* ObjectMgr::GetGenerator() { return &_corpseGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::AreaTrigger>* ObjectMgr::GetGenerator() { return &_areaTriggerGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::LootObject>* ObjectMgr::GetGenerator() { return &_lootObjectGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Transport>* ObjectMgr::GetGenerator() { return &_moTransportGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::BattlePet>* ObjectMgr::GetGenerator() { return &_BattlePetGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::PetBattle>* ObjectMgr::GetGenerator() { return &_PetBattleGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::LFGList>* ObjectMgr::GetGenerator() { return &_LFGListGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::LFGObject>* ObjectMgr::GetGenerator() { return &_LFGObjectGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Conversation>* ObjectMgr::GetGenerator() { return &_conversationGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Cast>* ObjectMgr::GetGenerator() { return &_castGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::EventObject>* ObjectMgr::GetGenerator() { return &_EventObjectGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Scenario>* ObjectMgr::GetGenerator() { return &_scenarioGuidGenerator; }
+template<> TC_GAME_API ObjectGuidGenerator<HighGuid::Vignette>* ObjectMgr::GetGenerator() { return &_vignetteGuidGenerator; }
 
 template<HighGuid type>
 ObjectGuidGenerator<type>* ObjectMgr::GetGenerator()

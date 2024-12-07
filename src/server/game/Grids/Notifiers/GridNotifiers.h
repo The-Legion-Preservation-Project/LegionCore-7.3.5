@@ -777,7 +777,7 @@ namespace Trinity
         uint32 i_spell;
     };
 
-    class AnyUnfriendlyUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnfriendlyUnitInObjectRangeCheck
     {
     public:
         AnyUnfriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range);
@@ -1084,7 +1084,7 @@ namespace Trinity
         float m_fRange;
     };
 
-    class AllCreaturesOfEntryInRange
+    class TC_GAME_API AllCreaturesOfEntryInRange
     {
     public:
         AllCreaturesOfEntryInRange(const WorldObject* object, uint32 entry, float maxRange);
@@ -1159,7 +1159,7 @@ namespace Trinity
         float fRange;
     };
 
-    class GameObjectInRangeCheck
+    class TC_GAME_API GameObjectInRangeCheck
     {
     public:
         GameObjectInRangeCheck(float _x, float _y, float _z, float _range, uint32 _entry = 0);

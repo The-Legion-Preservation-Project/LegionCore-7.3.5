@@ -196,7 +196,7 @@ void utf8printf(FILE* out, const char *str, ...);
 void vutf8printf(FILE* out, const char *str, va_list* ap);
 TC_COMMON_API bool Utf8ToUpperOnlyLatin(std::string& utf8String);
 
-bool IsIPAddress(char const* ipaddress);
+TC_COMMON_API bool IsIPAddress(char const* ipaddress);
 
 TC_COMMON_API uint32 CreatePIDFile(std::string const& filename);
 TC_COMMON_API uint32 GetPID();
