@@ -24,22 +24,29 @@
 
 namespace bpt = boost::property_tree;
 
-bool ConfigMgr::LoadInitial(std::string const& file, std::vector<std::string> args,
-                            std::string& error)
+namespace
+{
+    std::string _filename;
+    std::vector<std::string> _args;
+    boost::property_tree::ptree _config;
+    std::mutex _configLock;
+}
+
+bool ConfigMgr::LoadInitial(std::string file, std::vector<std::string> args, std::string& error)
 {
     std::lock_guard<std::mutex> lock(_configLock);
 
-    _filename = file;
-    _args = args;
+    _filename = std::move(file);
+    _args = std::move(args);
 
     try
     {
         bpt::ptree fullTree;
-        read_ini(file, fullTree);
+        read_ini(_filename, fullTree);
 
         if (fullTree.empty())
         {
-            error = "empty file (" + file + ")";
+            error = "empty file (" + _filename + ")";
             return false;
         }
 
@@ -104,6 +111,11 @@ std::string const& ConfigMgr::GetFilename()
 {
     std::lock_guard<std::mutex> lock(_configLock);
     return _filename;
+}
+
+std::vector<std::string> const& ConfigMgr::GetArguments() const
+{
+    return _args;
 }
 
 std::vector<std::string> ConfigMgr::GetKeysByString(std::string const& name)
