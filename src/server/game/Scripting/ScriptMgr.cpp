@@ -2401,24 +2401,33 @@ std::string ScriptMgr::BattlePayGetCustomData(Battlepay::Product const& product)
     return tmpscript->GetCustomData(product);
 }
 
-WorldMapScript::WorldMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<Map>(mapId)
+WorldMapScript::WorldMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<Map>(sMapStore.LookupEntry(mapId))
 {
+    if (!GetEntry())
+        TC_LOG_ERROR("scripts", "Invalid WorldMapScript for %u; no such map ID.", mapId);
+
     if (GetEntry() && !GetEntry()->IsWorldMap())
         TC_LOG_ERROR("scripts", "WorldMapScript for map %u is invalid.", mapId);
 
     ScriptRegistry<WorldMapScript>::Instance()->AddScript(this);
 }
 
-InstanceMapScript::InstanceMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<InstanceMap>(mapId)
+InstanceMapScript::InstanceMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<InstanceMap>(sMapStore.LookupEntry(mapId))
 {
+    if (!GetEntry())
+        TC_LOG_ERROR("scripts", "Invalid InstanceMapScript for %u; no such map ID.", mapId);
+
     if (GetEntry() && !GetEntry()->IsDungeon())
         TC_LOG_ERROR("scripts", "InstanceMapScript for map %u is invalid.", mapId);
 
     ScriptRegistry<InstanceMapScript>::Instance()->AddScript(this);
 }
 
-BattlegroundMapScript::BattlegroundMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<BattlegroundMap>(mapId)
+BattlegroundMapScript::BattlegroundMapScript(std::string name, uint32 mapId) : ScriptObject(name), MapScript<BattlegroundMap>(sMapStore.LookupEntry(mapId))
 {
+    if (!GetEntry())
+        TC_LOG_ERROR("scripts", "Invalid BattlegroundMapScript for %u; no such map ID.", mapId);
+
     if (GetEntry() && !GetEntry()->IsBattleground())
         TC_LOG_ERROR("scripts", "BattlegroundMapScript for map %u is invalid.", mapId);
 

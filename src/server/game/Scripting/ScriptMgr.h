@@ -203,11 +203,7 @@ class TC_GAME_API MapScript : public UpdatableScript<TMap>
 
     protected:
 
-        MapScript(uint32 mapId) : _mapEntry(sMapStore.LookupEntry(mapId))
-        {
-            if (!_mapEntry)
-                TC_LOG_ERROR("scripts", "Invalid MapScript for %u; no such map ID.", mapId);
-        }
+        MapScript(MapEntry const* mapEntry) : _mapEntry(mapEntry) { }
 
     public:
 
