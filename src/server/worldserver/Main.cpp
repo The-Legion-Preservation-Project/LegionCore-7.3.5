@@ -51,6 +51,7 @@
 #include "RealmList.h"
 #include "ScriptLoader.h"
 #include "ScriptMgr.h"
+#include "ScriptReloadMgr.h"
 #include "TCSoap.h"
 #include "World.h"
 #include "WorldSocket.h"
@@ -235,7 +236,11 @@ extern int main(int argc, char **argv)
 
     // Initialize the World
     sScriptMgr->SetScriptLoader(AddScripts);
-    std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*) { sScriptMgr->Unload(); });
+    std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
+    {
+        sScriptMgr->Unload();
+        sScriptReloadMgr->Unload();
+    });
 
     // Initialize the World
     sWorld->SetInitialWorldSettings();

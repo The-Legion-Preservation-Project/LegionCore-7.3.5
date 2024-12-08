@@ -39,6 +39,7 @@ target_include_directories(game
 target_link_libraries(game
   PRIVATE
     trinity-core-interface
+    efsw
   PUBLIC
     shared
     Detour)
