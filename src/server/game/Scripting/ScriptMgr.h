@@ -82,9 +82,6 @@ class ScriptObject
 
 public:
 
-    // Do not override this in scripts; it should be overridden by the various script type classes. It indicates
-    // whether or not this script type must be assigned in the database.
-    virtual bool IsDatabaseBound() const { return false; }
     std::string const& GetName() const { return _name; }
 
 protected:
@@ -110,8 +107,6 @@ class TC_GAME_API SpellScriptLoader : public ScriptObject
         SpellScriptLoader(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Should return a fully valid SpellScript pointer.
         virtual SpellScript* GetSpellScript() const { return nullptr; }
@@ -192,9 +187,8 @@ class TC_GAME_API BattlePayProductScript : public ScriptObject
 {
 protected:
     explicit BattlePayProductScript(std::string scriptName);
-public:
-    bool IsDatabaseBound() const override { return true; }
 
+public:
     virtual void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const* /*product*/) { }
     virtual bool CanShow(WorldSession* /*session*/, Battlepay::Product const& /*product*/) { return true; }
     virtual bool CanBuy(WorldSession* /*session*/, Battlepay::Product const* /*product*/, std::string& /*reason*/) { return true; }
@@ -256,8 +250,6 @@ class TC_GAME_API InstanceMapScript : public ScriptObject, public MapScript<Inst
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Gets an InstanceScript object for this instance.
         virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return nullptr; }
 };
@@ -276,8 +268,6 @@ class TC_GAME_API ItemScript : public ScriptObject
         ItemScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Called when a dummy spell effect is triggered on the item.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Item* /*target*/) { return false; }
@@ -301,8 +291,6 @@ class TC_GAME_API CreatureScript : public ScriptObject, public UpdatableScript<C
         CreatureScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Called when a dummy spell effect is triggered on the creature.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Creature* /*target*/) { return false; }
@@ -353,8 +341,6 @@ class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Called when a dummy spell effect is triggered on the gameobject.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, GameObject* /*target*/) { return false; }
 
@@ -402,8 +388,6 @@ class TC_GAME_API AreaTriggerScript : public ScriptObject
 
         ~AreaTriggerScript();
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Called when the area trigger is activated by a player.
         virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/, bool /*enter*/) { return false; }
 
@@ -436,8 +420,6 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const override { return true; }
-
     // Called when the scene event trigger by call CMSG_SCENE_TRIGGER_EVENT
     virtual bool OnTrigger(Player* /*player*/, SpellScene const* /*trigger*/, std::string /*triggername*/) { return false; }
 };
@@ -449,8 +431,6 @@ protected:
     EventObjectScript(std::string name);
 
 public:
-
-    bool IsDatabaseBound() const override { return true; }
 
     virtual bool IsTriggerMeets(Player* /*player*/, EventObject* /*trigger*/) { return true; }
     virtual bool OnTrigger(Player* /*player*/, EventObject* /*trigger*/, bool /*enter*/) { return false; }
@@ -464,8 +444,6 @@ class TC_GAME_API BattlegroundScript : public ScriptObject
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Should return a fully valid Battleground object for the type ID.
         virtual Battleground* GetBattleground() const = 0;
 };
@@ -477,8 +455,6 @@ class TC_GAME_API OutdoorPvPScript : public ScriptObject
         OutdoorPvPScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Should return a fully valid OutdoorPvP object for the type ID.
         virtual OutdoorPvP* GetOutdoorPvP() const = 0;
@@ -503,8 +479,6 @@ class TC_GAME_API WeatherScript : public ScriptObject, public UpdatableScript<We
         WeatherScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Called when the weather changes in the zone this script is associated with.
         virtual void OnChange(Weather* /*weather*/, WeatherState /*state*/, float /*grade*/) { }
@@ -539,8 +513,6 @@ class TC_GAME_API ConditionScript : public ScriptObject
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Called when a single condition is checked for a player.
         virtual bool OnConditionCheck(Condition* /*condition*/, ConditionSourceInfo& /*sourceInfo*/) { return true; }
 };
@@ -552,8 +524,6 @@ class TC_GAME_API VehicleScript : public ScriptObject
         VehicleScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Called after a vehicle is installed.
         virtual void OnInstall(Vehicle* /*veh*/) { }
@@ -592,8 +562,6 @@ class TC_GAME_API TransportScript : public ScriptObject, public UpdatableScript<
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Called when a player boards the transport.
         virtual void OnAddPassenger(Transport* /*transport*/, Player* /*player*/) { }
 
@@ -615,8 +583,6 @@ class TC_GAME_API AchievementCriteriaScript : public ScriptObject
 
     public:
 
-        bool IsDatabaseBound() const override { return true; }
-
         // Called when an additional criteria is checked.
         virtual bool OnCheck(Player* source, Unit* target) = 0;
 };
@@ -628,8 +594,6 @@ class TC_GAME_API AchievementRewardScript : public ScriptObject
         AchievementRewardScript(std::string name);
 
     public:
-
-        bool IsDatabaseBound() const override { return true; }
 
         // Called ow handling reward
         virtual bool OnGet(Player* /*source*/, AchievementReward const* /*data*/) {  return false; };
@@ -801,8 +765,6 @@ class TC_GAME_API GuildScript : public ScriptObject
 
     public:
 
-        bool IsDatabaseBound() const override { return false; }
-
         // Called when a member is added to the guild.
         virtual void OnAddMember(Guild* /*guild*/, Player* /*player*/, uint8& /*plRank*/) { }
 
@@ -844,8 +806,6 @@ class TC_GAME_API GroupScript : public ScriptObject
 
     public:
 
-        bool IsDatabaseBound() const override { return false; }
-
         // Called when a member is added to a group.
         virtual void OnAddMember(Group* /*group*/, ObjectGuid const& /*guid*/) { }
 
@@ -869,8 +829,6 @@ protected:
     WorldStateScript(std::string name);
 
 public:
-
-    bool IsDatabaseBound() const override { return false; }
 
     virtual void OnCreate(uint32 /*variableID*/, uint32 /*value*/, uint8 /*type*/) { }
     virtual void OnDelete(uint32 /*variableID*/, uint8 /*type*/) { }

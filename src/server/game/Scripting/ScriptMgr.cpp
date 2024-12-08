@@ -53,6 +53,92 @@
 
 UnusedScriptNamesContainer UnusedScriptNames;
 
+// Trait which indicates whether this script type
+// must be assigned in the database.
+template<typename>
+struct is_script_database_bound
+    : std::false_type { };
+
+template<>
+struct is_script_database_bound<SpellScriptLoader>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<BattlePayProductScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<InstanceMapScript>
+  : std::true_type { };
+
+template<>
+struct is_script_database_bound<ItemScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<CreatureScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<GameObjectScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<AreaTriggerScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<SceneTriggerScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<EventObjectScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<BattlegroundScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<OutdoorPvPScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<WeatherScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<ConditionScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<VehicleScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<TransportScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<AchievementCriteriaScript>
+    : std::true_type { };
+
+template<>
+struct is_script_database_bound<AchievementRewardScript>
+  : std::true_type { };
+
+template<>
+struct is_script_database_bound<GuildScript>
+  : std::true_type { };
+
+template<>
+struct is_script_database_bound<GroupScript>
+  : std::true_type { };
+
+template<>
+struct is_script_database_bound<WorldStateScript>
+  : std::true_type { };
+
 // This is the global static registry of scripts.
 template<class TScript>
 class ScriptRegistry
@@ -83,7 +169,7 @@ class ScriptRegistry
                 }
             }
 
-            if (script->IsDatabaseBound())
+            if (is_script_database_bound<TScript>::value)
             {
                 // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
                 // through a script name (or similar).
