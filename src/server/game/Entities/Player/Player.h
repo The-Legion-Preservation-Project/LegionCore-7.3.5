@@ -31,7 +31,6 @@
 #include "GameTime.h"
 #include "GridObject.h"
 #include "GroupReference.h"
-#include "HashFuctor.h"
 #include "Item.h"
 #include "ItemTemplate.h"
 #include "LogsSystem.h"
@@ -270,7 +269,7 @@ enum SceneEventStatus
 
 typedef std::unordered_map<uint32, PlayerSpellState> PlayerTalentMap;
 typedef std::unordered_map<uint32, PlayerSpellState> PlayerPvPTalentMap;
-typedef cds::container::FeldmanHashMap< cds::gc::HP, uint32, PlayerSpell, uint32Traits > PlayerSpellMap;
+typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 typedef std::list<uint32> ItemSpellList;
 typedef std::list<uint32> ExcludeCasterSpellList;
@@ -1454,7 +1453,7 @@ struct ArmyTrainingInfo
 
 typedef sf::safe_ptr<AchievementMgr<Player>> AchievementPtr;
 
-class Player : public Unit, public GridObject<Player>
+class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
     friend class BattlePayMgr;
@@ -2606,7 +2605,6 @@ class Player : public Unit, public GridObject<Player>
         void setFactionForRace(uint8 race);
 
         uint32 GetNativeTeam() const { return TeamForRace(getRace()); }
-        TeamId GetNativeTeamId() const { return TeamIdForRace(getRace()); }
 
         void InitDisplayIds();
 

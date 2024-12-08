@@ -37,7 +37,7 @@
 #include "World.h"
 #include "WorldPacket.h"
 
-MapManager::MapManager(): _nextInstanceId(0), _mapInfoCounter(0)
+MapManager::MapManager(): _nextInstanceId(0), _mapInfoCounter(0), _scheduledScripts(0)
 {
     _mapCount = sMapStore.GetNumRows() + 1;
     i_maps.assign(_mapCount, nullptr);
@@ -369,7 +369,6 @@ void MapManager::UnloadAll()
                     inst->StopInstance();
 
             map->SetMapStop();
-            map->m_Transports.clear();
         }
     }
 
@@ -518,7 +517,7 @@ void MapManager::LogInfoAllMaps()
     {
         if (Map* map = i_maps[i])
         {
-            uint32 worldObjectCount = map->GetAllWorldObjectOnMap().size();
+            uint32 worldObjectCount = map->GetWorldObjectCount();
             if (!map->Instanceable())
             {
                 // sLog->outMapInfo("LogInfoAllMaps mapId %u worldObjectCount: %u.", i, worldObjectCount);
@@ -528,7 +527,7 @@ void MapManager::LogInfoAllMaps()
             auto& maps = static_cast<MapInstanced*>(map)->GetInstancedMaps();
             for (auto& itr : maps)
                 if (Map* instance = itr.second)
-                    worldObjectCount += instance->GetAllWorldObjectOnMap().size();
+                    worldObjectCount += instance->GetWorldObjectCount();
 
             if (maps.size() > 10) // Only actual instance
                 sLog->outMapInfo("LogInfoAllMaps mapId %u instanceCount %u worldObjectCount: %u.", i, maps.size(), worldObjectCount);

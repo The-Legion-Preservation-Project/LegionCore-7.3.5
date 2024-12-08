@@ -1647,7 +1647,7 @@ typedef std::vector<SmartScriptHolder> SmartAIEventList;
 // all events for all entries / guids
 typedef std::unordered_map<int64, SmartAIEventList> SmartAIEventMap;
 
-class SmartAIMgr
+class TC_GAME_API SmartAIMgr
 {
         SmartAIMgr() { }
         ~SmartAIMgr() { }

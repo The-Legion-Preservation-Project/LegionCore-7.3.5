@@ -24,19 +24,17 @@
 #include "Cell.h"
 #include "DB2Structure.h"
 #include "DynamicTree.h"
+#include "FunctionProcessor.h"
 #include "GameObjectModel.h"
 #include "GridDefines.h"
 #include "MapRefManager.h"
+#include "NGrid.h"
 #include "SharedDefines.h"
+#include "ThreadPoolMap.hpp"
 #include "Timer.h"
 #include "Weather.h"
-#include "NGrid.h"
-#include "FunctionProcessor.h"
 #include "World.h"
-#include "ThreadPoolMap.hpp"
 
-#include <cds/container/feldman_hashset_hp.h>
-#include "HashFuctor.h"
 #include <safe_ptr.h>
 
 struct Position;
@@ -59,6 +57,7 @@ class Object;
 class OutdoorPvP;
 class Player;
 class TempSummon;
+class Transport;
 class Unit;
 class Weather;
 class WorldLocation;
@@ -71,8 +70,6 @@ class Scenario;
 
 namespace G3D { class Plane; }
 
-typedef cds::container::FeldmanHashSet< cds::gc::HP, WorldObject*, WorldObjectHashAccessor > WorldObjectSet;
-typedef cds::container::FeldmanHashSet< cds::gc::HP, Transport*, TransportHashAccessor > TransportHashSet;
 typedef std::map<ObjectGuid, StaticTransport*> StaticTransportMap;
 
 struct ScriptAction
@@ -214,7 +211,7 @@ typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMa
 
 typedef std::unordered_map<ObjectGuid, std::shared_ptr<WorldObject>> SharedObjectPtr;
 
-class Map
+class TC_GAME_API Map
 {
     friend class MapReference;
     public:
@@ -339,17 +336,17 @@ class Map
         SharedObjectPtr m_objectHolder;
 
         uint16 GetMapMaxPlayers() const;
-        bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
-        bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
-        bool IsDungeonOrRaid() const { return i_mapEntry && i_mapEntry->Is5pplDungeonOrRaid() && !i_mapEntry->IsContinent(); }
-        bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
-        bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
+        bool Instanceable() const;
+        bool IsDungeon() const;
+        bool IsDungeonOrRaid() const;
+        bool IsNonRaidDungeon() const;
+        bool IsRaid() const;
         bool IsLfr() const { return i_difficulty == DIFFICULTY_LFR || i_difficulty == DIFFICULTY_LFR_RAID || i_difficulty == DIFFICULTY_HC_SCENARIO || i_difficulty == DIFFICULTY_N_SCENARIO; }
         bool isChallenge() const { return i_difficulty == DIFFICULTY_MYTHIC_KEYSTONE; }
         bool IsNeedRecalc() const;
         bool IsCanScale() const;
         bool IsNeedRespawn(uint32 lastRespawn) const { return lastRespawn < m_respawnChallenge; }
-        bool IsScenario() const { return i_mapEntry && i_mapEntry->IsScenario(); }
+        bool IsScenario() const;
         bool IsRaidOrHeroicDungeon() const { return IsRaid() || IsHeroic(); }
         bool IsHeroic() const;
         bool Is10ManRaid() const { return IsRaid() && (i_difficulty == DIFFICULTY_10_N || i_difficulty == DIFFICULTY_25_N); }
@@ -360,11 +357,11 @@ class Map
         bool IsMythicRaid() const { return i_difficulty == DIFFICULTY_MYTHIC_RAID; }
         bool IsHeroicPlusRaid() const { return i_difficulty == DIFFICULTY_HEROIC_RAID || i_difficulty == DIFFICULTY_MYTHIC_RAID; }
         bool IsEventScenario() const { return i_difficulty == DIFFICULTY_EVENT_SCENARIO_6 || i_difficulty == DIFFICULTY_EVENT_SCENARIO; }
-        bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
-        bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
-        bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
-        bool IsGarrison() const { return i_mapEntry && i_mapEntry->IsGarrison(); }
-        bool IsContinent() const { return i_mapEntry && i_mapEntry->IsContinent(); }
+        bool IsBattleground() const;
+        bool IsBattleArena() const;
+        bool IsBattlegroundOrArena() const;
+        bool IsGarrison() const;
+        bool IsContinent() const;
         bool CanCreatedZone() const;
         bool CanCreatedThread() const;
         BattlegroundMap* ToBgMap()
@@ -394,8 +391,7 @@ class Map
 
         void AddWorldObject(WorldObject* obj);
         void RemoveWorldObject(WorldObject* obj);
-        WorldObjectSet& GetAllWorldObjectOnMap();
-        WorldObjectSet const& GetAllWorldObjectOnMap() const;
+        uint32 GetWorldObjectCount() const { return i_objects.size(); }
 
         uint32 GetGridCount();
 
@@ -543,10 +539,6 @@ class Map
         
         void LoadAllGrids(float p_MinX, float p_MaxX, float p_MinY, float p_MaxY, Player* p_Player);
 
-        void AddTransport(Transport * t);
-        void RemoveTransport(Transport * t);
-
-        TransportHashSet m_Transports;
         virtual void UpdateTransport(uint32 diff);
 
         void AddStaticTransport(StaticTransport* t);
@@ -650,6 +642,11 @@ class Map
     protected:
         void SetUnloadReferenceLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
+        // Objects that must update even in inactive grids without activating them
+        typedef std::set<Transport*> TransportsContainer;
+        TransportsContainer _transports;
+        TransportsContainer::iterator _transportsUpdateIter;
+
         MapEntry const* i_mapEntry;
         Difficulty i_difficulty;
         Difficulty i_lootDifficulty;
@@ -703,7 +700,7 @@ class Map
         std::set<WorldObject*> i_objectsToRemove;
         std::recursive_mutex i_objectsToRemove_lock;
         std::map<WorldObject*, bool> i_objectsToSwitch;
-        WorldObjectSet i_worldObjects;
+        std::set<WorldObject*> i_worldObjects;
 
         typedef std::multimap<time_t, ScriptAction> ScriptScheduleMap;
         ScriptScheduleMap m_scriptSchedule;
@@ -751,7 +748,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class InstanceMap : public Map
+class TC_GAME_API InstanceMap : public Map
 {
 public:
     InstanceMap(uint32 id, time_t, uint32 InstanceId, Difficulty difficulty, Map* _parent);

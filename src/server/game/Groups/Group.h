@@ -237,7 +237,7 @@ struct RaidMarker
     ObjectGuid TransportGUID;
 };
 
-class Group
+class TC_GAME_API Group
 {
     public:
         struct MemberSlot
@@ -256,7 +256,7 @@ class Group
         typedef std::unordered_map< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
     protected:
         typedef MemberSlotList::iterator member_witerator;
-        typedef cds::container::FeldmanHashSet< cds::gc::HP, Player*, PlayerHashAccessor > InvitesList;
+        typedef std::set<Player*> InvitesList;
 
         typedef std::vector<Roll*> Rolls;
 

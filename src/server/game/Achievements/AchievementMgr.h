@@ -25,9 +25,6 @@
 #include "DatabaseEnvFwd.h"
 #include <safe_ptr.h>
 
-#include <cds/container/feldman_hashmap_hp.h>
-#include "HashFuctor.h"
-
 enum CriteriaTreeCustomFlags : uint16
 {
     CRITERIA_TREE_CUSTOM_FLAG_QUEST = 0x01,  // custom flags for quest
@@ -333,7 +330,7 @@ struct CompletedAchievementData
     bool isAccountAchievement;
 };
 
-typedef cds::container::FeldmanHashMap< cds::gc::HP, uint32, CriteriaProgress, uint32Traits > CriteriaProgressMap;
+typedef std::unordered_map<uint32, CriteriaProgress> CriteriaProgressMap;
 typedef std::unordered_map<uint32, CompletedAchievementData> CompletedAchievementMap;
 
 enum CriteriaSort
@@ -344,7 +341,7 @@ enum CriteriaSort
 };
 
 template<class T>
-class AchievementMgr
+class TC_GAME_API AchievementMgr
 {
     public:
         AchievementMgr(T* owner);
@@ -427,7 +424,7 @@ class AchievementMgr
         std::vector<uint32*> _timeCriteriaTreesArr;
 };
 
-class AchievementGlobalMgr
+class TC_GAME_API AchievementGlobalMgr
 {
         AchievementGlobalMgr() { }
         ~AchievementGlobalMgr() { }

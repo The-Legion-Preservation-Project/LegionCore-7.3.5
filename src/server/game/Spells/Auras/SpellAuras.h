@@ -23,7 +23,6 @@
 #include "SpellInfo.h"
 #include "Unit.h"
 #include "Containers.h"
-#include "HashFuctor.h"
 
 class Unit;
 class SpellInfo;
@@ -51,7 +50,7 @@ namespace WorldPackets
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
 #define UPDATE_TARGET_MAP_INTERVAL 500
 
-class AuraApplication
+class TC_GAME_API AuraApplication
 {
     friend void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask);
     friend void Unit::_UnapplyAura(/*AuraApplicationMap*/std::multimap<uint32, AuraApplicationPtr>::iterator &i, AuraRemoveMode removeMode);
@@ -98,12 +97,12 @@ class AuraApplication
 
 typedef std::array<AuraEffect*, MAX_SPELL_EFFECTS> AuraEffectVector;
 
-class Aura
+class TC_GAME_API Aura
 {
     friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, float *baseAmount, Item* castItem, ObjectGuid casterGUID);
     public:
         void SetAuraTimer(int32 time, ObjectGuid guid = ObjectGuid::Empty);
-        typedef cds::container::FeldmanHashMap< cds::gc::HP, ObjectGuid, AuraApplicationPtr, guidTraits > ApplicationMap;
+        typedef std::map<ObjectGuid, AuraApplicationPtr> ApplicationMap;
 
         static uint32 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibleEffectMask, WorldObject* owner);
         static Aura* TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObject* owner, Unit* caster, float* baseAmount = nullptr, Item* castItem = nullptr, ObjectGuid casterGUID = ObjectGuid::Empty, bool* refresh = nullptr, uint16 stackAmount = 0, Spell* spell = nullptr);
