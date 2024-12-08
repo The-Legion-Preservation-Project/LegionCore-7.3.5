@@ -102,6 +102,17 @@ typedef HMODULE HandleType;
 typedef void* HandleType;
 #endif
 
+static fs::path GetDirectoryOfExecutable()
+{
+    ASSERT((!sConfigMgr->GetArguments().empty()),
+           "Expected the arguments to contain at least 1 element!");
+    fs::path path(sConfigMgr->GetArguments()[0]);
+    if (path.is_absolute())
+        return path.parent_path();
+    else
+        return fs::absolute(path).parent_path();
+}
+
 class SharedLibraryUnloader
 {
 public:
@@ -537,7 +548,13 @@ public:
     /// Returns the absolute path to the script module directory
     static fs::path GetLibraryDirectory()
     {
-        return fs::absolute(sConfigMgr->GetStringDefault("HotSwap.ScriptDir", "scripts"));
+        // When an absolute path is given in the config use it,
+        // otherwise interpret paths relative to the executable.
+        fs::path path(sConfigMgr->GetStringDefault("HotSwap.ScriptDir", "scripts"));
+        if (path.is_absolute())
+            return path;
+        else
+            return fs::absolute(path, GetDirectoryOfExecutable());
     }
 
     /// Returns the absolute path to the scripts directory in the source tree.
@@ -733,7 +750,6 @@ private:
     static fs::path CalculateTemporaryCachePath()
     {
         auto path = fs::temp_directory_path();
-
         path /= Trinity::StringFormat("tc_script_cache_%s_%s",
             GitRevision::GetBranch(),
             CalculateSHA1Hash(sConfigMgr->GetFilename()).c_str());
@@ -1314,7 +1330,7 @@ private:
             #ifndef _WIN32
                 // The worldserver location is ${CMAKE_INSTALL_PREFIX}/bin
                 // on all other platforms then windows
-                current_path = current_path.remove_leaf();
+                current_path = current_path.parent_path();
             #endif
 
                 if (value != current_path)
@@ -1330,7 +1346,7 @@ private:
                             if (base == branch)
                                 return true;
 
-                            branch = branch.remove_filename();
+                            branch = branch.parent_path();
                         }
 
                         return false;

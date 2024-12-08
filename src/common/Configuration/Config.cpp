@@ -22,20 +22,15 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include "Config.h"
 
-namespace
-{
-    boost::property_tree::ptree _config;
-    std::string _filename;
-    std::mutex _configLock;
-}
-
 namespace bpt = boost::property_tree;
 
-bool ConfigMgr::LoadInitial(std::string const& file, std::string& error)
+bool ConfigMgr::LoadInitial(std::string const& file, std::vector<std::string> args,
+                            std::string& error)
 {
     std::lock_guard<std::mutex> lock(_configLock);
 
     _filename = file;
+    _args = args;
 
     try
     {
@@ -71,7 +66,7 @@ ConfigMgr* ConfigMgr::instance()
 
 bool ConfigMgr::Reload(std::string& error)
 {
-    return LoadInitial(_filename, error);
+    return LoadInitial(_filename, std::move(_args), error);
 }
 
 std::string ConfigMgr::GetStringDefault(std::string const& name, const std::string& def)

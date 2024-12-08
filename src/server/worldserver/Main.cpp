@@ -23,6 +23,8 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/program_options.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <google/protobuf/stubs/common.h>
 #include <openssl/crypto.h>
@@ -67,6 +69,7 @@
 #endif
 
 using namespace boost::program_options;
+namespace fs = boost::filesystem;
 
 #ifndef _TRINITY_CORE_CONFIG
     #define _TRINITY_CORE_CONFIG  "worldserver.conf"
@@ -117,14 +120,14 @@ void WorldUpdateLoop();
 void ClearOnlineAccounts();
 void ShutdownCLIThread(std::thread* cliThread);
 bool LoadRealmInfo();
-variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
+variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& cfg_service);
 
 /// Launch the Trinity server
 extern int main(int argc, char **argv)
 {
     signal(SIGABRT, &Trinity::AbortHandler);
 
-    std::string configFile = _TRINITY_CORE_CONFIG;
+    auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
     std::string configService;
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
@@ -146,7 +149,9 @@ extern int main(int argc, char **argv)
 #endif
 
     std::string configError;
-    if (!sConfigMgr->LoadInitial(configFile, configError))
+    if (!sConfigMgr->LoadInitial(configFile.generic_string(),
+                             std::vector<std::string>(argv, argv + argc),
+                             configError))
     {
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
@@ -571,13 +576,14 @@ void ClearOnlineAccounts()
 
 /// @}
 
-variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile, std::string& configService)
+variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& configService)
 {
     options_description all("Allowed options");
     all.add_options()
         ("help,h", "print usage message")
         ("version,v", "print version build info")
-        ("config,c", value<std::string>(&configFile)->default_value(_TRINITY_CORE_CONFIG), "use <arg> as configuration file")
+        ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
+             "use <arg> as configuration file")
         ;
 #ifdef _WIN32
     options_description win("Windows platform specific options");
