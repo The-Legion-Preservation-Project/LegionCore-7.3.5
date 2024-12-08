@@ -266,7 +266,6 @@ struct TSpellSummary
 
 ScriptMgr::ScriptMgr() : _scriptCount(0)
 {
-    _scheduledScripts = 0;
     _script_loader_callback = nullptr;
 }
 
@@ -287,9 +286,12 @@ void ScriptMgr::Initialize()
     TC_LOG_INFO("server.loading", "Loading C++ scripts");
 
     FillSpellSummary();
+
     AddSC_SmartSCripts();
 
-    ASSERT(_script_loader_callback, "Script loader callback wasn't registered!");
+    ASSERT(_script_loader_callback,
+           "Script loader callback wasn't registered!");
+
     _script_loader_callback();
 
 #ifdef SCRIPTS

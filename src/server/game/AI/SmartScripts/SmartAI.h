@@ -263,6 +263,7 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript mScript;
 };
 
+/// Registers scripts required by the SAI scripting system
 void AddSC_SmartSCripts();
 
 #endif

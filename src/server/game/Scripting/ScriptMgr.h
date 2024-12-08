@@ -1099,12 +1099,6 @@ class TC_GAME_API ScriptMgr
         void OnGroupChangeLeader(Group* group, ObjectGuid const& newLeaderGuid, ObjectGuid const& oldLeaderGuid);
         void OnGroupDisband(Group* group);
 
-        /* Scheduled scripts */
-        uint32 IncreaseScheduledScriptsCount() { return ++_scheduledScripts; }
-        uint32 DecreaseScheduledScriptCount() { return --_scheduledScripts; }
-        uint32 DecreaseScheduledScriptCount(size_t count) { return _scheduledScripts -= count; }
-        bool IsScriptScheduled() const { return _scheduledScripts > 0; }
-
         void OnWorldStateCreate(uint32 variableID, uint32 value, uint8 type);
         void OnWorldStateDelete(uint32 variableID, uint8 type);
 
@@ -1116,8 +1110,6 @@ class TC_GAME_API ScriptMgr
 
         uint32 _scriptCount;
 
-        //atomic op counter for active scripts amount
-        std::atomic_long _scheduledScripts;
         ScriptLoaderCallbackType _script_loader_callback;
 };
 

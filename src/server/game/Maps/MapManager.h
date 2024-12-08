@@ -87,6 +87,11 @@ class TC_GAME_API MapManager
         std::vector<std::thread*> _mapThreads;
         uint16 _mapCount;
 
+        uint32 IncreaseScheduledScriptsCount() { return ++_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount() { return --_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount(size_t count) { return _scheduledScripts -= count; }
+        bool IsScriptScheduled() const { return _scheduledScripts > 0; }
+
     private:
 
         uint32 i_gridCleanUpDelay;
@@ -95,6 +100,8 @@ class TC_GAME_API MapManager
         uint32 _nextInstanceId;
         uint8 _mapInfoCounter;
 
+        // atomic op counter for active scripts amount
+        std::atomic<uint32> _scheduledScripts;
 };
 #define sMapMgr MapManager::instance()
 #endif
