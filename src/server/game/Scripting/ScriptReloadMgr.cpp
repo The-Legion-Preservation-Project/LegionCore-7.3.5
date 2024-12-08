@@ -311,15 +311,6 @@ namespace std
     };
 }
 
-/// Escapes spaces in the given path
-static std::string EscapeWindowsPath(std::string str)
-{
-#ifdef _WIN32
-    boost::algorithm::replace_all(str, " ", "\\ ");
-#endif
-    return str;
-}
-
 /// Invokes a synchronous CMake process with the given arguments
 template<typename... T>
 static int InvokeCMakeCommand(T&&... args)
@@ -519,6 +510,16 @@ public:
     {
         if (!sWorld->getBoolConfig(CONFIG_HOTSWAP_ENABLED))
             return;
+
+        if (BuiltInConfig::GetBuildDirectory().find(" ") != std::string::npos)
+        {
+            TC_LOG_ERROR("scripts.hotswap", "Your build directory path \"%s\" "
+                "contains spaces, which isn't allowed for compatibility reasons! "
+                "You need to create a build directory which doesn't contain any space character "
+                "in it's path!",
+                BuiltInConfig::GetBuildDirectory().c_str());
+            return;
+        }
 
         {
             auto const library_directory = GetLibraryDirectory();
@@ -1118,7 +1119,7 @@ private:
         TC_LOG_INFO("scripts.hotswap", "Rerunning CMake because there were sources added or removed...");
 
         _build_job->UpdateCurrentJob(BuildJobType::BUILD_JOB_RERUN_CMAKE,
-            InvokeAsyncCMakeCommand(EscapeWindowsPath(BuiltInConfig::GetBuildDirectory())));
+            InvokeAsyncCMakeCommand(BuiltInConfig::GetBuildDirectory()));
     }
 
     /// Invokes a new build of the current active module job
@@ -1131,9 +1132,9 @@ private:
 
         _build_job->UpdateCurrentJob(BuildJobType::BUILD_JOB_COMPILE,
             InvokeAsyncCMakeCommand(
-                "--build", EscapeWindowsPath(BuiltInConfig::GetBuildDirectory()),
-                "--target", EscapeWindowsPath(_build_job->GetProjectName()),
-                "--config", EscapeWindowsPath(_build_job->GetBuildDirective())));
+                "--build", BuiltInConfig::GetBuildDirectory(),
+                "--target", _build_job->GetProjectName(),
+                "--config", _build_job->GetBuildDirective()));
     }
 
     /// Invokes a new asynchronous install of the current active module job
@@ -1146,10 +1147,10 @@ private:
 
         _build_job->UpdateCurrentJob(BuildJobType::BUILD_JOB_INSTALL,
             InvokeAsyncCMakeCommand(
-                "-DCOMPONENT=" + EscapeWindowsPath(_build_job->GetProjectName()),
-                "-DBUILD_TYPE=" + EscapeWindowsPath(_build_job->GetBuildDirective()),
-                "-P", EscapeWindowsPath(fs::absolute("cmake_install.cmake",
-                    BuiltInConfig::GetBuildDirectory()).generic_string())));
+                "-DCOMPONENT=" + _build_job->GetProjectName(),
+                "-DBUILD_TYPE=" + _build_job->GetBuildDirective(),
+                "-P", fs::absolute("cmake_install.cmake",
+                    BuiltInConfig::GetBuildDirectory()).generic_string()));
     }
 
     /// Sets the CMAKE_INSTALL_PREFIX variable in the CMake cache
@@ -1260,8 +1261,8 @@ private:
         TC_LOG_INFO("scripts.hotswap", "Invoking CMake cache correction...");
 
         auto const error = InvokeCMakeCommand(
-            "-DCMAKE_INSTALL_PREFIX:PATH=" + EscapeWindowsPath(fs::current_path().generic_string()),
-            EscapeWindowsPath(BuiltInConfig::GetBuildDirectory()));
+            "-DCMAKE_INSTALL_PREFIX:PATH=" + fs::current_path().generic_string(),
+            BuiltInConfig::GetBuildDirectory());
 
         if (error)
         {
