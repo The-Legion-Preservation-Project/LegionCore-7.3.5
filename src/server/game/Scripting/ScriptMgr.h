@@ -870,15 +870,22 @@ class TC_GAME_API ScriptMgr
         /// to accept new scripts in this context.
         /// Requires a SwapScriptContext() call afterwards to load the new scripts.
         void SetScriptContext(std::string const& context);
+
         /// Returns the current script context.
         std::string const& GetCurrentScriptContext() const { return _currentContext; }
+
         /// Releases all scripts associated with the given script context immediately.
         /// Requires a SwapScriptContext() call afterwards to finish the unloading.
         void ReleaseScriptContext(std::string const& context);
+
         /// Executes all changed introduced by SetScriptContext and ReleaseScriptContext.
         /// It is possible to combine multiple SetScriptContext and ReleaseScriptContext
         /// calls for better performance (bulk changes).
         void SwapScriptContext(bool initialize = false);
+
+        /// Returns the context name of the static context provided by the worldserver
+        static std::string const& GetNameOfStaticContext();
+
         /// Acquires a strong module reference to the module containing the given script name,
         /// which prevents the shared library which contains the script from unloading.
         /// The shared library is lazy unloaded as soon as all references to it are released.
