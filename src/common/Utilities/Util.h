@@ -184,8 +184,21 @@ TC_COMMON_API bool isEastAsianString(const std::wstring& wstr, bool numericOrSpa
 TC_COMMON_API wchar_t wcharToUpper(wchar_t wchar);
 TC_COMMON_API wchar_t wcharToUpperOnlyLatin(wchar_t wchar);
 TC_COMMON_API wchar_t wcharToLower(wchar_t wchar);
+
+struct CharToUpper
+{
+        char operator()(char c) const { return std::toupper(static_cast<unsigned char>(c)); }
+} inline constexpr charToUpper;
+
+struct CharToLower
+{
+        char operator()(char c) const { return std::tolower(static_cast<unsigned char>(c)); }
+} inline constexpr charToLower;
+
 TC_COMMON_API void wstrToUpper(std::wstring& str);
 TC_COMMON_API void wstrToLower(std::wstring& str);
+TC_COMMON_API void strToUpper(std::string& str);
+TC_COMMON_API void strToLower(std::string& str);
 
 TC_COMMON_API std::wstring GetMainPartOfName(std::wstring wname, uint32 declension);
 

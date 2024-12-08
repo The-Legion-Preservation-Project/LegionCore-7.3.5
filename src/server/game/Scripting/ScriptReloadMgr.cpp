@@ -36,30 +36,27 @@ ScriptReloadMgr* ScriptReloadMgr::instance()
 
 #else
 
+#include "BuiltInConfig.h"
+#include "Config.h"
+#include "GitRevision.h"
+#include "Log.h"
+#include "MPSCQueue.h"
+#include "SHA1.h"
+#include "ScriptMgr.h"
+#include "StartProcess.h"
+#include "efsw/efsw.hpp"
 #include <algorithm>
-#include <regex>
-#include <vector>
-#include <future>
-#include <memory>
-#include <fstream>
-#include <type_traits>
-#include <unordered_set>
-#include <unordered_map>
-
-#include <boost/algorithm/string/replace.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/system/system_error.hpp>
-
-#include "efsw/efsw.hpp"
-
-#include "Log.h"
-#include "Config.h"
-#include "BuiltInConfig.h"
-#include "ScriptMgr.h"
-#include "SHA1.h"
-#include "StartProcess.h"
-#include "MPSCQueue.h"
-#include "GitRevision.h"
+#include <fstream>
+#include <future>
+#include <memory>
+#include <regex>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace fs = boost::filesystem;
 
@@ -102,13 +99,7 @@ typedef void* HandleType;
 
 static fs::path GetDirectoryOfExecutable()
 {
-    ASSERT((!sConfigMgr->GetArguments().empty()),
-           "Expected the arguments to contain at least 1 element!");
-    fs::path path(sConfigMgr->GetArguments()[0]);
-    if (path.is_absolute())
-        return path.parent_path();
-    else
-        return fs::absolute(path).parent_path();
+    return boost::dll::program_location().parent_path();
 }
 
 class SharedLibraryUnloader
@@ -351,7 +342,7 @@ namespace std
     {
         hash<string> hasher;
 
-        std::size_t operator()(fs::path const& key) const
+        std::size_t operator()(fs::path const& key) const noexcept
         {
             return hasher(key.generic_string());
         }
@@ -383,8 +374,7 @@ static std::shared_ptr<Trinity::AsyncProcessResult> InvokeAsyncCMakeCommand(T&&.
 static std::string CalculateScriptModuleProjectName(std::string const& module)
 {
     std::string module_project = "scripts_" + module;
-    std::transform(module_project.begin(), module_project.end(),
-                   module_project.begin(), ::tolower);
+    strToLower(module_project);
 
     return module_project;
 }
@@ -745,7 +735,6 @@ private:
 
         _fileWatcher.watch();
     }
-
     static fs::path CalculateTemporaryCachePath()
     {
         auto path = fs::temp_directory_path();
@@ -863,6 +852,7 @@ private:
                     "\"%s\" at \"%s\" with reason (\"%s\")!",
                     path.filename().generic_string().c_str(), cache_path.generic_string().c_str(),
                     code.message().c_str());
+
                 // Find a better solution for this but it's much better
                 // to start the core without scripts
                 std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -928,7 +918,7 @@ private:
         }
 
         // Create the source listener
-        auto listener = Trinity::make_unique<SourceUpdateListener>(
+        auto listener = std::make_unique<SourceUpdateListener>(
             sScriptReloadMgr->GetSourceDirectory() / module_name,
             module_name);
 
@@ -942,6 +932,7 @@ private:
         sScriptMgr->SetScriptContext(module_name);
         (*module)->AddScripts();
         TC_LOG_TRACE("scripts.hotswap", ">> Registered all scripts of module %s.", module_name.c_str());
+
         if (swap_context)
             sScriptMgr->SwapScriptContext();
     }
@@ -1025,7 +1016,7 @@ private:
             // Wait for the current build job to finish, if the job finishes in time
             // evaluate it and continue with the next one.
             if (_build_job->GetProcess()->GetFutureResult().
-                    wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+                    wait_for(0s) == std::future_status::ready)
                 ProcessReadyBuildJob();
             else
                 return; // Return when the job didn't finish in time
@@ -1477,7 +1468,7 @@ void LibraryUpdateListener::handleFileAction(efsw::WatchID watchid, std::string 
 
     sScriptReloadMgr->QueueMessage([=](HotSwapScriptReloadMgr* reloader) mutable
     {
-        fs::path path = fs::absolute(
+        auto const path = fs::absolute(
             filename,
             sScriptReloadMgr->GetLibraryDirectory());
 
@@ -1559,7 +1550,7 @@ void SourceUpdateListener::handleFileAction(efsw::WatchID watchid, std::string c
         return;
     }
 
-    auto const path = fs::absolute(
+    fs::path path = fs::absolute(
         filename,
         dir);
 

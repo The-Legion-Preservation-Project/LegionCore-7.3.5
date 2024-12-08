@@ -993,11 +993,9 @@ private:
 
 // Utility macros for looping over scripts.
 #define FOR_SCRIPTS(T, C, E) \
-    if (SCR_REG_LST(T).empty()) \
-        return; \
-    \
-    for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
-        C != SCR_REG_LST(T).end(); ++C)
+    if (!SCR_REG_LST(T).empty()) \
+        for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
+            C != SCR_REG_LST(T).end(); ++C)
 
 #define FOR_SCRIPTS_RET(T, C, E, R) \
     if (SCR_REG_LST(T).empty()) \
@@ -1112,9 +1110,8 @@ ScriptObject::~ScriptObject()
     sScriptMgr->DecreaseScriptCount();
 }
 
-ScriptMgr::ScriptMgr() : _scriptCount(0)
+ScriptMgr::ScriptMgr() : _scriptCount(0), _script_loader_callback(nullptr)
 {
-    _script_loader_callback = nullptr;
 }
 
 ScriptMgr::~ScriptMgr() = default;
@@ -1150,7 +1147,6 @@ void ScriptMgr::Initialize()
     // Load all static linked scripts through the script loader function.
     ASSERT(_script_loader_callback,
            "Script loader callback wasn't registered!");
-
     _script_loader_callback();
 
     // Initialize all dynamic scripts
@@ -1176,11 +1172,11 @@ void ScriptMgr::Initialize()
         if (scriptName.empty())
             continue;
 
-        TC_LOG_ERROR("sql.sql", "ScriptName '%s' exists in database, "
-                                "but no core script found!", scriptName.c_str());
+        TC_LOG_ERROR("sql.sql", "ScriptName '%s' is referenced by the database, but does not exist in the core!", scriptName.c_str());
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u C++ scripts in %u ms", GetScriptCount(), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u C++ scripts in %u ms",
+        GetScriptCount(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ScriptMgr::SetScriptContext(std::string const& context)
@@ -2580,32 +2576,32 @@ void ScriptMgr::OnQuestRewardItem(Player* player, Item* item, uint32 count)
 }
 
 // Specialize for each script type class like so:
-template class ScriptRegistry<AchievementCriteriaScript>;
-template class ScriptRegistry<AchievementRewardScript>;
-template class ScriptRegistry<AreaTriggerScript>;
-template class ScriptRegistry<AuctionHouseScript>;
-template class ScriptRegistry<BattlegroundMapScript>;
-template class ScriptRegistry<BattlegroundScript>;
-template class ScriptRegistry<BattlePayProductScript>;
-template class ScriptRegistry<CommandScript>;
-template class ScriptRegistry<ConditionScript>;
-template class ScriptRegistry<CreatureScript>;
-template class ScriptRegistry<DynamicObjectScript>;
-template class ScriptRegistry<EventObjectScript>;
-template class ScriptRegistry<FormulaScript>;
-template class ScriptRegistry<GameObjectScript>;
-template class ScriptRegistry<GroupScript>;
-template class ScriptRegistry<GuildScript>;
-template class ScriptRegistry<InstanceMapScript>;
-template class ScriptRegistry<ItemScript>;
-template class ScriptRegistry<OutdoorPvPScript>;
-template class ScriptRegistry<PlayerScript>;
-template class ScriptRegistry<SceneTriggerScript>;
-template class ScriptRegistry<SessionScript>;
-template class ScriptRegistry<SpellScriptLoader>;
-template class ScriptRegistry<TransportScript>;
-template class ScriptRegistry<VehicleScript>;
-template class ScriptRegistry<WeatherScript>;
-template class ScriptRegistry<WorldMapScript>;
-template class ScriptRegistry<WorldScript>;
-template class ScriptRegistry<WorldStateScript>;
+template class TC_GAME_API ScriptRegistry<AchievementCriteriaScript>;
+template class TC_GAME_API ScriptRegistry<AchievementRewardScript>;
+template class TC_GAME_API ScriptRegistry<AreaTriggerScript>;
+template class TC_GAME_API ScriptRegistry<AuctionHouseScript>;
+template class TC_GAME_API ScriptRegistry<BattlegroundMapScript>;
+template class TC_GAME_API ScriptRegistry<BattlegroundScript>;
+template class TC_GAME_API ScriptRegistry<BattlePayProductScript>;
+template class TC_GAME_API ScriptRegistry<CommandScript>;
+template class TC_GAME_API ScriptRegistry<ConditionScript>;
+template class TC_GAME_API ScriptRegistry<CreatureScript>;
+template class TC_GAME_API ScriptRegistry<DynamicObjectScript>;
+template class TC_GAME_API ScriptRegistry<EventObjectScript>;
+template class TC_GAME_API ScriptRegistry<FormulaScript>;
+template class TC_GAME_API ScriptRegistry<GameObjectScript>;
+template class TC_GAME_API ScriptRegistry<GroupScript>;
+template class TC_GAME_API ScriptRegistry<GuildScript>;
+template class TC_GAME_API ScriptRegistry<InstanceMapScript>;
+template class TC_GAME_API ScriptRegistry<ItemScript>;
+template class TC_GAME_API ScriptRegistry<OutdoorPvPScript>;
+template class TC_GAME_API ScriptRegistry<PlayerScript>;
+template class TC_GAME_API ScriptRegistry<SceneTriggerScript>;
+template class TC_GAME_API ScriptRegistry<SessionScript>;
+template class TC_GAME_API ScriptRegistry<SpellScriptLoader>;
+template class TC_GAME_API ScriptRegistry<TransportScript>;
+template class TC_GAME_API ScriptRegistry<VehicleScript>;
+template class TC_GAME_API ScriptRegistry<WeatherScript>;
+template class TC_GAME_API ScriptRegistry<WorldMapScript>;
+template class TC_GAME_API ScriptRegistry<WorldScript>;
+template class TC_GAME_API ScriptRegistry<WorldStateScript>;
