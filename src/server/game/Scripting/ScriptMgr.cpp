@@ -416,7 +416,8 @@ class CreatureGameObjectScriptRegistrySwapHooks
         ASSERT(!creature->isCharmed(),
                "There is a disabled AI which is still loaded.");
 
-        creature->AI()->EnterEvadeMode();
+        if (creature->IsAlive())
+            creature->AI()->EnterEvadeMode();
     }
 
     static void UnloadDestroyScript(Creature* creature)
