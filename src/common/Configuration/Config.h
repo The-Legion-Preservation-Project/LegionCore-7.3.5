@@ -21,6 +21,7 @@
 
 #include "Define.h"
 #include <boost/property_tree/ptree.hpp>
+#include <mutex>
 #include <string>
 #include <vector>
 
