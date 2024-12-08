@@ -334,7 +334,7 @@ public:
     virtual void BeforeReleaseContext(std::string const& /*context*/) { }
 
     /// Called before SwapContext
-    virtual void BeforeSwapContext() { }
+    virtual void BeforeSwapContext(bool /*initialize*/) { }
 
     /// Called before Unload
     virtual void BeforeUnload() { }
@@ -521,8 +521,12 @@ public:
         ids_removed_.insert(ids_to_remove.begin(), ids_to_remove.end());
     }
 
-    void BeforeSwapContext() final override
+    void BeforeSwapContext(bool initialize) final override
     {
+        // Never swap creature or gameobject scripts when initializing
+        if (initialize)
+            return;
+
         // Add the recently added scripts to the deleted scripts to replace
         // default AI's with recently added core scripts.
         ids_removed_.insert(static_cast<Base*>(this)->GetRecentlyAddedScriptIDs().begin(),
@@ -605,9 +609,10 @@ public:
         }
     }
 
-    void BeforeSwapContext() final override
+    void BeforeSwapContext(bool initialize) final override
     {
-        if (swapped)
+        // Never swap outdoor pvp scripts when initializing
+        if ((!initialize) && swapped)
         {
             sOutdoorPvPMgr->InitOutdoorPvP();
             swapped = false;
@@ -638,7 +643,7 @@ public:
             swapped = true;
     }
 
-    void BeforeSwapContext() final override
+    void BeforeSwapContext(bool initialize) final override
     {
         swapped = false;
     }
@@ -668,7 +673,7 @@ public:
             swapped = true;
     }
 
-    void BeforeSwapContext() final override
+    void BeforeSwapContext(bool initialize) final override
     {
         if (swapped)
         {
@@ -722,8 +727,7 @@ public:
 
     void SwapContext(bool initialize) final override
     {
-      if (!initialize)
-          this->BeforeSwapContext();
+      this->BeforeSwapContext(initialize);
 
       _recently_added_ids.clear();
     }
@@ -852,7 +856,7 @@ public:
         ChatHandler::invalidateCommandTable();
     }
 
-    void BeforeSwapContext() final override
+    void BeforeSwapContext(bool /*initialize*/) final override
     {
         ChatHandler::invalidateCommandTable();
     }
@@ -885,9 +889,9 @@ public:
         _scripts.erase(context);
     }
 
-    void SwapContext(bool) final override
+    void SwapContext(bool initialize) final override
     {
-        this->BeforeSwapContext();
+        this->BeforeSwapContext(initialize);
     }
 
     void RemoveUsedScriptsFromContainer(std::unordered_set<std::string>& scripts) final override
@@ -1157,6 +1161,7 @@ std::shared_ptr<ModuleReference>
     return ScriptReloadMgr::AcquireModuleReferenceOfContext(
         sScriptRegistryCompositum->GetScriptContextOfScriptName(scriptname));
 #else
+    (void)scriptname;
     // Something went wrong when this function is used in
     // a static linked context.
     WPAbort();
@@ -1275,7 +1280,7 @@ void CreateSpellOrAuraScripts(uint32 spellId, std::vector<T*>& scriptVector, F&&
         if (!itr->second.second)
             continue;
 
-        auto tmpscript = ScriptRegistry<SpellScriptLoader>::Instance()->GetScriptById(itr->second.first);
+        SpellScriptLoader* tmpscript = sScriptMgr->GetSpellScriptLoader(itr->second.first);
         if (!tmpscript)
             continue;
 
