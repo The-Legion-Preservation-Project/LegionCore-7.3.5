@@ -48,6 +48,7 @@ class InstanceMap;
 class InstanceScript;
 class Item;
 class Map;
+class ModuleReference;
 class OutdoorPvP;
 class Player;
 class Quest;
@@ -85,8 +86,8 @@ public:
     std::string const& GetName() const { return _name; }
 
 protected:
-    ScriptObject(std::string name) : _name(name) { }
-    virtual ~ScriptObject() = default;
+    ScriptObject(std::string name);
+    virtual ~ScriptObject();
 };
 
 template<class TObject>
@@ -834,9 +835,6 @@ public:
     virtual void OnDelete(uint32 /*variableID*/, uint8 /*type*/) { }
 };
 
-typedef std::list<std::string> UnusedScriptNamesContainer;
-extern UnusedScriptNamesContainer UnusedScriptNames;
-
 // Manages registration, loading, and execution of scripts.
 class TC_GAME_API ScriptMgr
 {
@@ -848,14 +846,14 @@ class TC_GAME_API ScriptMgr
         void FillSpellSummary();
         void LoadDatabase();
 
+        void IncreaseScriptCount() { ++_scriptCount; }
+        void DecreaseScriptCount() { --_scriptCount; }
+
     public: /* Initialization */
         static ScriptMgr* instance();
 
         void Initialize();
 
-        const char* ScriptsVersion() const { return "Integrated Trinity Scripts"; }
-
-        void IncrementScriptCount() { ++_scriptCount; }
         uint32 GetScriptCount() const { return _scriptCount; }
 
         typedef void(*ScriptLoaderCallbackType)();
@@ -868,12 +866,25 @@ class TC_GAME_API ScriptMgr
         }
 
     public: /* Script contexts */
-        void BeginScriptContext(std::string const& context);
-        void FinishScriptContext();
-
+        /// Set the current script context, which allows the ScriptMgr
+        /// to accept new scripts in this context.
+        /// Requires a SwapScriptContext() call afterwards to load the new scripts.
+        void SetScriptContext(std::string const& context);
+        /// Returns the current script context.
+        std::string const& GetCurrentScriptContext() const { return _currentContext; }
+        /// Releases all scripts associated with the given script context immediately.
+        /// Requires a SwapScriptContext() call afterwards to finish the unloading.
         void ReleaseScriptContext(std::string const& context);
+        /// Executes all changed introduced by SetScriptContext and ReleaseScriptContext.
+        /// It is possible to combine multiple SetScriptContext and ReleaseScriptContext
+        /// calls for better performance (bulk changes).
+        void SwapScriptContext(bool initialize = false);
+        /// Acquires a strong module reference to the module containing the given script name,
+        /// which prevents the shared library which contains the script from unloading.
+        /// The shared library is lazy unloaded as soon as all references to it are released.
+        std::shared_ptr<ModuleReference> AcquireModuleReferenceOfScriptName(std::string const& scriptname) const;
 
-        /* Unloading */
+    public: /* Unloading */
         void Unload();
 
         /* SpellScriptLoader */

@@ -18,12 +18,13 @@
 #ifndef __SPELL_SCRIPT_H
 #define __SPELL_SCRIPT_H
 
-#include "Util.h"
+#include "ScriptReloadMgr.h"
 #include "SharedDefines.h"
-#include "SpellAuraDefines.h"
 #include "Spell.h"
-#include <stack>
+#include "SpellAuraDefines.h"
+#include "Util.h"
 #include <safe_ptr.h>
+#include <stack>
 
 class Unit;
 class SpellInfo;
@@ -104,6 +105,14 @@ class TC_GAME_API _SpellScript
         uint8 m_currentScriptState;
         std::string const* m_scriptName;
         uint32 m_scriptSpellId;
+
+    private:
+
+#ifdef TRINITY_API_USE_DYNAMIC_LINKING
+        // Strong reference to keep the binary code loaded
+        std::shared_ptr<ModuleReference> m_moduleReference;
+#endif // #ifndef TRINITY_API_USE_DYNAMIC_LINKING
+
     public:
         //
         // SpellScript/AuraScript interface base

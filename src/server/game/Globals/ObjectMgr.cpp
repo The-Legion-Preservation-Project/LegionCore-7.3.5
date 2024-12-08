@@ -6996,7 +6996,10 @@ void ObjectMgr::LoadScriptNames()
 {
     uint32 oldMSTime = getMSTime();
 
-    _scriptNamesStore.push_back("");
+    // We insert an empty placeholder here so we can use the
+    // script id 0 as dummy for "no script found".
+    _scriptNamesStore.emplace_back("");
+
     QueryResult result = WorldDatabase.Query(
       "SELECT DISTINCT(ScriptName) FROM achievement_criteria_data WHERE ScriptName <> '' AND type = 11 "
       "UNION "
@@ -7048,15 +7051,10 @@ void ObjectMgr::LoadScriptNames()
 
     std::sort(_scriptNamesStore.begin(), _scriptNamesStore.end());
 
-#ifdef SCRIPTS
-    for (size_t i = 1; i < _scriptNamesStore.size(); ++i)
-        UnusedScriptNames.push_back(_scriptNamesStore[i]);
-#endif
-
     TC_LOG_INFO("server.loading", ">> Loaded %d Script Names in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-ObjectMgr::ScriptNameContainer& ObjectMgr::GetScriptNames()
+ObjectMgr::ScriptNameContainer const& ObjectMgr::GetAllScriptNames() const
 {
     return _scriptNamesStore;
 }

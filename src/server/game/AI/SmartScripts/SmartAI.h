@@ -264,6 +264,6 @@ class SmartGameObjectAI : public GameObjectAI
 };
 
 /// Registers scripts required by the SAI scripting system
-void AddSC_SmartSCripts();
+void AddSC_SmartScripts();
 
 #endif

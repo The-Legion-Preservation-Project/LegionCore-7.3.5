@@ -2132,7 +2132,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Initializing Scripts...");
     sScriptMgr->Initialize();
     sScriptMgr->OnConfigLoad(false);                                // must be done after the ScriptMgr has been properly initialized
-    sScriptReloadMgr->Initialize();
 
     sScriptDataStore->ValidateSpellScripts();
 
