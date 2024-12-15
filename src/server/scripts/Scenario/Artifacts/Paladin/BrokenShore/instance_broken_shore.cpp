@@ -2,6 +2,7 @@
     Paladin Specialization: Retribution
 */
 
+#include "PhasingHandler.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "broken_shore.h"
@@ -189,7 +190,7 @@ public:
                         if (go->GetEntry() == GO_BOSS_ZERUS_DOOR_1)
                             HandleGameObject(go->GetGUID(), true);
                         if (go->GetEntry() == GO_BOSS_ZERUS_DOOR_2)
-                            go->SetPhaseMask(1, true);
+                            PhasingHandler::AddPhase(go, 170, true);
                     }
                     break;
             }

@@ -17,16 +17,17 @@
 
 #include "Garrison.h"
 #include "Creature.h"
+#include "DatabaseEnv.h"
 #include "GameObject.h"
 #include "GarrisonMgr.h"
-#include "MapManager.h"
-#include "ObjectMgr.h"
-#include "VehicleDefines.h"
-#include "MiscPackets.h"
 #include "InstanceScript.h"
 #include "LootPackets.h"
-#include "DatabaseEnv.h"
+#include "MapManager.h"
+#include "MiscPackets.h"
 #include "NPCPackets.h"
+#include "ObjectMgr.h"
+#include "PhasingHandler.h"
+#include "VehicleDefines.h"
 #include <G3D/Quat.h>
 
 #define SALVAGE_ITEM 114119
@@ -735,7 +736,7 @@ bool Garrison::Create(uint32 garrSiteId, bool skip_teleport /* = false*/)
     garrisonCreateResult.GarrSiteLevelID = siteLevel->ID;
     _owner->SendDirectMessage(garrisonCreateResult.Write());
 
-    //_owner->GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE); update phase send at quest credit.
+    PhasingHandler::OnConditionChange(_owner);
     if (siteLevel->UpgradeMovieID && !skip_teleport)
         _owner->TeleportTo(GetGarrisonMapID(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ(), _owner->GetOrientation(), TELE_TO_SEAMLESS);
     SendRemoteInfo();
@@ -963,7 +964,7 @@ void Garrison::Update(uint32 diff)
                 {
                     Position const& pos2 = finalizeInfo->FactionInfo[GetFaction()].Pos;
                     GameObject* finalizer = sObjectMgr->IsStaticTransport(finalizeInfo->FactionInfo[GetFaction()].GameObjectId) ? new StaticTransport : new GameObject;
-                    if (finalizer->Create(sObjectMgr->GetGenerator<HighGuid::GameObject>()->Generate(), finalizeInfo->FactionInfo[GetFaction()].GameObjectId, map, 1,
+                    if (finalizer->Create(sObjectMgr->GetGenerator<HighGuid::GameObject>()->Generate(), finalizeInfo->FactionInfo[GetFaction()].GameObjectId, map,
                         pos2, G3D::Matrix3::fromEulerAnglesZYX(pos2.GetOrientation(), 0.0f, 0.0f), 255, GO_STATE_READY) && finalizer->IsPositionValid() && map->AddToMap(finalizer))
                     {
                         // set some spell id to make the object delete itself after use

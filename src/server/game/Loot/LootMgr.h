@@ -151,7 +151,7 @@ class ConditionMgr;
 
 struct TC_GAME_API LootStoreItem
 {
-    std::list<Condition*>  conditions;                      // additional loot condition
+    std::vector<Condition*>  conditions;                    // additional loot condition
     uint32  itemid;                                         // id of the item
     uint32  currencyid;                                     // id of the currency
     uint32  reference;                                      // reference template id
@@ -207,7 +207,7 @@ struct TC_GAME_API LootItem
 
     uint8   type;                                           // 0 = item, 1 = currency
     ItemQualities quality;
-    std::list<Condition*> conditions;                               // additional loot condition
+    std::vector<Condition*> conditions;                     // additional loot condition
     GuidSet allowedGUIDs;
     uint32  count;
     bool    currency          : 1;
@@ -308,7 +308,7 @@ class LootTemplate
         void ProcessOploteChest(Loot& loot) const;
         void ProcessChallengeChest(Loot& loot, uint32 lootId, Challenge* _challenge) const;
         void ProcessItemLoot(Loot& loot) const;
-        void CopyConditions(ConditionList conditions);
+        void CopyConditions(ConditionContainer conditions);
         void ProcessWorld(Loot& loot, bool rate, bool ignore = false) const;
         void ProcessLuck(Loot& loot, uint32 entry, bool ignore = false) const;
         void ProcessBossLoot(Loot& loot) const;

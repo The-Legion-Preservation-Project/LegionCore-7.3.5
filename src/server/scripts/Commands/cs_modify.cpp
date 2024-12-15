@@ -22,9 +22,10 @@ Comment: All modify related commands
 Category: commandscripts
 EndScriptData */
 
-#include "ScriptMgr.h"
-#include "ObjectMgr.h"
 #include "Chat.h"
+#include "ObjectMgr.h"
+#include "PhasingHandler.h"
+#include "ScriptMgr.h"
 #include <stdlib.h>
 
 class modify_commandscript : public CommandScript
@@ -62,7 +63,6 @@ public:
             { "drunk",          SEC_MODERATOR,      false, &HandleModifyDrunkCommand,         ""},
             { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    ""},
             { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         ""},
-            { "phaseids",       SEC_ADMINISTRATOR,  false, &HandleModifyPhaseIDsCommand, ""},
             { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        ""},
             { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         ""},
             { "currency",       SEC_GAMEMASTER,     false, &HandleModifyCurrencyCommand,      ""},
@@ -1214,55 +1214,63 @@ public:
         return true;
     }
 
-    //set temporary phase mask for player
+    // Toggles a phaseid on a player
     static bool HandleModifyPhaseCommand(ChatHandler* handler, const char* args)
     {
         if (!*args)
             return false;
 
-        uint32 phasemask = (uint32)atoi((char*)args);
-
-        Unit* target = handler->getSelectedUnit();    
-        if (target)    
-        {    
-            if (target->GetTypeId() == TYPEID_PLAYER)    
-                target->ToPlayer()->GetPhaseMgr().SetCustomPhase(phasemask);    
-            else    
-                target->SetPhaseMask(phasemask, true);    
-        }    
-        else    
-            handler->GetSession()->GetPlayer()->GetPhaseMgr().SetCustomPhase(phasemask);
-
-        return true;
-    }
-
-    
-    static bool HandleModifyPhaseIDsCommand(ChatHandler* handler, const char* args)
-    {
-        if (!*args)
+        char* phaseText = strtok((char*)args, " ");
+        if (!phaseText)
             return false;
 
-        std::set<uint32> phaseIds;
-        Tokenizer phasesToken((char*)args, ' ', 100);
-        for (Tokenizer::const_iterator itr = phasesToken.begin(); itr != phasesToken.end(); ++itr)
+        uint32 phaseId = uint32(strtoul(phaseText, nullptr, 10));
+        uint32 visibleMapId = 0;
+
+        char* visibleMapIdText = strtok(nullptr, " ");
+        if (visibleMapIdText)
+            visibleMapId = uint32(strtoul(visibleMapIdText, nullptr, 10));
+
+        if (phaseId && !sPhaseStore.LookupEntry(phaseId))
         {
-            if (PhaseEntry const* phase = sPhaseStore.LookupEntry(uint32(strtoull(*itr, nullptr, 10))))
-                phaseIds.insert(phase->ID);
+            // TODO: Phasing
+//            handler->SendSysMessage(LANG_PHASE_NOTFOUND);
+//            handler->SetSentErrorMessage(true);
+            return false;
         }
 
         Unit* target = handler->getSelectedUnit();
-        if (target)
+
+        if (visibleMapId)
         {
-            if (target->GetTypeId() == TYPEID_PLAYER)
-                target->ToPlayer()->SetPhaseId(phaseIds, true);
-            else
+            MapEntry const* visibleMap = sMapStore.LookupEntry(visibleMapId);
+            if (!visibleMap || visibleMap->ParentMapID != int32(target->GetMapId()))
+            {
+                // TODO: Phasing
+//                handler->SendSysMessage(LANG_PHASE_NOTFOUND);
+//                handler->SetSentErrorMessage(true);
                 return false;
+            }
+
+            if (!target->GetPhaseShift().HasVisibleMapId(visibleMapId))
+                PhasingHandler::AddVisibleMapId(target, visibleMapId);
+            else
+                PhasingHandler::RemoveVisibleMapId(target, visibleMapId);
+        }
+
+        if (phaseId)
+        {
+            if (!target->GetPhaseShift().HasPhase(phaseId))
+                PhasingHandler::AddPhase(target, phaseId, true);
+            else
+                PhasingHandler::RemovePhase(target, phaseId, true);
         }
         else
-            handler->GetSession()->GetPlayer()->SetPhaseId(phaseIds, true);
+            target->GetPhaseShift().ClearPhases();
 
         return true;
     }
+
     //change standstate
     static bool HandleModifyStandStateCommand(ChatHandler* handler, const char* args)
     {

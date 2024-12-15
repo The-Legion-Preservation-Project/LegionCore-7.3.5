@@ -26,6 +26,7 @@ EndScriptData */
 #include "Cell.h"
 #include "ChallengeMgr.h"
 #include "Chat.h"
+#include "Garrison.h"
 #include "GridNotifiers.h"
 #include "Group.h"
 #include "GroupMgr.h"
@@ -40,11 +41,11 @@ EndScriptData */
 #include "Packets/InstancePackets.h"
 #include "Packets/LfgListPackets.h"
 #include "Packets/MiscPackets.h"
+#include "PhasingHandler.h"
 #include "PlayerDefines.h"
 #include "ScriptMgr.h"
 #include "Vehicle.h"
 #include <fstream>
-#include "Garrison.h"
 
 class debug_commandscript : public CommandScript
 {
@@ -105,7 +106,6 @@ public:
             { "hostile",        SEC_REALM_LEADER,   false, &HandleDebugHostileRefListCommand,  ""},
             { "itemexpire",     SEC_ADMINISTRATOR,  false, &HandleDebugItemExpireCommand,      ""},
             { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               ""},
-            { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  ""},
             { "lootrecipient",  SEC_GAMEMASTER,     false, &HandleDebugGetLootRecipientCommand, ""},
             { "los",            SEC_MODERATOR,      false, &HandleDebugLoSCommand,             ""},
             { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              ""},
@@ -1189,11 +1189,13 @@ public:
 
         Map* map = handler->GetSession()->GetPlayer()->GetMap();
 
-        if (!v->Create(sObjectMgr->GetGenerator<HighGuid::Vehicle>()->Generate(), map, handler->GetSession()->GetPlayer()->GetPhaseMask(), entry, id, handler->GetSession()->GetPlayer()->GetTeam(), x, y, z, o))
+        if (!v->Create(sObjectMgr->GetGenerator<HighGuid::Vehicle>()->Generate(), map, entry, id, handler->GetSession()->GetPlayer()->GetTeam(), x, y, z, o))
         {
             delete v;
             return false;
         }
+
+        PhasingHandler::InheritPhaseShift(v, handler->GetSession()->GetPlayer());
 
         map->AddToMap(v->ToCreature());
 
@@ -1216,29 +1218,26 @@ public:
             return false;
 
         char* t = strtok((char*)args, " ");
-        char* p = strtok(nullptr, " ");
-        char* w = strtok(nullptr, " ");
-        char* s = strtok(nullptr, " ");
+        char* p = strtok(NULL, " ");
+        char* m = strtok(NULL, " ");
+
         if (!t)
             return false;
 
-        std::vector<WorldPackets::Misc::PhaseShiftDataPhase> phaseIds;
-        std::vector<uint16> visibleMapIDs;
-        std::vector<uint16> uiWorldMapAreaIDSwaps;
-        std::vector<uint16> preloadMapIDs;
+        PhaseShift phaseShift;
 
-        visibleMapIDs.emplace_back(static_cast<uint32>(atoi(t)));
+        if (uint32 ut = (uint32)atoi(t))
+            phaseShift.AddVisibleMapId(ut, nullptr);
 
         if (p)
-            phaseIds.emplace_back(static_cast<uint32>(atoi(p)));
+            if (uint32 up = (uint32)atoi(p))
+                phaseShift.AddPhase(up, PhaseFlags::None, nullptr);
 
-        if (w)
-            uiWorldMapAreaIDSwaps.emplace_back(static_cast<uint32>(atoi(w)));
+        if (m)
+            if (uint32 um = (uint32)atoi(m))
+                phaseShift.AddUiWorldMapAreaIdSwap(um);
 
-        if (s)
-            preloadMapIDs.emplace_back(static_cast<uint32>(atoi(s)));
-
-        handler->GetSession()->SendSetPhaseShift(phaseIds, visibleMapIDs, uiWorldMapAreaIDSwaps, preloadMapIDs);
+        PhasingHandler::SendToPlayer(handler->GetSession()->GetPlayer(), phaseShift);
         return true;
     }
 
@@ -1762,13 +1761,18 @@ public:
         return true;
     }
 
-    static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* args)
+    static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->getSelectedPlayer();
-        if (!player)
-            return false;
+        Unit* target = handler->getSelectedUnit();
 
-        player->GetPhaseMgr().SendDebugReportToPlayer(handler->GetSession()->GetPlayer());
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        PhasingHandler::PrintToChat(handler, target->GetPhaseShift());
         return true;
     }
 
@@ -1829,32 +1833,6 @@ public:
         float z         = (float)atof(cz);
 
         //target->ToUnit()->GetMotionMaster()->MoveBackward(0, x, y,z);
-        return true;
-    }
-
-    static bool HandleDebugLoadZ(ChatHandler* handler, char const* args)
-    {
-        for (GameObjectDataContainer::iterator itr = sObjectMgr->_gameObjectDataStore.begin(); itr != sObjectMgr->_gameObjectDataStore.end(); ++itr)
-        {
-            GameObjectData data = itr->second;
-
-            if (!data.posZ)
-            {
-                Map* map = sMapMgr->FindMap(data.mapid, 0);
-
-                if (!map)
-                    map = sMapMgr->CreateMap(data.mapid, handler->GetSession()->GetPlayer());
-
-                if (map)
-                {
-                    float newPosZ = map->GetHeight(data.posX, data.posY, MAX_HEIGHT, true);
-
-                    if (newPosZ && newPosZ != -200000.0f)
-                        WorldDatabase.PExecute("UPDATE gameobject SET position_z = %f WHERE guid = %u", newPosZ, itr->first);
-                }
-            }
-        }
-
         return true;
     }
 

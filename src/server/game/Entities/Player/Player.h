@@ -31,6 +31,7 @@
 #include "GameTime.h"
 #include "GridObject.h"
 #include "GroupReference.h"
+#include "Hash.h"
 #include "Item.h"
 #include "ItemTemplate.h"
 #include "LogsSystem.h"
@@ -38,7 +39,6 @@
 #include "Object.h"
 #include "Packets/VehiclePackets.h"
 #include "Pet.h"
-#include "PhaseMgr.h"
 #include "PlayerTaxi.h"
 #include "QuestDef.h"
 #include "ReputationMgr.h"
@@ -61,7 +61,6 @@ class Group;
 class Guild;
 class OutdoorPvP;
 class Pet;
-class PhaseMgr;
 class PlayerMenu;
 class PlayerSocial;
 class RestMgr;
@@ -1612,8 +1611,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Pet* SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float y, float z, float ang, uint32 despwtime, bool* isNew = nullptr);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
 
-        PhaseMgr& GetPhaseMgr() { return phaseMgr; }
-
         void Say(std::string const& text, const uint32 language, bool isSpamm = false);
         void Yell(std::string const& text, const uint32 language, bool isSpamm = false);
         void TextEmote(std::string const& text, bool isSpamm = false);
@@ -2362,7 +2359,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void UpdatePvP(bool state, bool override=false);
         void UpdateZone(uint32 newZone, uint32 newArea);
         void UpdateArea(uint32 newArea);
-        void ChaeckSeamlessTeleport(uint32 newZoneOrArea, bool isArea = false);
+        void CheckSeamlessTeleport(uint32 newZoneOrArea, bool isArea = false);
         void ZoneTeleport(uint32 zoneId);
         bool InFFAPvPArea();
 
@@ -2888,7 +2885,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         bool CanSummonPet(uint32 entry) const;
         // currently visible objects at player client
-        GuidSet m_clientGUIDs;
+        GuidUnorderedSet m_clientGUIDs;
+        GuidUnorderedSet m_visibleTransports;
         GuidSet m_extraLookList;
         sf::contention_free_shared_mutex< > i_clientGUIDLock;
         std::recursive_mutex i_killMapLock;
@@ -2897,7 +2895,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         bool HaveAtClient(WorldObject const* u);
         void AddClient(ObjectGuid guid);
         void RemoveClient(ObjectGuid guid);
-        GuidSet& GetClient();
+        GuidUnorderedSet& GetClient();
         void ClearClient();
 
         // some hack :( now impossible implemented correct build of object update packet
@@ -3532,8 +3530,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         Vignette::Manager& GetVignetteMgr() { return _vignetteMgr; }
 
-        bool NeedPhaseRecalculate;
-        bool NeedPhaseUpdate;
         bool NeedUpdateVisibility;
 
         ////////////////////Stat System/////////////////////
@@ -3671,8 +3667,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
-
-        PhaseMgr phaseMgr;
 
         uint32 _lastTargetedGO;
         float m_PersonnalXpRate;

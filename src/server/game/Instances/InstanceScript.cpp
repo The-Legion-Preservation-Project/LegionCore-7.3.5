@@ -30,10 +30,12 @@
 #include "Log.h"
 #include "Map.h"
 #include "Packets/InstancePackets.h"
+#include "PhasingHandler.h"
 #include "Player.h"
 #include "ScenarioMgr.h"
 #include "ScriptMgr.h"
 #include "ScriptReloadMgr.h"
+#include "SpellAuras.h"
 
 DungeonEncounterEntry const* BossInfo::GetDungeonEncounterForDifficulty(Difficulty difficulty) const
 {
@@ -911,6 +913,10 @@ void InstanceScript::UpdatePhasing()
     {
         if (player->CanContact())
         {
+            PhasingHandler::SendToPlayer(player);
+
+            // TODO: Phasing - cleanup?
+            /*
             player->AddDelayedEvent(100, [player, step]() -> void
             {
                 PhaseUpdateData phaseUdateData;
@@ -919,6 +925,7 @@ void InstanceScript::UpdatePhasing()
                     phaseUdateData.AddScenarioUpdate(step);
                 player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
             });
+            */
         }
     });
 }

@@ -488,19 +488,6 @@ void WorldSession::HandleUITimeRequest(WorldPackets::Misc::UITimeRequest& /*requ
     SendPacket(response.Write());
 }
 
-void WorldSession::SendSetPhaseShift(std::vector<WorldPackets::Misc::PhaseShiftDataPhase> phases, std::vector<uint16> const& visibleMapIDs, std::vector<uint16> const& uiWorldMapAreaIDSwaps, std::vector<uint16> const& preloadMapIDs, uint32 phaseShiftFlags /*= 0x1F*/)
-{
-    WorldPackets::Misc::PhaseShift phaseShift;
-    phaseShift.Client = _player->GetGUID();
-    phaseShift.Phaseshift.PersonalGUID = ObjectGuid::Empty;
-    phaseShift.Phaseshift.PhaseShiftFlags = phaseShiftFlags | 0x08;
-    phaseShift.Phaseshift.Phases = std::move(phases);
-    phaseShift.PreloadMapIDs = preloadMapIDs;
-    phaseShift.VisibleMapIDs = visibleMapIDs;
-    phaseShift.UiWorldMapAreaIDSwaps = uiWorldMapAreaIDSwaps;
-    SendPacket(phaseShift.Write());
-}
-
 void WorldSession::HandleInstanceLockResponse(WorldPackets::Instance::InstanceLockResponse& packet)
 {
     Player* player = GetPlayer();

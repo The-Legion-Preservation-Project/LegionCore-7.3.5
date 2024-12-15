@@ -16,14 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Common.h"
 #include "Corpse.h"
-#include "Player.h"
-#include "ObjectAccessor.h"
+#include "Common.h"
 #include "DatabaseEnv.h"
-#include "Opcodes.h"
-#include "World.h"
+#include "ObjectAccessor.h"
 #include "ObjectMgr.h"
+#include "Opcodes.h"
+#include "PhasingHandler.h"
+#include "Player.h"
+#include "World.h"
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
 {
@@ -91,8 +92,6 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player* owner)
     SetMap(owner->GetMap());
 
     Object::_Create(ObjectGuid::Create<HighGuid::Corpse>(GetMapId(), 0, guidlow));
-    //SetPhaseMask(owner->GetPhaseMask(), false);
-    //SetPhaseId(owner->GetPhases(), false);
 
     SetObjectScale(1);
     SetGuidValue(CORPSE_FIELD_OWNER, owner->GetGUID());
@@ -100,6 +99,8 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player* owner)
     loot.SetSource(GetGUID());
 
     _gridCoord = Trinity::ComputeGridCoord(GetPositionX(), GetPositionY());
+
+    PhasingHandler::InheritPhaseShift(this, owner);
 
     return true;
 }
@@ -128,8 +129,19 @@ void Corpse::SaveToDB()
     stmt->setUInt32(index++, uint32(m_time));                                         // time
     stmt->setUInt8 (index++, GetType());                                              // corpseType
     stmt->setUInt32(index++, GetInstanceId());                                        // instanceId
-    stmt->setUInt16(index++, GetPhaseMask());                                         // phaseMask
     trans->Append(stmt);
+
+    for (PhaseShift::PhaseRef const& phase : GetPhaseShift().GetPhases())
+    {
+        index = 0;
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE_PHASES);
+        stmt->setUInt32(index++, GetGUID().GetCounter());                             // Guid (corpse's)
+        stmt->setUInt32(index++, phase.Id);                                           // PhaseId
+        stmt->setUInt32(index++, GetOwnerGUID().GetCounter());                        // OwnerGuid
+        stmt->setUInt32(index++, uint32(m_time));                                     // Time
+        stmt->setUInt8(index++, GetType());                                           // CorpseType
+        trans->Append(stmt);
+    }
 
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -155,15 +167,24 @@ void Corpse::DeleteFromDB(CharacterDatabaseTransaction& trans)
     {
         // Only specific bones
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSE);
-        stmt->setUInt64(0, GetGUIDLow());
+        stmt->setUInt32(0, GetGUID().GetCounter());
+        trans->Append(stmt);
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSE_PHASES);
+        stmt->setUInt32(0, GetGUID().GetCounter());
+        trans->Append(stmt);
     }
     else
     {
         // all corpses (not bones)
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_CORPSES);
-        stmt->setUInt64(0, GetOwnerGUID().GetCounter());
+        stmt->setUInt32(0, GetOwnerGUID().GetCounter());
+        trans->Append(stmt);
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PLAYER_CORPSES_PHASES);
+        stmt->setUInt32(0, GetOwnerGUID().GetCounter());
+        trans->Append(stmt);
     }
-    trans->Append(stmt);
 }
 
 ObjectGuid Corpse::GetOwnerGUID() const
@@ -223,8 +244,8 @@ void Corpse::YellToZone(int32 textId, uint32 language, ObjectGuid TargetGuid)
 
 bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 {
-    //        0     1     2     3            4      5          6          7       8       9      10        11    12          13          14          15         16
-    // SELECT posX, posY, posZ, orientation, mapId, displayId, itemCache, bytes1, bytes2, flags, dynFlags, time, corpseType, instanceId, phaseMask, corpseGuid, guid FROM corpse WHERE corpseType <> 0
+    //        0     1     2     3            4      5          6          7       8       9      10        11    12          13          14          15
+    // SELECT posX, posY, posZ, orientation, mapId, displayId, itemCache, bytes1, bytes2, flags, dynFlags, time, corpseType, instanceId, corpseGuid, guid FROM corpse WHERE corpseType <> 0
 
     float posX   = fields[0].GetFloat();
     float posY   = fields[1].GetFloat();
@@ -242,19 +263,17 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
     SetUInt32Value(CORPSE_FIELD_BYTES_2, fields[8].GetUInt32());
     SetUInt32Value(CORPSE_FIELD_FLAGS, fields[9].GetUInt8());
     SetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS, fields[10].GetUInt8());
-    SetGuidValue(CORPSE_FIELD_OWNER, ObjectGuid::Create<HighGuid::Player>(fields[16].GetUInt64()));
+    SetGuidValue(CORPSE_FIELD_OWNER, ObjectGuid::Create<HighGuid::Player>(fields[15].GetUInt64()));
     if (CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(GetGuidValue(CORPSE_FIELD_OWNER)))
         SetUInt32Value(CORPSE_FIELD_FACTION_TEMPLATE, sChrRacesStore.AssertEntry(characterInfo->Race)->FactionID);
 
     m_time = time_t(fields[11].GetUInt32());
 
     uint32 instanceId  = fields[13].GetUInt32();
-    uint32 phaseMask   = fields[14].GetUInt16();
 
     // place
     SetLocationInstanceId(instanceId);
     SetLocationMapId(mapId);
-    SetPhaseMask(phaseMask, false);
     Relocate(posX, posY, posZ, o);
 
     if (!IsPositionValid())

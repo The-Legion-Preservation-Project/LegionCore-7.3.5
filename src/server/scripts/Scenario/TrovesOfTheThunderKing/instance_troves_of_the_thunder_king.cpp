@@ -17,6 +17,7 @@
  */
 
 #include "MiscPackets.h"
+#include "PhasingHandler.h"
 #include "troves_of_the_thunder_king.h"
 
 class instance_troves_of_the_thunder_king : public InstanceMapScript
@@ -42,12 +43,19 @@ public:
 
         void OnPlayerEnter(Player* player) override
         {
-            std::vector<uint16> WorldMapAreaIds;
-            WorldMapAreaIds.emplace_back(770);
-            WorldMapAreaIds.emplace_back(748);
-            WorldMapAreaIds.emplace_back(907);
-            WorldMapAreaIds.emplace_back(910);
-            player->GetSession()->SendSetPhaseShift(std::vector<WorldPackets::Misc::PhaseShiftDataPhase>(), std::vector<uint16>(), WorldMapAreaIds, std::vector<uint16>(), 8);
+//            std::set<uint32> WorldMapAreaIds;
+//            WorldMapAreaIds.emplace(770);
+//            WorldMapAreaIds.emplace(748);
+//            WorldMapAreaIds.emplace(907);
+//            WorldMapAreaIds.emplace(910);
+//            player->GetSession()->SendSetPhaseShift(std::set<uint32>(), std::set<uint32>(), WorldMapAreaIds, std::set<uint32>(), 8);
+
+            PhaseShift phaseShift;
+            phaseShift.AddUiWorldMapAreaIdSwap(770);
+            phaseShift.AddUiWorldMapAreaIdSwap(748);
+            phaseShift.AddUiWorldMapAreaIdSwap(907);
+            phaseShift.AddUiWorldMapAreaIdSwap(910);
+            PhasingHandler::SendToPlayer(player, phaseShift);
         }
 
         void OnCreatureCreate(Creature* creature) override

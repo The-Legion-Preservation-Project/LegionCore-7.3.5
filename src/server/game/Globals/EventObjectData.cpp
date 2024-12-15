@@ -19,6 +19,7 @@
 #include "EventObjectData.h"
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
+#include "PhasingHandler.h"
 
 EventObjectDataStoreMgr::EventObjectDataStoreMgr()
 {
@@ -72,8 +73,10 @@ void EventObjectDataStoreMgr::LoadEventObjects()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0    1   2      3      4       5           6           7           8            9            10        11  
-    QueryResult result = WorldDatabase.Query("SELECT guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, spawnMask, phaseMask, PhaseId "
+    //                                                 0    1   2      3      4       5           6           7           8            9
+    QueryResult result = WorldDatabase.Query("SELECT guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, spawnMask, "
+        // 10           11       12          13              14
+        "phaseUseFlags, PhaseId, PhaseGroup, terrainSwapMap, LegacyPhaseId "
         "FROM eventobject ORDER BY `map` ASC, `guid` ASC");
 
     if (!result)
@@ -88,7 +91,9 @@ void EventObjectDataStoreMgr::LoadEventObjects()
         for (auto& difficultyPair : mapDifficultyPair.second)
             spawnMasks[mapDifficultyPair.first] |= (UI64LIT(1) << difficultyPair.first);
 
-    _eventObjectData.rehash(result->GetRowCount());
+    PhaseShift phaseShift;
+
+    _eventObjectData.reserve(result->GetRowCount());
     std::map<uint32, EventObjectData*> lastEntry;
 
     uint32 count = 0;
@@ -113,43 +118,98 @@ void EventObjectDataStoreMgr::LoadEventObjects()
         auto o = fields[index++].GetFloat();
         data.Pos.Relocate(x, y, z, o);
         data.spawnMask = fields[index++].GetUInt64();
-        data.phaseMask = fields[index++].GetUInt32();
+        data.phaseUseFlags = fields[index++].GetUInt8();
+        data.phaseId = fields[index++].GetUInt32();
+        data.phaseGroup = fields[index++].GetUInt32();
+
+        if (data.phaseUseFlags & ~PHASE_USE_FLAGS_ALL)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) has unknown `phaseUseFlags` set, removed unknown value.", guid, data.id);
+            data.phaseUseFlags &= PHASE_USE_FLAGS_ALL;
+        }
+
+        if (data.phaseUseFlags & PHASE_USE_FLAGS_ALWAYS_VISIBLE && data.phaseUseFlags & PHASE_USE_FLAGS_INVERSE)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) has both `phaseUseFlags` PHASE_USE_FLAGS_ALWAYS_VISIBLE and PHASE_USE_FLAGS_INVERSE,"
+                " removing PHASE_USE_FLAGS_INVERSE.", guid, data.id);
+            data.phaseUseFlags &= ~PHASE_USE_FLAGS_INVERSE;
+        }
+
+        if (data.phaseGroup && data.phaseId)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: %u Entry: %u) with both `phaseid` and `phasegroup` set, `phasegroup` set to 0", guid, data.id);
+            data.phaseGroup = 0;
+        }
+
+        if (data.phaseId)
+        {
+            if (!sPhaseStore.LookupEntry(data.phaseId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) with `phaseid` %u does not exist, set to 0", guid, data.id, data.phaseId);
+                data.phaseId = 0;
+            }
+        }
+
+        if (data.phaseGroup)
+        {
+            if (!sDB2Manager.GetPhasesForGroup(data.phaseGroup))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) with `phaseGroup` %u does not exist, set to 0", guid, data.id, data.phaseGroup);
+                data.phaseGroup = 0;
+            }
+        }
+
+        data.terrainSwapMap = fields[index++].GetInt32();
+        if (data.terrainSwapMap != -1)
+        {
+            MapEntry const* terrainSwapEntry = sMapStore.LookupEntry(data.terrainSwapMap);
+            if (!terrainSwapEntry)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) with `terrainSwapMap` %u does not exist, set to -1", guid, data.id, data.terrainSwapMap);
+                data.terrainSwapMap = -1;
+            }
+            else if (terrainSwapEntry->ParentMapID != data.mapid)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) with `terrainSwapMap` %u which cannot be used on spawn map, set to -1", guid, data.id, data.terrainSwapMap);
+                data.terrainSwapMap = -1;
+            }
+        }
 
         Tokenizer phasesToken(fields[index++].GetString(), ' ', 100);
         for (auto itr : phasesToken)
             if (PhaseEntry const* phase = sPhaseStore.LookupEntry(uint32(strtoull(itr, nullptr, 10))))
-                data.PhaseID.insert(phase->ID);
+                data.legacyPhaseIds.insert(phase->ID);
 
-        // check near npc with same entry.
-        auto lastObject = lastEntry.find(entry);
-        if (lastObject != lastEntry.end())
-        {
-            if (data.mapid == lastObject->second->mapid)
-            {
-                float dx1 = lastObject->second->Pos.GetPositionX() - data.Pos.GetPositionX();
-                float dy1 = lastObject->second->Pos.GetPositionY() - data.Pos.GetPositionY();
-                float dz1 = lastObject->second->Pos.GetPositionZ() - data.Pos.GetPositionZ();
-
-                float distsq1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
-                if (distsq1 < 0.5f)
-                {
-                    // split phaseID
-                    for (auto phaseID : data.PhaseID)
-                        lastObject->second->PhaseID.insert(phaseID);
-
-                    lastObject->second->phaseMask |= data.phaseMask;
-                    lastObject->second->spawnMask |= data.spawnMask;
-                    WorldDatabase.PExecute("UPDATE eventobject SET phaseMask = %u, spawnMask = " UI64FMTD " WHERE guid = %u", lastObject->second->phaseMask, lastObject->second->spawnMask, lastObject->second->guid);
-                    WorldDatabase.PExecute("DELETE FROM eventobject WHERE guid = %u", guid);
-                    TC_LOG_ERROR("sql.sql", "LoadEventObjects >> Table `eventobject` have clone npc %u witch stay too close (dist: %f). original npc guid %lu. npc with guid %lu will be deleted.", entry, distsq1, lastObject->second->guid, guid);
-                    continue;
-                }
-            }
-            else
-                lastEntry[entry] = &data;
-        }
-        else
-            lastEntry[entry] = &data;
+//        // check near npc with same entry.
+//        auto lastObject = lastEntry.find(entry);
+//        if (lastObject != lastEntry.end())
+//        {
+//            if (data.mapid == lastObject->second->mapid)
+//            {
+//                float dx1 = lastObject->second->Pos.GetPositionX() - data.Pos.GetPositionX();
+//                float dy1 = lastObject->second->Pos.GetPositionY() - data.Pos.GetPositionY();
+//                float dz1 = lastObject->second->Pos.GetPositionZ() - data.Pos.GetPositionZ();
+//
+//                float distsq1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
+//                if (distsq1 < 0.5f)
+//                {
+//                    // split phaseID
+//                    for (auto phaseID : data.PhaseID)
+//                        lastObject->second->PhaseID.insert(phaseID);
+//
+//                    lastObject->second->phaseMask |= data.phaseMask;
+//                    lastObject->second->spawnMask |= data.spawnMask;
+//                    WorldDatabase.PExecute("UPDATE eventobject SET phaseMask = %u, spawnMask = " UI64FMTD " WHERE guid = %u", lastObject->second->phaseMask, lastObject->second->spawnMask, lastObject->second->guid);
+//                    WorldDatabase.PExecute("DELETE FROM eventobject WHERE guid = %u", guid);
+//                    TC_LOG_ERROR("sql.sql", "LoadEventObjects >> Table `eventobject` have clone npc %u witch stay too close (dist: %f). original npc guid %lu. npc with guid %lu will be deleted.", entry, distsq1, lastObject->second->guid, guid);
+//                    continue;
+//                }
+//            }
+//            else
+//                lastEntry[entry] = &data;
+//        }
+//        else
+//            lastEntry[entry] = &data;
 
         if (!sMapStore.LookupEntry(data.mapid))
         {
@@ -164,12 +224,6 @@ void EventObjectDataStoreMgr::LoadEventObjects()
             data.spawnMask = spawnMasks[data.mapid];
         }
 
-        if (data.phaseMask == 0)
-        {
-            TC_LOG_ERROR("sql.sql", "LoadEventObjects >> Table `eventobject` have eventobject (GUID: " UI64FMTD " Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
-            data.phaseMask = 1;
-        }
-
         // Add to grid if not managed by the game event or pool system
         sObjectMgr->AddEventObjectToGrid(guid, &data);
 
@@ -178,7 +232,8 @@ void EventObjectDataStoreMgr::LoadEventObjects()
             uint32 zoneId = 0;
             uint32 areaId = 0;
 
-            sMapMgr->GetZoneAndAreaId(zoneId, areaId, data.mapid, data.Pos.GetPositionX(), data.Pos.GetPositionY(), data.Pos.GetPositionZ());
+            PhasingHandler::InitDbVisibleMapId(phaseShift, data.terrainSwapMap);
+            sMapMgr->GetZoneAndAreaId(phaseShift, zoneId, areaId, data.mapid, data.Pos.GetPositionX(), data.Pos.GetPositionY(), data.Pos.GetPositionZ());
 
             data.zoneId = zoneId;
             data.areaId = areaId;

@@ -1068,7 +1068,6 @@ class TC_GAME_API WorldSession
         void SendNotification(uint32 string_id, ...);
         void SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std::string const& name, Optional<DeclinedName> const& declinedName);
         void SendPartyResult(PartyOperation operation, std::string const& member, PartyResult res, uint32 val = 0);
-        void SendSetPhaseShift(std::vector<WorldPackets::Misc::PhaseShiftDataPhase> phases, std::vector<uint16> const& visibleMapIDs, std::vector<uint16> const& uiWorldMapAreaIDSwaps, std::vector<uint16> const& preloadMapIDs, uint32 phaseShiftFlags = 0x1F);
         void SendQueryTimeResponse();
 
         void SendAuthResponse(uint8 code, bool queued = false, uint32 queuePos = 0);

@@ -94,6 +94,7 @@
 #include "PetBattle.h"
 #include "PetBattleSystem.h"
 #include "PetPackets.h"
+#include "PhasingHandler.h"
 #include "PlayerDefines.h"
 #include "QueryHolder.h"
 #include "QuestData.h"
@@ -166,8 +167,7 @@ ItemEntry(vsi.ItemEntry), ItemSuffixFactor(vsi.ItemSuffixFactor), ItemUpgradeId(
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session) : Unit(true), _vignetteMgr(this), m_reputationMgr(this), phaseMgr(this),
-m_achievementMgr(sf::safe_ptr<AchievementMgr<Player>>(this))
+Player::Player(WorldSession* session) : Unit(true), _vignetteMgr(this), m_reputationMgr(this), m_achievementMgr(sf::safe_ptr<AchievementMgr<Player>>(this))
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -215,8 +215,6 @@ m_achievementMgr(sf::safe_ptr<AchievementMgr<Player>>(this))
     m_zoneId = 0;
     m_zoneUpdateTimer = 0;
     m_zoneUpdateAllow = false;
-    NeedPhaseRecalculate = false;
-    NeedPhaseUpdate = false;
     NeedUpdateVisibility = false;
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
@@ -1851,12 +1849,6 @@ void Player::Update(uint32 p_time)
         }
     }
 
-    if (NeedPhaseRecalculate)
-        GetPhaseMgr().Recalculate();
-
-    if (NeedPhaseUpdate)
-        GetPhaseMgr().Update();
-
     if (NeedUpdateVisibility)
     {
         UpdateObjectVisibility();
@@ -1882,7 +1874,7 @@ void Player::OnDisconnected()
 
     if (IsInWorld() && FindMap() && CanFreeMove())
     {
-        float height = GetMap()->GetHeight(GetPositionX(), GetPositionY(), GetPositionZ());
+        float height = GetMap()->GetHeight(GetPhaseShift(), GetPositionX(), GetPositionY(), GetPositionZ());
         if ((GetPositionZ() < height + 0.1f) && !IsInWater())
             SetStandState(UNIT_STAND_STATE_SIT);
         // Apres avoir ajoute le bot on actualise la position du joueur
@@ -2775,7 +2767,7 @@ void Player::ProcessDelayedOperations()
             if (teamID == PETBATTLE_TEAM_2)
                 std::swap(request.TeamPosition[PETBATTLE_TEAM_1], request.TeamPosition[PETBATTLE_TEAM_2]);
 
-            matchMakingRequest.PetBattleCenterPosition.m_positionZ = GetMap()->GetHeight(matchMakingRequest.PetBattleCenterPosition.GetPositionX(), matchMakingRequest.PetBattleCenterPosition.GetPositionZ(), MAX_HEIGHT);
+            matchMakingRequest.PetBattleCenterPosition.m_positionZ = GetMap()->GetHeight(GetPhaseShift(), matchMakingRequest.PetBattleCenterPosition.GetPositionX(), matchMakingRequest.PetBattleCenterPosition.GetPositionZ(), MAX_HEIGHT);
 
             GetSession()->SendPetBattleFinalizeLocation(&request);
 
@@ -3278,7 +3270,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(ObjectGuid guid, GameobjectTy
 
 bool Player::IsUnderWater() const
 {
-    return IsInWater() && GetPositionZ() < (GetMap()->GetWaterLevel(GetPositionX(), GetPositionY()) - 2);
+    return IsInWater() && GetPositionZ() < (GetMap()->GetWaterLevel(GetPhaseShift(), GetPositionX(), GetPositionY()) - 2);
 }
 
 void Player::SetInWater(bool apply)
@@ -3309,8 +3301,15 @@ bool Player::IsInAreaTriggerRadius(uint32 areatriggerID) const
 
 bool Player::IsInAreaTriggerRadius(AreaTriggerEntry const* trigger) const
 {
-    if (!trigger || GetMapId() != trigger->ContinentID)
+    if (!trigger)
         return false;
+
+    if (int32(GetMapId()) != trigger->ContinentID && !GetPhaseShift().HasVisibleMapId(trigger->ContinentID))
+        return false;
+
+    if (trigger->PhaseID || trigger->PhaseGroupID || trigger->PhaseUseFlags)
+        if (!PhasingHandler::InDbPhaseShift(this, trigger->PhaseUseFlags, trigger->PhaseID, trigger->PhaseGroupID))
+            return false;
 
     if (trigger->Radius > 0.f)
     {
@@ -3330,7 +3329,6 @@ bool Player::IsInAreaTriggerRadius(AreaTriggerEntry const* trigger) const
 
 void Player::SetGameMaster(bool on)
 {
-    setIgnorePhaseIdCheck(on);
     if (on)
     {
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
@@ -3351,11 +3349,13 @@ void Player::SetGameMaster(bool on)
         getHostileRefManager().setOnlineOfflineState(false);
         CombatStopWithPets();
 
-        SetPhaseMask(uint32(PHASEMASK_ANYWHERE), false);    // see and visible in all phases
+        PhasingHandler::SetAlwaysVisible(GetPhaseShift(), true);
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
     {
+        PhasingHandler::SetAlwaysVisible(GetPhaseShift(), false);
+
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
         RemoveFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GM);
@@ -3379,13 +3379,6 @@ void Player::SetGameMaster(bool on)
 
         getHostileRefManager().setOnlineOfflineState(true);
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
-
-        AddDelayedEvent(100, [this]() -> void
-        {
-            GetPhaseMgr().AddUpdateFlag(PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED);
-            GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
-            GetPhaseMgr().Update();
-        });
     }
 
     UpdateObjectVisibility();
@@ -3898,13 +3891,6 @@ void Player::GiveLevel(uint8 level)
     }
 
     UpdateAchievementCriteria(CRITERIA_TYPE_REACH_LEVEL);
-
-    AddDelayedEvent(100, [this]() -> void
-    {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddConditionType(CONDITION_LEVEL);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-    });
 
     // Refer-A-Friend
     if (GetSession()->GetRecruiterId())
@@ -8625,7 +8611,7 @@ void Player::CheckAreaExploreAndOutdoor()
         return;
 
     bool isOutdoor = false;
-    uint32 areaId = GetMap()->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
+    uint32 areaId = GetMap()->GetAreaId(GetPhaseShift(), GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
 
     // Explore hack. Razorfen Kraul
     if (GetMapId() == 1 && areaId == 491)
@@ -8685,11 +8671,6 @@ void Player::CheckAreaExploreAndOutdoor()
                 SendExplorationExperience(areaId, XP);
             }
             TC_LOG_DEBUG("entities.player", "Player %u discovered a new area: %u", GetGUIDLow(), areaId);
-
-            AddDelayedEvent(100, [this]() -> void
-            {
-                GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
-            });
         }
     }
 }
@@ -9970,7 +9951,7 @@ uint32 Player::GetZoneIdFromDB(ObjectGuid guid)
         if (!sMapStore.LookupEntry(map))
             return 0;
 
-        zone = sMapMgr->GetZoneId(map, posx, posy, posz);
+        zone = sMapMgr->GetZoneId(PhasingHandler::GetEmptyPhaseShift(), map, posx, posy, posz);
 
         if (zone > 0)
         {
@@ -10019,8 +10000,7 @@ void Player::UpdateArea(uint32 newArea)
         }
     }
 
-    ChaeckSeamlessTeleport(newArea, true);
-
+    CheckSeamlessTeleport(newArea, true);
 
     uint32 newAreaForUpdate = m_areaId;
     AddDelayedEvent(100, [=, this]() -> void
@@ -10052,11 +10032,6 @@ void Player::UpdateArea(uint32 newArea)
             AddPlayerToArea(m_areaId);
     }
 
-    AddDelayedEvent(100, [this]() -> void
-    {
-        GetPhaseMgr().AddUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
-    });
-
     pvpInfo.inFFAPvPArea = area && (area->Flags[0] & AREA_FLAG_ARENA);
 
     UpdatePvPState(true);
@@ -10066,6 +10041,7 @@ void Player::UpdateArea(uint32 newArea)
         SendInitWorldStates(m_zoneId, newArea);
 
     UpdateAreaDependentAuras(newArea);
+    PhasingHandler::OnAreaChange(this);
 
 	if (sWorld->getBoolConfig(CONFIG_PLAYER_ALLOW_PVP_TALENTS_ALL_THE_TIME) && getLevel() >= 110)
 	{
@@ -10105,11 +10081,6 @@ void Player::UpdateArea(uint32 newArea)
         _restMgr->SetRestFlag(REST_FLAG_IN_FACTION_AREA);
     else
         _restMgr->RemoveRestFlag(REST_FLAG_IN_FACTION_AREA);
-
-    AddDelayedEvent(100, [this]() -> void
-    {
-        GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
-    });
 }
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
@@ -10124,12 +10095,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         m_zoneForce = false;
     }
 
-    AddDelayedEvent(100, [this]() -> void
-    {
-        GetPhaseMgr().AddUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
-    });
-
-    ChaeckSeamlessTeleport(newZone);
+    CheckSeamlessTeleport(newZone);
 
     if (m_zoneId != newZone)
     {
@@ -10169,6 +10135,9 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // zone changed, so area changed as well, update it
     UpdateArea(newArea);
+
+    // this is needed to support legacy phase definitions
+    PhasingHandler::OnConditionChange(this);
 
     AreaTableEntry const* zone = sAreaTableStore.LookupEntry(newZone);
     if (!zone)
@@ -10224,12 +10193,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     UpdateZoneDependentAuras(newZone);
 
-    ZoneTeleport(newZone);
-
-    AddDelayedEvent(100, [this]() -> void
-    {
-        GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
-    });
+    //ZoneTeleport(newZone);
 }
 
 bool Player::IsOutdoorPvPActive()
@@ -19016,9 +18980,6 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     AddDelayedEvent(100, [this, quest_id]() -> void
     {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddQuestUpdate(quest_id);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
         UpdateForQuestWorldObjects();
     });
 }
@@ -19469,13 +19430,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     SendQuestReward(quest, XP, questGiver ? questGiver->ToCreature() : nullptr, moneyRew, !announce);
 
-    AddDelayedEvent(100, [this, quest_id]() -> void
-    {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddQuestUpdate(quest_id);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-    });
-
     // update area quests
     uint32 newzone, newarea;
     GetZoneAndAreaId(newzone, newarea);
@@ -19828,8 +19782,7 @@ bool Player::SatisfyQuestStatus(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestConditions(Quest const* qInfo, bool msg)
 {
-    ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, qInfo->GetQuestId());
-    if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, qInfo->GetQuestId(), this))
     {
         if (msg)
             SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ, qInfo, "cond");
@@ -20162,9 +20115,6 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
 
     AddDelayedEvent(100, [this, quest_id]() -> void
     {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddQuestUpdate(quest_id);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
         UpdateForQuestWorldObjects();
     });
 }
@@ -20183,13 +20133,6 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     m_QuestStatusSave[quest_id] = QUEST_DELETE_SAVE_TYPE;
 
     SetQuestUpdate(quest_id);
-
-    AddDelayedEvent(100, [this, quest_id]() -> void
-    {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddQuestUpdate(quest_id);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-    });
 }
 
 void Player::RemoveRewardedQuest(uint32 quest_id)
@@ -20198,13 +20141,6 @@ void Player::RemoveRewardedQuest(uint32 quest_id)
     if (rewItr != m_RewardedQuests.end())
     {
         m_RewardedQuests.erase(rewItr);
-
-        AddDelayedEvent(100, [this, quest_id]() -> void
-        {
-            PhaseUpdateData phaseUdateData;
-            phaseUdateData.AddQuestUpdate(quest_id);
-            GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-        });
     }
 
     // TC_LOG_DEBUG("worldquest", "RemoveRewardedQuest quest_id %u", quest_id);
@@ -21358,12 +21294,10 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
         if (!quest)
             continue;
 
-        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, quest->GetQuestId());
-        if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, quest->GetQuestId(), this))
             continue;
 
-        conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId());
-        if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId(), this))
             continue;
 
         switch (GetQuestStatus(questId))
@@ -21397,12 +21331,10 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
         if (!quest)
             continue;
 
-        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, quest->GetQuestId());
-        if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, quest->GetQuestId(), this))
             continue;
 
-        conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId());
-        if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, quest->GetQuestId(), this))
             continue;
 
         if (GetQuestStatus(questId) == QUEST_STATUS_NONE)
@@ -26440,7 +26372,7 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
 
     Map* map = GetMap();
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if (!pet->Create(sObjectMgr->GetGenerator<HighGuid::Pet>()->Generate(), map, GetPhaseMask(), entry, pet_number))
+    if (!pet->Create(sObjectMgr->GetGenerator<HighGuid::Pet>()->Generate(), map, entry, pet_number))
     {
         TC_LOG_ERROR("misc", "no such creature entry %u", entry);
         delete pet;
@@ -26449,6 +26381,8 @@ Pet* Player::SummonPet(uint32 entry, Optional<PetSaveMode> slot, float x, float 
 
     if (petStable.GetCurrentPet())
         RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
+
+    PhasingHandler::InheritPhaseShift(pet, this);
 
     pet->SetTratsport(GetTransport());
     pet->SetCreatorGUID(GetGUID());
@@ -26889,8 +26823,7 @@ void Player::VehicleSpellInitialize()
             continue;
         }
 
-        ConditionList conditions = sConditionMgr->GetConditionsForVehicleSpell(vehicle->GetEntry(), spellId);
-        if (!sConditionMgr->IsObjectMeetToConditions(this, vehicle, conditions))
+        if (!sConditionMgr->IsObjectMeetingVehicleSpellConditions(vehicle->GetEntry(), spellId, this, vehicle))
         {
             TC_LOG_DEBUG("condition", "VehicleSpellInitialize: conditions not met for Vehicle entry %u spell %u", vehicle->ToCreature()->GetEntry(), spellId);
             spellsMessage.Buttons[i] = MAKE_UNIT_ACTION_BUTTON(0, i + 8);
@@ -29704,7 +29637,6 @@ void Player::SendInitialPacketsBeforeAddToMap(bool login)
         SendDirectMessage(loginSetTimeSpeed.Write());
     }
 
-    GetPhaseMgr().Recalculate();
     SendMountSpells();
 
     if (login) // Don`t send when teleported
@@ -29853,6 +29785,8 @@ void Player::SendInitialPacketsAfterAddToMap(bool login)
     }
 
     GetSession()->SendBattlePetJournal();
+
+    PhasingHandler::OnMapChange(this);
 
     if (_garrison)
         _garrison->SendRemoteInfo();
@@ -30759,7 +30693,7 @@ void Player::UpdateForQuestWorldObjects()
 
     UpdateData udata(GetMapId());
     WorldPacket packet;
-    for (GuidSet::const_iterator itr = m_clientGUIDs.begin(), next; itr != m_clientGUIDs.end(); itr = next)
+    for (GuidUnorderedSet::const_iterator itr = m_clientGUIDs.begin(), next; itr != m_clientGUIDs.end(); itr = next)
     {
         next = itr;
         ++next;
@@ -30785,14 +30719,15 @@ void Player::UpdateForQuestWorldObjects()
                 {
                     //! This code doesn't look right, but it was logically converted to condition system to do the exact
                     //! same thing it did before. It definitely needs to be overlooked for intended functionality.
-                    ConditionList conds = sConditionMgr->GetConditionsForSpellClickEvent(obj->GetEntry(), _itr->second.spellId);
-
-                    for (ConditionList::const_iterator jtr = conds.begin(); jtr != conds.end() && !buildUpdateBlock; ++jtr)
-                        if ((*jtr)->ConditionType == CONDITION_QUESTREWARDED || (*jtr)->ConditionType == CONDITION_QUESTTAKEN)
-                        {
-                            buildUpdateBlock = true;
-                            break;
-                        }
+                    if (ConditionContainer const* conds = sConditionMgr->GetConditionsForSpellClickEvent(obj->GetEntry(), _itr->second.spellId))
+                    {
+                        for (ConditionContainer::const_iterator jtr = conds->begin(); jtr != conds->end() && !buildUpdateBlock; ++jtr)
+                            if ((*jtr)->ConditionType == CONDITION_QUESTREWARDED || (*jtr)->ConditionType == CONDITION_QUESTTAKEN)
+                            {
+                                buildUpdateBlock = true;
+                                break;
+                            }
+                    }
                 }
             }
             if (!buildUpdateBlock && obj->HasFlag(UNIT_FIELD_NPC_FLAGS2, UNIT_NPC_FLAG2_GARRISON_ARCHITECT))
@@ -31731,7 +31666,7 @@ void Player::SetOriginalGroup(Group* group, int8 subgroup)
 
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
-    Zliquid_status = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
+    Zliquid_status = m->getLiquidStatus(GetPhaseShift(), x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
     if (!Zliquid_status)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWARER_INDARKWATER);
@@ -33283,9 +33218,7 @@ bool Player::canSeeSpellClickOn(Creature const* c) const
             continue;
         }
 
-        ConditionList conds = sConditionMgr->GetConditionsForSpellClickEvent(c->GetEntry(), itr->second.spellId);
-        ConditionSourceInfo info = ConditionSourceInfo(const_cast<Player*>(this), const_cast<Creature*>(c));
-        if (!sConditionMgr->IsObjectMeetToConditions(info, conds))
+        if (sConditionMgr->IsObjectMeetingSpellClickConditions(c->GetEntry(), itr->second.spellId, const_cast<Player*>(this), const_cast<Creature*>(c)))
         {
             res = false;
             continue;
@@ -33704,7 +33637,6 @@ void Player::ActivateTalentGroup(ChrSpecializationEntry const* spec)
     if (GetPet())
         GetPet()->RemoveAllAurasOnDeath();
 
-    RemoveMultiSingleTargetAuras();
     //RemoveAllAuras(GetGUID(), NULL, false, true); // removes too many auras
     //ExitVehicle(); // should be impossible to switch specs from inside a vehicle..
 
@@ -33900,13 +33832,6 @@ void Player::ActivateTalentGroup(ChrSpecializationEntry const* spec)
     SendDirectMessage(activeGlyphs.Write());
 
     SetGroupUpdateFlag(GROUP_UPDATE_FLAG_SPECIALIZATION_ID);
-
-    AddDelayedEvent(100, [this]() -> void
-    {
-        PhaseUpdateData phaseUdateData;
-        phaseUdateData.AddConditionType(CONDITION_SPEC_ID);
-        GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-    });
 
     AddDelayedEvent(500, [this]() -> void
     {
@@ -36081,11 +36006,6 @@ void Player::SceneCompleted(uint32 instance)
 
     m_sceneStatus[data->second] = SCENE_COMPLETE;
 
-    AddDelayedEvent(100, [this]() -> void
-    {
-        GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
-    });
-
     AuraEffectList const& periodicAuras = GetAuraEffectsByType(SPELL_AURA_ACTIVATE_SCENE);
     for (AuraEffectList::const_iterator i = periodicAuras.begin(); i != periodicAuras.end(); ++i)
     {
@@ -36304,7 +36224,6 @@ uint32 Player::SelectArfiactSpellForSpec(uint32 specID)
 
 void Player::OnEnterMap()
 {
-    GetPhaseMgr().Recalculate();
 }
 
 void Player::AchieveCriteriaCredit(uint32 criteriaID)
@@ -36559,7 +36478,7 @@ void Player::UnLockThirdSocketIfNeed(Item* item)
             item->AddBonuses(bonusID);
 }
 
-void Player::ChaeckSeamlessTeleport(uint32 newZoneOrArea, bool isArea)
+void Player::CheckSeamlessTeleport(uint32 newZoneOrArea, bool isArea)
 {
     if (!isArea && (m_zoneId ? m_zoneId : m_oldZoneId) != newZoneOrArea)
     {
@@ -36575,8 +36494,7 @@ void Player::ChaeckSeamlessTeleport(uint32 newZoneOrArea, bool isArea)
             }
             else if (to && !from)
             {
-                ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SEAMLESS_TELEPORT, to->ToMapID);
-                if (sConditionMgr->IsObjectMeetToConditions(this, conditions))
+                if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_SEAMLESS_TELEPORT, to->ToMapID, this))
                     if (GetMapId() != to->ToMapID)
                         TeleportTo(to->ToMapID, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(), TELE_TO_SEAMLESS);
             }
@@ -36602,8 +36520,7 @@ void Player::ChaeckSeamlessTeleport(uint32 newZoneOrArea, bool isArea)
             }
             else if (to && !from)
             {
-                ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SEAMLESS_TELEPORT, to->ToMapID);
-                if (sConditionMgr->IsObjectMeetToConditions(this, conditions))
+                if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_SEAMLESS_TELEPORT, to->ToMapID, this))
                     if (GetMapId() != to->ToMapID)
                         TeleportTo(to->ToMapID, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation(), TELE_TO_SEAMLESS);
             }
@@ -36927,7 +36844,7 @@ void Player::RemoveClient(ObjectGuid guid)
     i_clientGUIDLock.unlock();
 }
 
-GuidSet& Player::GetClient()
+GuidUnorderedSet& Player::GetClient()
 {
     return m_clientGUIDs;
 }
@@ -37240,14 +37157,13 @@ void Player::SummonBattlePet(ObjectGuid journalID)
         return;
 
     uint32 team = GetTeam();
-    uint32 l_Phase = GetPhaseMask();
 
     WorldLocation l_Position;
     GetClosePoint(l_Position.m_positionX, l_Position.m_positionY, l_Position.m_positionZ, DEFAULT_WORLD_OBJECT_SIZE);
 
     TempSummon* currentPet = new Minion(summonProperties, this, false);
 
-    if (!currentPet->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), GetMap(), l_Phase, speciesInfo->CreatureID, 0, team, l_Position.m_positionX, l_Position.m_positionY, l_Position.m_positionZ, GetOrientation()))
+    if (!currentPet->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), GetMap(), speciesInfo->CreatureID, 0, team, l_Position.m_positionX, l_Position.m_positionY, l_Position.m_positionZ, GetOrientation()))
     {
         delete currentPet;
         currentPet = nullptr;
@@ -37284,6 +37200,8 @@ void Player::SummonBattlePet(ObjectGuid journalID)
     currentPet->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15 | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE);
     currentPet->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER);
     currentPet->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_WILD_BATTLE_PET);
+
+    PhasingHandler::InheritPhaseShift(currentPet, this);
 
     GetMap()->AddToMap(currentPet->ToCreature());
 

@@ -32,6 +32,7 @@
 #include "ObjectDefines.h"
 #include "ObjectMgr.h"
 #include "ObjectVisitors.hpp"
+#include "PhasingHandler.h"
 #include "QuestData.h"
 #include "ScenarioMgr.h"
 #include "ScriptedCreature.h"
@@ -1249,10 +1250,40 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             CAST_AI(SmartAI, me->AI())->StartDespawn();
             break;
         }
-        case SMART_ACTION_SET_INGAME_PHASE_MASK:
+        case SMART_ACTION_SET_INGAME_PHASE_ID:
         {
-            if (GetBaseObject())
-                GetBaseObject()->SetPhaseMask(e.action.ingamePhaseMask.mask, true);
+            ObjectList* targets = GetTargets(e, unit);
+
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if (e.action.ingamePhaseId.apply == 1)
+                    PhasingHandler::AddPhase(*itr, e.action.ingamePhaseId.id, true);
+                else
+                    PhasingHandler::RemovePhase(*itr, e.action.ingamePhaseId.id, true);
+            }
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SET_INGAME_PHASE_GROUP:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if (e.action.ingamePhaseGroup.apply == 1)
+                    PhasingHandler::AddPhaseGroup(*itr, e.action.ingamePhaseGroup.groupId, true);
+                else
+                    PhasingHandler::RemovePhaseGroup(*itr, e.action.ingamePhaseGroup.groupId, true);
+            }
+
+            delete targets;
             break;
         }
         case SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL:
@@ -1380,10 +1411,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         if (e.action.summonCreature.attackInvoker)
                             summon->AI()->AttackStart((*itr)->ToUnit());
                         if (e.action.summonCreature.phaseByTarget)
-                        {
-                            summon->SetPhaseMask((*itr)->GetPhaseMask(), true);
-                            summon->SetPhaseId((*itr)->GetPhases(), false);
-                        }
+                            PhasingHandler::InheritPhaseShift(summon, (*itr));
                     }
                 }
 
@@ -2528,10 +2556,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         if (e.action.sumCreaturePV.attackinvoker)
                             summon->AI()->AttackStart((*itr)->ToUnit());
                         if (e.action.sumCreaturePV.getphases)
-                        {
-                            summon->SetPhaseMask(GetBaseObject()->GetPhaseMask(), true);
-                            summon->SetPhaseId(GetBaseObject()->GetPhases(), false);
-                        }
+                            PhasingHandler::InheritPhaseShift(summon, GetBaseObject());
                     }
                 }
             }
@@ -3264,9 +3289,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
     if ((e.event.event_phase_mask && !IsInPhase(e.event.event_phase_mask)) || ((e.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && e.runOnce))
         return;
 
-    ConditionList conds = sConditionMgr->GetConditionsForSmartEvent(e.entryOrGuid, e.event_id, e.source_type);
-    ConditionSourceInfo info = ConditionSourceInfo(unit ? unit : GetBaseObject(), GetBaseObject());
-    if(!sConditionMgr->IsObjectMeetToConditions(info, conds))
+    if (sConditionMgr->IsObjectMeetingSmartEventConditions(e.entryOrGuid, e.event_id, e.source_type, unit, GetBaseObject()))
         return;
 
     switch (e.GetEventType())

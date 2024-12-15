@@ -20,13 +20,14 @@
 #include "AreaTriggerData.h"
 #include "GridNotifiers.h"
 #include "MoveSpline.h"
+#include "PhasingHandler.h"
 #include "ScriptMgr.h"
 #include "SpellAuraEffects.h"
 #include "SpellPackets.h"
 #include "Spline.h"
 #include "UpdateFieldFlags.h"
-#include "Vehicle.h"
 #include "VMapFactory.h"
+#include "Vehicle.h"
 
 AreaTriggerScaleData::AreaTriggerScaleData()
 {
@@ -227,11 +228,6 @@ bool AreaTrigger::CreateAreaTrigger(ObjectGuid::LowType guidlow, uint32 triggerE
     TC_LOG_DEBUG("entities.areatrigger", "AreaTrigger (spell %u) coordinates (X: %f Y: %f) _actionInfo %zu", info ? info->Id : 0, GetPositionX(), GetPositionY(), _actionInfo.size());
 
     Object::_Create(ObjectGuid::Create<HighGuid::AreaTrigger>(GetMapId(), atInfo.customEntry, guidlow));
-    if (caster)
-    {
-        SetPhaseMask(caster->GetPhaseMask(), false);
-        SetPhaseId(caster->GetPhases(), false);
-    }
 
     if (spell && !spell->CanDestoyCastItem())
         m_CastItem = spell->m_CastItem;
@@ -320,6 +316,8 @@ bool AreaTrigger::CreateAreaTrigger(ObjectGuid::LowType guidlow, uint32 triggerE
     if (atInfo.DecalPropertiesId)
         SetUInt32Value(AREATRIGGER_FIELD_DECAL_PROPERTIES_ID, atInfo.DecalPropertiesId);
     SetTargetGuid(targetGuid);
+
+    PhasingHandler::InheritPhaseShift(this, caster);
 
     if (GetSpellInfo())
         _range = GetSpellInfo()->GetMaxRange() < _radius ? _radius : GetSpellInfo()->GetMaxRange(); //If spline not set client crash, set default to 15m
@@ -1567,7 +1565,7 @@ bool AreaTrigger::CheckActionConditions(AreaTriggerAction const& action, Unit* u
         return false;
 
     ConditionSourceInfo srcInfo = ConditionSourceInfo(caster, unit);
-    return sConditionMgr->IsObjectMeetToConditions(srcInfo, sConditionMgr->GetConditionsForAreaTriggerAction(GetEntry(), action.id));
+    return sConditionMgr->IsObjectMeetingAreaTriggerConditions(GetEntry(), action.id, caster, unit);
 }
 
 void AreaTrigger::BindToCaster()

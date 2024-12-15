@@ -16,22 +16,23 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Transport.h"
 #include "Anticheat.h"
 #include "Cell.h"
 #include "CellImpl.h"
 #include "Common.h"
 #include "GameObjectAI.h"
 #include "Log.h"
-#include "MapManager.h"
 #include "MMapFactory.h"
 #include "MMapManager.h"
+#include "MapManager.h"
 #include "ObjectMgr.h"
+#include "PhasingHandler.h"
 #include "Player.h"
-#include "ScriptsData.h"
 #include "ScriptMgr.h"
+#include "ScriptsData.h"
 #include "Spline.h"
 #include "Totem.h"
-#include "Transport.h"
 #include "UpdateData.h"
 #include "Vehicle.h"
 #include "ZoneScript.h"
@@ -338,7 +339,8 @@ Creature* Transport::CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData c
         return nullptr;
     }
 
-    creature->SetPhaseId(data->PhaseID, false);
+    PhasingHandler::InitDbPhaseShift(creature->GetPhaseShift(), data->phaseUseFlags, data->phaseId, data->phaseGroup);
+    PhasingHandler::InitDbVisibleMapId(creature->GetPhaseShift(), data->terrainSwapMap);
 
     map->AddToMapWait(creature);
 
@@ -379,6 +381,9 @@ GameObject* Transport::CreateGOPassenger(ObjectGuid::LowType guid, GameObjectDat
         delete go;
         return nullptr;
     }
+
+    PhasingHandler::InitDbPhaseShift(go->GetPhaseShift(), data->phaseUseFlags, data->phaseId, data->phaseGroup);
+    PhasingHandler::InitDbVisibleMapId(go->GetPhaseShift(), data->terrainSwapMap);
 
     map->AddToMapWait(go);
 
@@ -466,13 +471,13 @@ TempSummon* Transport::SummonPassenger(uint32 entry, Position const& pos, TempSu
     pos.GetPosition(x, y, z, o);
     CalculatePassengerPosition(x, y, z, &o);
 
-    if (!summon->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), map, 0, entry, vehId, 0, x, y, z, o))
+    if (!summon->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), map, entry, vehId, 0, x, y, z, o))
     {
         delete summon;
         return nullptr;
     }
 
-    summon->SetPhaseId(summoner ? summoner->GetPhases() : GetPhases(), false);
+    PhasingHandler::InheritPhaseShift(summon, summoner ? static_cast<WorldObject*>(summoner) : static_cast<WorldObject*>(this));
 
     summon->SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, spellId);
 
@@ -777,7 +782,7 @@ StaticTransport::~StaticTransport()
     UnloadStaticPassengers();
 }
 
-bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, uint32 aid, GameObjectData const* data)
+bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit, uint32 aid, GameObjectData const* data)
 {
     ASSERT(map);
     SetMap(map);
@@ -790,9 +795,8 @@ bool StaticTransport::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* m
         return false;
     }
 
-    SetPhaseMask(phaseMask, false);
-    if (data)
-        SetPhaseId(data->PhaseID, false);
+    // TODO: Phasing - is this needed?
+    PhasingHandler::InitDbPhaseShift(GetPhaseShift(), data->phaseUseFlags, data->phaseId, data->phaseGroup);
 
     SetZoneScript();
     if (m_zoneScript)

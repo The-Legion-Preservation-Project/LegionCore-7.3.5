@@ -16,13 +16,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
-#include "ScriptedEscortAI.h"
 #include "CreatureTextMgr.h"
 #include "GameObjectAI.h"
 #include "GossipDef.h"
+#include "PhasingHandler.h"
 #include "QuestData.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedEscortAI.h"
 
 enum misc
 {
@@ -478,9 +479,7 @@ public:
             {
                 player->CastSpell(player, SPELL_CREDIT, true);
                 player->CastSpell(player, SPELL_SUMMON, true);
-                std::set<uint32> phase = player->GetPhases();
-                phase.erase(PHASE_ARIOK_DB);
-                player->SetPhaseId(phase, true);
+                PhasingHandler::RemovePhase(player, PHASE_ARIOK_DB, true);
             }
         }
 
@@ -1257,7 +1256,7 @@ public:
             if (player->GetQuestStatus(QUEST) == QUEST_STATUS_INCOMPLETE)
             {
                 player->KilledMonsterCredit(CREDIT, ObjectGuid::Empty);
-                player->GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
+                //player->GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
                 return true;
             }
         }

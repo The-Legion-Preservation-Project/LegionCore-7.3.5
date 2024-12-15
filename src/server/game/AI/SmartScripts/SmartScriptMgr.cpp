@@ -15,23 +15,23 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "DatabaseEnv.h"
-#include "ObjectMgr.h"
-#include "ObjectDefines.h"
-#include "GridDefines.h"
-#include "GridNotifiers.h"
-#include "SpellMgr.h"
-#include "GridNotifiersImpl.h"
+#include "SmartScriptMgr.h"
 #include "Cell.h"
 #include "CellImpl.h"
-#include "InstanceScript.h"
-#include "ScriptedCreature.h"
-#include "GameEventMgr.h"
 #include "CreatureTextMgr.h"
 #include "DB2Stores.h"
-#include "SmartScriptMgr.h"
+#include "DatabaseEnv.h"
 #include "EventObjectData.h"
+#include "GameEventMgr.h"
+#include "GridDefines.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "InstanceScript.h"
+#include "ObjectDefines.h"
+#include "ObjectMgr.h"
 #include "QuestData.h"
+#include "ScriptedCreature.h"
+#include "SpellMgr.h"
 #include "StringConvert.h"
 
 void SmartWaypointMgr::LoadFromDB()
@@ -1080,6 +1080,47 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
             break;
         }
+
+        case SMART_ACTION_SET_INGAME_PHASE_ID:
+        {
+            uint32 phaseId = e.action.ingamePhaseId.id;
+            uint32 apply = e.action.ingamePhaseId.apply;
+
+            if (apply != 0 && apply != 1)
+            {
+                TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_SET_INGAME_PHASE_ID uses invalid apply value %u (Should be 0 or 1) for creature %u, skipped", apply, e.entryOrGuid);
+                return false;
+            }
+
+            PhaseEntry const* phase = sPhaseStore.LookupEntry(phaseId);
+            if (!phase)
+            {
+                TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_SET_INGAME_PHASE_ID uses invalid phaseid %u for creature %u, skipped", phaseId, e.entryOrGuid);
+                return false;
+            }
+
+            break;
+        }
+
+        case SMART_ACTION_SET_INGAME_PHASE_GROUP:
+        {
+            uint32 phaseGroup = e.action.ingamePhaseGroup.groupId;
+            uint32 apply = e.action.ingamePhaseGroup.apply;
+
+            if (apply != 0 && apply != 1)
+            {
+                TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_SET_INGAME_PHASE_GROUP uses invalid apply value %u (Should be 0 or 1) for creature %u, skipped", apply, e.entryOrGuid);
+                return false;
+            }
+
+            if (!sDB2Manager.GetPhasesForGroup(phaseGroup))
+            {
+                TC_LOG_ERROR("sql.sql", "SmartScript: SMART_ACTION_SET_INGAME_PHASE_GROUP uses invalid phase group id %u for creature %u, skipped", phaseGroup, e.entryOrGuid);
+                return false;
+            }
+            break;
+        }
+
         case SMART_ACTION_FOLLOW:
         case SMART_ACTION_SET_ORIENTATION:
         case SMART_ACTION_STORE_TARGET_LIST:
@@ -1109,7 +1150,6 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_SET_RUN:
         case SMART_ACTION_SET_SWIM:
         case SMART_ACTION_FORCE_DESPAWN:
-        case SMART_ACTION_SET_INGAME_PHASE_MASK:
         case SMART_ACTION_SET_UNIT_FLAG:
         case SMART_ACTION_REMOVE_UNIT_FLAG:
         case SMART_ACTION_PLAYMOVIE:
