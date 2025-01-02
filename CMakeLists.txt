@@ -33,6 +33,8 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 list(APPEND CMAKE_MODULE_PATH
   "${CMAKE_SOURCE_DIR}/cmake/macros")
 
+include(cmake/utils.cmake)
+
 # build in Release-mode by default if not explicitly set
 if( NOT CMAKE_BUILD_TYPE )
   set(CMAKE_BUILD_TYPE "Release")
@@ -41,6 +43,7 @@ endif()
 include(CheckCXXSourceRuns)
 include(CheckIncludeFiles)
 include(ConfigureScripts)
+include(ConfigureModules)
 
 # set default buildoptions and print them
 include(cmake/options.cmake)
@@ -57,6 +60,7 @@ include(CheckPlatform)
 include(GroupSources)
 include(AutoCollect)
 include(Macros)
+include(ConfigInstall)
 
 find_package(PCHSupport)
 find_package(MySQL)
@@ -71,8 +75,28 @@ include(cmake/genrev.cmake)
 # print out the results before continuing
 include(cmake/showoptions.cmake)
 
+# add modules and dependencies
+LC_SUBDIRLIST(sub_DIRS  "${CMAKE_SOURCE_DIR}/mods" FALSE FALSE)
+FOREACH(subdir ${sub_DIRS})
+
+    get_filename_component(MODULENAME ${subdir} NAME)
+
+    if (";${DISABLED_LC_MODULES};" MATCHES ";${MODULENAME};")
+        continue()
+    endif()
+
+    STRING(REPLACE "${CMAKE_SOURCE_DIR}/" "" subdir_rel ${subdir})
+    if(EXISTS "${subdir}/CMakeLists.txt")
+        add_subdirectory("${subdir_rel}")
+    endif()
+ENDFOREACH()
+LC_RUN_HOOK("AFTER_LOAD_CONF")
+
 # add dependencies
 add_subdirectory(dep)
 
 # add core sources
 add_subdirectory(src)
+
+# add custom mods
+add_subdirectory(mods)
