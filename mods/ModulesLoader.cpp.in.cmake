@@ -25,9 +25,9 @@
 #include <string>
 
 // Add deprecated api loaders include
-@LC_SCRIPTS_INCLUDES@
+@TC_SCRIPTS_INCLUDES@
 // Includes list
-@LC_SCRIPTS_FORWARD_DECL@
+@TRINITY_SCRIPTS_FORWARD_DECL@
 #ifdef TRINITY_IS_DYNAMIC_SCRIPTLOADER
 #  include "revision_data.h"
 #  define LC_MODULES_API TC_API_EXPORT
