@@ -1,0 +1,54 @@
+#
+# This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the License, or (at your
+# option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
+[worldserver]
+
+########################################
+# Individual XP configuration
+########################################
+#
+#    IndividualXP.Enabled
+#        Description: Enable Individual XP mod.
+#        Default:     0 - Disabled
+#                     1 - Enabled
+#
+
+IndividualXP.Enabled = 1
+
+#
+#    IndividualXp.Announce
+#        Description: Announce the IndividualXP Module at logon.
+#        Default:     IndividualXP.Announce   = 1
+#
+
+IndividualXP.Announce = 1
+
+#
+#    IndividualXP.MaxRate
+#        Description: This is the max amount a player can set their xp to.
+#        Default:     Default  = 1
+#
+
+IndividualXP.MaxRate = 10
+
+#
+#    IndividualXP.DefaultRate
+#        Description: This is the default rate players start with.
+#        Default:     Default  = 1
+#
+
+IndividualXP.DefaultRate = 1
