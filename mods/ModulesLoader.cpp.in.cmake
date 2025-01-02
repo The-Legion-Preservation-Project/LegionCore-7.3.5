@@ -18,7 +18,7 @@
 // This file was created automatically from your script configuration!
 // Use CMake to reconfigure this file, never change it on your own!
 
-#cmakedefine LC_IS_DYNAMIC_SCRIPTLOADER
+#cmakedefine TRINITY_IS_DYNAMIC_SCRIPTLOADER
 
 #include "Define.h"
 #include <vector>
@@ -28,16 +28,16 @@
 @LC_SCRIPTS_INCLUDES@
 // Includes list
 @LC_SCRIPTS_FORWARD_DECL@
-#ifdef LC_IS_DYNAMIC_SCRIPTLOADER
+#ifdef TRINITY_IS_DYNAMIC_SCRIPTLOADER
 #  include "revision_data.h"
-#  define LC_MODULES_API LC_API_EXPORT
+#  define LC_MODULES_API TC_API_EXPORT
 extern "C" {
 
 /// Exposed in script module to return the name of the script module
 /// contained in this shared library.
 LC_MODULES_API char const* GetScriptModule()
 {
-    return "@LC_CURRENT_SCRIPT_PROJECT@";
+    return "@TRINITY_CURRENT_SCRIPT_PROJECT@";
 }
 
 #else
@@ -49,9 +49,9 @@ LC_MODULES_API char const* GetScriptModule()
 LC_MODULES_API void AddModulesScripts()
 {
     // Modules
-@LC_SCRIPTS_INVOKE@
+@TRINITY_SCRIPTS_INVOKE@
     // Deprecated api modules
-@LC_SCRIPTS_LIST@}
+@TC_SCRIPTS_LIST@}
 
 /// Exposed in script modules to get the build directive of the module.
 LC_MODULES_API char const* GetModulesBuildDirective()
@@ -59,6 +59,6 @@ LC_MODULES_API char const* GetModulesBuildDirective()
     return _BUILD_DIRECTIVE;
 }
 
-#ifdef FC_IS_DYNAMIC_SCRIPTLOADER
+#ifdef TRINITY_IS_DYNAMIC_SCRIPTLOADER
 } // extern "C"
 #endif

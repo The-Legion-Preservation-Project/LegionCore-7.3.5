@@ -29,22 +29,22 @@ else()
   set(MODULES_DEFAULT_LINKAGE "disabled")
 endif()
 
-set("LC_SCRIPTS_INCLUDES" "")
-set("LC_MODULE_LIST" "")
-set("LC_SCRIPTS_LIST" "")
+set("TC_SCRIPTS_INCLUDES" "")
+set("TC_MODULE_LIST" "")
+set("TC_SCRIPTS_LIST" "")
 set(MOD_ELUNA_FOUND 0)
 set(MOD_ELUNA_PATH "")
 
-foreach(include ${FC_ADD_SCRIPTS_INCLUDE})
-  set("LC_SCRIPTS_INCLUDES" "#include \"${include}\"\n${LC_SCRIPTS_INCLUDES}")
+foreach(include ${LC_ADD_SCRIPTS_INCLUDE})
+  set("TC_SCRIPTS_INCLUDES" "#include \"${include}\"\n${TC_SCRIPTS_INCLUDES}")
 endforeach()
 
-foreach(void ${FC_ADD_SCRIPTS_LIST})
-  set("LC_MODULE_LIST" "void ${void};\n${LC_MODULE_LIST}")
+foreach(void ${LC_ADD_SCRIPTS_LIST})
+  set("TC_MODULE_LIST" "void ${void};\n${TC_MODULE_LIST}")
 endforeach()
 
-foreach(scriptName ${FC_ADD_SCRIPTS_LIST})
-  set("LC_SCRIPTS_LIST" "    ${scriptName};\n${LC_SCRIPTS_LIST}")
+foreach(scriptName ${LC_ADD_SCRIPTS_LIST})
+  set("TC_SCRIPTS_LIST" "    ${scriptName};\n${TC_SCRIPTS_LIST}")
 endforeach()
 
 function(ConfigureElunaModule moduleName)
@@ -129,20 +129,20 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 # it to the variable arguments
 function(ConfigureScriptLoader SCRIPTLOADER_NAME LOADER_OUT IS_DYNAMIC_SCRIPTLOADER)
   # Deduces following variables which are referenced by thge template:
-  # FC_IS_DYNAMIC_SCRIPTLOADER
-  # FC_SCRIPTS_FORWARD_DECL
-  # FC_SCRIPTS_INVOKE
-  # FC_CURRENT_SCRIPT_PROJECT
+  # TRINITY_IS_DYNAMIC_SCRIPTLOADER
+  # TRINITY_SCRIPTS_FORWARD_DECL
+  # TRINITY_SCRIPTS_INVOKE
+  # TRINITY_CURRENT_SCRIPT_PROJECT
 
   # To generate export macros
-  set(FC_IS_DYNAMIC_SCRIPTLOADER ${IS_DYNAMIC_SCRIPTLOADER})
+  set(TRINITY_IS_DYNAMIC_SCRIPTLOADER ${IS_DYNAMIC_SCRIPTLOADER})
 
   # To generate forward declarations of the loading functions
-  unset(FC_SCRIPTS_FORWARD_DECL)
-  unset(FC_SCRIPTS_INVOKE)
+  unset(TRINITY_SCRIPTS_FORWARD_DECL)
+  unset(TRINITY_SCRIPTS_INVOKE)
 
   # The current script project which is built in
-  set(FC_CURRENT_SCRIPT_PROJECT ${SCRIPTLOADER_NAME})
+  set(TRINITY_CURRENT_SCRIPT_PROJECT ${SCRIPTLOADER_NAME})
 
   foreach(LOCALE_SCRIPT_MODULE ${ARGN})
 
@@ -154,11 +154,11 @@ function(ConfigureScriptLoader SCRIPTLOADER_NAME LOADER_OUT IS_DYNAMIC_SCRIPTLOA
       "Add${LOCALE_SCRIPT_MODULE}Scripts()")
 
     # Generate the funciton call and the forward declarations
-    set(FC_SCRIPTS_FORWARD_DECL
-      "${FC_SCRIPTS_FORWARD_DECL}void ${LOADER_FUNCTION};\n")
+    set(TRINITY_SCRIPTS_FORWARD_DECL
+      "${TRINITY_SCRIPTS_FORWARD_DECL}void ${LOADER_FUNCTION};\n")
 
-    set(FC_SCRIPTS_INVOKE
-      "${FC_SCRIPTS_INVOKE}    ${LOADER_FUNCTION};\n")
+    set(TRINITY_SCRIPTS_INVOKE
+      "${TRINITY_SCRIPTS_INVOKE}    ${LOADER_FUNCTION};\n")
   endforeach()
 
   set(GENERATED_LOADER ${CMAKE_CURRENT_BINARY_DIR}/gen_scriptloader/${SCRIPTLOADER_NAME}/ModulesLoader.cpp)
@@ -223,7 +223,7 @@ foreach(SOURCE_MODULE ${MODULES_MODULE_LIST})
 
     target_link_libraries(${MODULE_SOURCE_PROJECT_NAME}
       PRIVATE
-        fc-core-interface
+        trinity-core-interface
       PUBLIC
         game)
 
@@ -276,9 +276,9 @@ add_library(mods STATIC
 
 target_link_libraries(mods
   PRIVATE
-    fc-core-interface
+    trinity-core-interface
   PUBLIC
-    game-interface)
+    game)
 
 target_include_directories(mods
   PUBLIC

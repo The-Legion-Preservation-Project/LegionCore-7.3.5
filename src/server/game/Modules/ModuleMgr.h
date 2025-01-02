@@ -15,6 +15,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _MODULE_MGR_H_
+#define _MODULE_MGR_H_
+
 #include "Define.h"
 #include "Util.h"
 #include <string>
