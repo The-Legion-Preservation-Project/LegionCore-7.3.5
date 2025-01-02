@@ -1098,7 +1098,7 @@ ScriptObject::~ScriptObject()
     sScriptMgr->DecreaseScriptCount();
 }
 
-ScriptMgr::ScriptMgr() : _scriptCount(0), _script_loader_callback(nullptr)
+ScriptMgr::ScriptMgr() : _scriptCount(0), _script_loader_callback(nullptr), _modules_loader_callback(nullptr)
 {
 }
 
@@ -1136,6 +1136,10 @@ void ScriptMgr::Initialize()
     ASSERT(_script_loader_callback,
            "Script loader callback wasn't registered!");
     _script_loader_callback();
+
+    ASSERT(_modules_loader_callback,
+           "Modules loader callback wasn't registered!");
+    _modules_loader_callback();
 
     // Initialize all dynamic scripts
     // and finishes the context switch to do

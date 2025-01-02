@@ -22,6 +22,9 @@
 #include "DB2Structure.h"
 #include "SharedDefines.h"
 #include "Hash.h"
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include <boost/regex_fwd.hpp>
 

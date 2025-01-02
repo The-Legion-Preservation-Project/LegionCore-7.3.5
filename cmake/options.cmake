@@ -11,6 +11,13 @@
 option(SERVERS          "Build worldserver and bnetserver"                            1)
 
 set(SCRIPTS_AVAILABLE_OPTIONS none static dynamic minimal-static minimal-dynamic)
+set(MODULES_AVAILABLE_OPTIONS none static dynamic)
+
+set(SCRIPTS "static" CACHE STRING "Build core with scripts")
+set(MODULES "static" CACHE STRING "Build core with modules")
+
+set_property(CACHE MODULES PROPERTY STRINGS ${MODULES_AVAILABLE_OPTIONS})
+
 # Log a fatal error when the value of the SCRIPTS variable isn't a valid option.
 
 if (SCRIPTS)
@@ -21,7 +28,15 @@ if (SCRIPTS)
   endif()
 endif()
 
-set(SCRIPTS "static" CACHE STRING "Build core with scripts")
+# Log a error when the value of the MODULES variable isn't a valid option.
+if(MODULES)
+  list(FIND MODULES_AVAILABLE_OPTIONS "${MODULES}" MODULES_INDEX)
+  if(${MODULES_INDEX} EQUAL -1)
+    message(FATAL_ERROR "The value (${MODULES}) of your MODULES variable is invalid! "
+            "Allowed values are: ${MODULES_AVAILABLE_OPTIONS}. Set static")
+  endif()
+endif()
+
 set_property(CACHE SCRIPTS PROPERTY STRINGS ${SCRIPTS_AVAILABLE_OPTIONS})
 
 # Build a list of all script modules when -DSCRIPT="custom" is selected
