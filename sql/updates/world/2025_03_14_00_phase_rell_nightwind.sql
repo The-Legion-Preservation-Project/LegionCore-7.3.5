@@ -9,5 +9,4 @@ INSERT INTO `phase_area` (`AreaId`, `PhaseId`, `Comment`) VALUES
 -- Conditions
 DELETE FROM `conditions` WHERE (`SourceTypeOrReferenceId` = 26 AND `SourceGroup` = 1687 AND `SourceEntry` = 1519);
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `Comment`) VALUES
-(26, 1687, 1519, 0, 0, 47, 0, 60125, 66, 0, 0, 'Allow Phase 1687 if Quest (60125) IS completed or Rewarded'),
 (26, 1687, 1519, 0, 0, 47, 0, 29547, 66, 0, 0, 'Allow Phase 1687 if Quest (29547) IS completed or Rewarded');
