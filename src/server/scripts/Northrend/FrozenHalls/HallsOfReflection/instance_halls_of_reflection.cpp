@@ -15,10 +15,11 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptMgr.h"
-#include "Packets/WorldStatePackets.h"
 #include "InstanceScript.h"
+#include "Packets/WorldStatePackets.h"
+#include "PhasingHandler.h"
 #include "Player.h"
+#include "ScriptMgr.h"
 #include "WorldPacket.h"
 #include "halls_of_reflection.h"
 
@@ -129,7 +130,10 @@ public:
                     _frostwornGeneralGUID = creature->GetGUID();
                     if (GetBossState(DATA_MARWYN_EVENT) == DONE)
                         if (Creature* general = instance->GetCreature(_frostwornGeneralGUID))
-                            general->SetPhaseMask(1, true);
+                            if (GetBossState(DATA_MARWYN_EVENT) == DONE)
+                                PhasingHandler::RemovePhase(creature, 170, true);
+                            else
+                                PhasingHandler::AddPhase(creature, 170, true);
                     break;
                 case NPC_JAINA_PART2:
                 case NPC_SYLVANAS_PART2:
@@ -164,7 +168,7 @@ public:
                     go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND);
                     HandleGameObject(ObjectGuid::Empty, false, go);
                     if (GetData(DATA_INTRO_EVENT) == DONE)
-                        go->SetPhaseMask(2, true);
+                        go->SetLootState(GO_JUST_DEACTIVATED);
                     break;
                 case GO_ENTRANCE_DOOR:
                     _entranceDoorGUID = go->GetGUID();
@@ -221,7 +225,7 @@ public:
                         HandleGameObject(_frostwornDoorGUID, true);
                         DoUpdateWorldState(WorldStates::WORLD_STATE_HOR_WAVES_ENABLED, 0);
                         if (Creature* general = instance->GetCreature(_frostwornGeneralGUID))
-                            general->SetPhaseMask(1, true);
+                            PhasingHandler::RemovePhase(general, 170, true);
                     }
                     break;
                 case DATA_LICHKING_EVENT:

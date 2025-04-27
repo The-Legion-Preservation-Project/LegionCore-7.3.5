@@ -27,7 +27,7 @@ struct CreatureData;
 
 class TC_GAME_API Transport : public GameObject, public TransportBase
 {
-        friend Transport* TransportMgr::CreateTransport(uint32, ObjectGuid::LowType, Map*);
+        friend Transport* TransportMgr::CreateTransport(uint32, ObjectGuid::LowType, Map*, uint8, uint32, uint32);
 
     public:
         typedef std::set<WorldObject*> PassengerSet;
@@ -137,7 +137,7 @@ class TC_GAME_API StaticTransport : public Transport
         StaticTransport();
         ~StaticTransport();
 
-        bool Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit = 0, uint32 aid = 0, GameObjectData const* data = nullptr) override;
+        bool Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit = 0, uint32 aid = 0, GameObjectData const* data = nullptr) override;
 
         void Update(uint32 diff) override;
 

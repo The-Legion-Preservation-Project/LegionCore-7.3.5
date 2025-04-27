@@ -21,11 +21,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <boost/container/static_vector.hpp>
 #include <exception>
 #include <iterator>
-#include <vector>
 #include <list>
-#include <boost/container/static_vector.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "Define.h"
 #include "Common.h"
@@ -229,6 +231,22 @@ uint64 GetThreadID();
 #define PAIR64_HIPART(x)   (uint32)((uint64(x) >> 32) & UI64LIT(0x00000000FFFFFFFF))
 #define PAIR64_LOPART(x)   (uint32)(uint64(x)         & UI64LIT(0x00000000FFFFFFFF))
 #endif
+
+template<class Container>
+std::string StringJoin(Container const& c, std::string delimiter)
+{
+    if (c.empty())
+        return "";
+
+    std::ostringstream os;
+    auto itr = c.begin();
+    os << *itr++;
+
+    for (; itr != c.end(); ++itr)
+        os << delimiter << *itr;
+
+    return os.str();
+}
 
 // simple class for not-modifiable list
 template <typename T>

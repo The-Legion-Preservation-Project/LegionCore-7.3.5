@@ -16,14 +16,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Common.h"
-#include "World.h"
-#include "ObjectAccessor.h"
 #include "Conversation.h"
-#include "ObjectMgr.h"
-#include "Group.h"
+#include "Common.h"
 #include "ConversationData.h"
+#include "Group.h"
+#include "ObjectAccessor.h"
+#include "ObjectMgr.h"
+#include "PhasingHandler.h"
 #include "UpdateFieldFlags.h"
+#include "World.h"
 
 ConversationSpawnData::ConversationSpawnData(): id(0), posX(0), posY(0), posZ(0), orientation(0), mapid(0), dbData(true)
 {
@@ -92,8 +93,8 @@ bool Conversation::CreateConversation(ObjectGuid::LowType guidlow, uint32 trigge
     }
 
     Object::_Create(ObjectGuid::Create<HighGuid::Conversation>(GetMapId(), triggerEntry, guidlow));
-    SetPhaseMask(caster->GetPhaseMask(), false);
-    SetPhaseId(caster->GetPhases(), false);
+
+    PhasingHandler::InheritPhaseShift(this, caster);
 
     SetEntry(triggerEntry);
     SetObjectScale(1.0f);
@@ -302,8 +303,9 @@ bool Conversation::LoadConversationFromDB(ObjectGuid::LowType guid, Map* map, bo
     }
 
     Object::_Create(ObjectGuid::Create<HighGuid::Conversation>(GetMapId(), data->id, guid));
-    SetPhaseMask(data->phaseMask, false);
-    SetPhaseId(data->PhaseID, false);
+
+    PhasingHandler::InitDbPhaseShift(GetPhaseShift(), data->phaseUseFlags, data->phaseId, data->phaseGroup, data->legacyPhaseIds);
+    PhasingHandler::InitDbVisibleMapId(GetPhaseShift(), data->terrainSwapMap);
 
     SetEntry(data->id);
     SetObjectScale(1.0f);

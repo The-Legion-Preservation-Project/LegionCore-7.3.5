@@ -19,27 +19,26 @@
 #ifndef _OBJECTMGR_H
 #define _OBJECTMGR_H
 
+#include "ConditionMgr.h"
 #include "Conversation.h"
-#include "Log.h"
-#include "Object.h"
-#include "Creature.h"
-#include "Player.h"
-#include "GameObject.h"
 #include "Corpse.h"
+#include "Creature.h"
+#include "GameObject.h"
 #include "ItemTemplate.h"
-#include "NPCHandler.h"
+#include "LegacyPhaseMgr.h"
+#include "Log.h"
 #include "Mail.h"
 #include "Map.h"
+#include "NPCHandler.h"
+#include "Object.h"
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
+#include "Player.h"
 #include "VehicleDefines.h"
 #include <limits>
 #include <utility>
-#include "ConditionMgr.h"
-#include "PhaseMgr.h"
 
 class Item;
-class PhaseMgr;
 
 struct EventObjectData;
 
@@ -476,6 +475,29 @@ typedef std::vector<DungeonEncounterList*> DungeonEncounterVector;
 typedef std::unordered_map<uint32, uint16> CreatureToDungeonEncounterMap;
 typedef std::vector<uint32> DungeonEncounterToCreatureMap;
 
+struct TerrainSwapInfo
+{
+    uint32 Id;
+    std::vector<uint32> UiWorldMapAreaIDSwaps;
+};
+
+struct PhaseInfoStruct
+{
+    uint32 Id;
+    std::unordered_set<uint32> Areas;
+
+    bool IsAllowedInArea(uint32 areaId) const;
+};
+
+struct PhaseAreaInfo
+{
+    PhaseAreaInfo(PhaseInfoStruct const* phaseInfo) : PhaseInfo(phaseInfo) { }
+
+    PhaseInfoStruct const* PhaseInfo;
+    std::unordered_set<uint32> SubAreaExclusions;
+    ConditionContainer Conditions;
+};
+
 class PlayerDumpReader;
 
 struct TC_GAME_API ItemSpecStats
@@ -684,8 +706,13 @@ class TC_GAME_API ObjectMgr
         void LoadTrainerSpell();
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
-        void LoadPhaseDefinitions();
-        void LoadSpellPhaseInfo();
+        void LoadPhases();
+        void UnloadPhaseConditions();
+        void LoadLegacyPhaseDefinitions();
+
+        void LoadTerrainSwapDefaults();
+        void LoadTerrainWorldMaps();
+        void LoadAreaPhases();
 
         void LoadResearchSiteToZoneData();
         void LoadDigSitePositions();
@@ -694,10 +721,12 @@ class TC_GAME_API ObjectMgr
         void LoadScenarioSpellData();
         
         void LoadCreatureOutfits();
-        
-        PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
-        SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
 
+        LegacyPhaseDefinitionContainer const* GetLegacyPhaseDefinitionsForZone(uint32 zoneId)
+        {
+            return Trinity::Containers::MapGetValuePtr(_LegacyPhaseDefinitionStore, zoneId);
+        }
+        
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint8 level);
         uint32 GetXPForLevel(uint8 level) const;
@@ -971,10 +1000,20 @@ class TC_GAME_API ObjectMgr
         
         CreatureOutfitContainer _creatureOutfitStore;
 
-        PhaseDefinitionStore _PhaseDefinitionStore;
-        SpellPhaseStore _SpellPhaseStore;
+    public:
+        PhaseInfoStruct const* GetPhaseInfo(uint32 phaseId) const;
+        std::vector<PhaseAreaInfo> const* GetPhasesForArea(uint32 areaId) const;
+        TerrainSwapInfo const* GetTerrainSwapInfo(uint32 terrainSwapId) const;
+        std::vector<TerrainSwapInfo*> const* GetTerrainSwapsForMap(uint32 mapId) const;
 
-        uint32 _skipUpdateCount;
+    private:
+        std::unordered_map<uint32, PhaseInfoStruct> _phaseInfoById;
+        std::unordered_map<uint32, TerrainSwapInfo> _terrainSwapInfoById;
+        std::unordered_map<uint32, std::vector<PhaseAreaInfo>> _phaseInfoByArea;
+        std::unordered_map<uint32, std::vector<TerrainSwapInfo*>> _terrainSwapInfoByMap;
+
+        LegacyPhaseDefinitionStore _LegacyPhaseDefinitionStore;
+
         void PlayerCreateInfoAddItemHelper(uint32 race_, uint32 class_, uint32 itemId, int32 count, std::vector<uint32> bonusListIDs);
         void PlayerCreateInfoAddQuestHelper(uint32 race_, uint32 class_, uint32 questId);
         void PlayerCreateInfoAddSpellHelper(uint32 race_, uint32 class_, uint32 spellId);
