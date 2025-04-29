@@ -3,11 +3,12 @@
     To-Do: Last Boss (i havent sniffs)
 */
 
-#include "ScriptMgr.h"
-#include "ScriptedCreature.h"
+#include "DH_vengeance_art_scenario.h"
 #include "CreatureTextMgr.h"
 #include "GameObjectAI.h"
-#include "DH_vengeance_art_scenario.h"
+#include "PhasingHandler.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 
 // 99299 99230
 class npc_illidari_fel_bat : public CreatureScript
@@ -606,16 +607,15 @@ public:
                 target->ToPlayer()->CompleteQuest(41863);
                 if (Creature* trigget = target->SummonCreature(99229, -2726.35f, -307.24f, 30.97f, 3.11f))
                 {
-                  //  target->ToPlayer()->SetPhaseMask(1, true);
-                    target->ToPlayer()->GetPhaseMgr().SetCustomPhase(1);
+                    PhasingHandler::AddPhase(target, 170, true);
                     trigget->AddPlayerInPersonnalVisibilityList(target->GetGUID());
-                    trigget->SetPhaseMask(1, true);
+                    PhasingHandler::AddPhase(trigget, 170, true);
                 }
                 if (Creature* trigget = target->SummonCreature(99227, -2734.72f, -304.77f, 30.97f, 3.19f))
                 {
-                    target->ToPlayer()->GetPhaseMgr().SetCustomPhase(1);
+                    PhasingHandler::AddPhase(target, 170, true);
                     trigget->AddPlayerInPersonnalVisibilityList(target->GetGUID());
-                    trigget->SetPhaseMask(1, true);
+                    PhasingHandler::AddPhase(trigget, 170, true);
                 }
                 
             }

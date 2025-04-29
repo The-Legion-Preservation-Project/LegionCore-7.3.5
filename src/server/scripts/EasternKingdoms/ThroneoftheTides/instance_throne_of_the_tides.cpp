@@ -1,4 +1,5 @@
 #include "throne_of_the_tides.h"
+#include "PhasingHandler.h"
 
 static const DoorData doordata[] = 
 {
@@ -83,9 +84,9 @@ public:
             case NPC_COMMANDER_ULTHOK:
                 uiCommanderUlthokGUID = creature->GetGUID();
                 if (GetData(DATA_COMMANDER_ULTHOK_EVENT) == DONE)
-                    creature->SetPhaseMask(PHASEMASK_NORMAL, true);
+                    PhasingHandler::RemovePhase(creature, 170, true);
                 else
-                    creature->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(creature, 170, true);
                 break;
             case NPC_ERUNAK_STONESPEAKER:
                 uiErunakStonespeakerGUID = creature->GetGUID();
@@ -119,7 +120,7 @@ public:
                 if (GetBossState(DATA_LADY_NAZJAR) == DONE)
                 {
                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-                    go->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(go, 170, true);
                 }
                 break;
             case GO_LADY_NAZJAR_DOOR:
@@ -144,22 +145,22 @@ public:
             case GO_TENTACLE_RIGHT:
                 uiTentacleRightGUID = go->GetGUID();
                 if (GetBossState(DATA_COMMANDER_ULTHOK) == DONE)
-                    go->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(go, 170, true);
                 break;
             case GO_TENTACLE_LEFT:
                 uiTentacleLeftGUID = go->GetGUID();
                 if (GetBossState(DATA_COMMANDER_ULTHOK) == DONE)
-                    go->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(go, 170, true);
                 break;
             case GO_INVISIBLE_DOOR_1:
                 uiInvisibleDoor1GUID = go->GetGUID();
                 if (GetBossState(DATA_COMMANDER_ULTHOK) == DONE)
-                    go->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(go, 170, true);
                 break;
             case GO_INVISIBLE_DOOR_2:
                 uiInvisibleDoor2GUID = go->GetGUID();
                 if (GetBossState(DATA_COMMANDER_ULTHOK) == DONE)
-                    go->SetPhaseMask(2, true);
+                    PhasingHandler::AddPhase(go, 170, true);
                 break;
             case GO_NEPTULON_CACHE:
             case GO_NEPTULON_CACHE_H:
@@ -253,13 +254,13 @@ public:
                     if (state == DONE)
                     {
                         if (GameObject* pTentacleRight = instance->GetGameObject(uiTentacleRightGUID))
-                            pTentacleRight->SetPhaseMask(2, true);
+                            PhasingHandler::AddPhase(pTentacleRight, 170, true);
                         if (GameObject* pTentacleLeft = instance->GetGameObject(uiTentacleLeftGUID))
-                            pTentacleLeft->SetPhaseMask(2, true);
+                            PhasingHandler::AddPhase(pTentacleLeft, 170, true);
                         if (GameObject* pInvisibleDoor1 = instance->GetGameObject(uiInvisibleDoor1GUID))
-                            pInvisibleDoor1->SetPhaseMask(2, true);
+                            PhasingHandler::AddPhase(pInvisibleDoor1, 170, true);
                         if (GameObject* pInvisibleDoor2 = instance->GetGameObject(uiInvisibleDoor2GUID))
-                            pInvisibleDoor2->SetPhaseMask(2, true);
+                            PhasingHandler::AddPhase(pInvisibleDoor2, 170, true);
                     }
                 break;
                 case DATA_OZUMAT:

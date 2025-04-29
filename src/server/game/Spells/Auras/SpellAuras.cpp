@@ -1915,10 +1915,11 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
         //Phase
         if (Player* player = target->ToPlayer())
         {
-            if (apply)    
-                player->GetPhaseMgr().RegisterPhasingAura(GetId(), target);
-            else    
-                player->GetPhaseMgr().UnRegisterPhasingAura(GetId(), target);
+            // TODO: Phasing
+//            if (apply)
+//                player->GetPhaseMgr().RegisterPhasingAura(GetId(), target);
+//            else
+//                player->GetPhaseMgr().UnRegisterPhasingAura(GetId(), target);
         }
 
         Item* castItem = nullptr;
@@ -2893,9 +2894,7 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplication* aurApp, ProcEventInfo& eventI
         return false;
 
     // do checks using conditions table
-    ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, GetId());
-    ConditionSourceInfo condInfo = ConditionSourceInfo(eventInfo.GetActor(), eventInfo.GetActionTarget());
-    if (!sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
+    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_SPELL_PROC, GetId(), eventInfo.GetActor(), eventInfo.GetActionTarget()))
         return false;
 
     // AuraScript Hook

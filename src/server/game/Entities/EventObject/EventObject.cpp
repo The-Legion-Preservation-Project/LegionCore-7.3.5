@@ -16,12 +16,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "EventObject.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
-#include "EventObject.h"
 #include "EventObjectData.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
+#include "PhasingHandler.h"
 #include "ScriptMgr.h"
 #include "World.h"
 
@@ -94,7 +95,7 @@ void EventObject::Update(uint32 /*p_time*/)
     GetPlayerListInGrid(playerList, eventTemplate->radius);
     for (auto player : playerList)
     {
-        if (!player->InSamePhase(this))
+        if (!player->IsInPhase(this))
             continue;
 
         if (ActivatedForPlayer(player))
@@ -158,8 +159,9 @@ bool EventObject::LoadEventObjectFromDB(ObjectGuid::LowType guid, Map* map)
     eventTemplate = sEventObjectDataStore->GetEventObjectTemplate(data->id);
 
     Object::_Create(ObjectGuid::Create<HighGuid::EventObject>(GetMapId(), data->id, guid));
-    SetPhaseMask(data->phaseMask, false);
-    SetPhaseId(data->PhaseID, false);
+
+    PhasingHandler::InitDbPhaseShift(GetPhaseShift(), data->phaseUseFlags, data->phaseId, data->phaseGroup, data->legacyPhaseIds);
+    PhasingHandler::InitDbVisibleMapId(GetPhaseShift(), data->terrainSwapMap);
 
     SetEntry(data->id);
     SetObjectScale(1.0f);
@@ -167,11 +169,10 @@ bool EventObject::LoadEventObjectFromDB(ObjectGuid::LowType guid, Map* map)
     return true;
 }
 
-bool EventObject::Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask, uint32 entry, float x, float y, float z, float ang, float radius, uint32 spell, uint32 worldsafe)
+bool EventObject::Create(ObjectGuid::LowType guidlow, Map* map, uint32 entry, float x, float y, float z, float ang, float radius, uint32 spell, uint32 worldsafe)
 {
     ASSERT(map);
     SetMap(map);
-    SetPhaseMask(phaseMask, false);
 
     eventTemplate = sEventObjectDataStore->GetEventObjectTemplate(entry);
     if (!eventTemplate)
@@ -192,7 +193,7 @@ bool EventObject::Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask
     return true;
 }
 
-void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask, uint32 phaseMask)
+void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask)
 {
     // update in loaded data
     if (!m_DBTableGuid)
@@ -202,13 +203,12 @@ void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask, uint32 phaseMask)
 
     uint32 zoneId = 0;
     uint32 areaId = 0;
-    sMapMgr->GetZoneAndAreaId(zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
+    sMapMgr->GetZoneAndAreaId(GetPhaseShift(), zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
 
     data.id = GetEntry();
     data.mapid = mapid;
     data.zoneId = zoneId;
     data.areaId = areaId;
-    data.phaseMask = phaseMask;
     data.spawnMask = spawnMask;
     data.Pos = GetPosition();
 
@@ -228,7 +228,6 @@ void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, zoneId);
     stmt->setUInt32(index++, areaId);
     stmt->setUInt64(index++, spawnMask);
-    stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setFloat(index++,  GetPositionX());
     stmt->setFloat(index++,  GetPositionY());
     stmt->setFloat(index++,  GetPositionZ());

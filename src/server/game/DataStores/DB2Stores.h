@@ -532,7 +532,7 @@ public:
     GarrTalentOptionMap const* GetGarrTalentOptionMap(uint16 __class, uint16 __line);
     XData const* getXMechanic(uint32 X) const;
     XData const* getXEncounter(uint32 X) const;
-    std::set<uint32> GetPhasesForGroup(uint32 group) const;
+    std::vector<uint32> const* GetPhasesForGroup(uint32 group) const;
     SkillLineAbilityEntry const* GetSkillBySpell(uint32 SpellID) const;
     BattlePetSpeciesEntry const* GetSpeciesBySpell(uint32 SpellID) const;
     BattlePetSpeciesEntry const* GetSpeciesByCreatureID(uint32 CreatureID) const;

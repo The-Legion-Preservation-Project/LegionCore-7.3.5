@@ -19,6 +19,7 @@
 #include "ConversationData.h"
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
+#include "PhasingHandler.h"
 
 ConversationDataStoreMgr::ConversationDataStoreMgr()
 {
@@ -38,8 +39,10 @@ void ConversationDataStoreMgr::LoadConversations()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0    1   2      3      4       5           6           7           8            9            10        11  
-    QueryResult result = WorldDatabase.Query("SELECT guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, spawnMask, phaseMask, PhaseId "
+    //                                                 0    1   2      3      4       5           6           7           8            9
+    QueryResult result = WorldDatabase.Query("SELECT guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, spawnMask, "
+        // 10           11       12          13              14
+        "phaseUseFlags, PhaseId, PhaseGroup, terrainSwapMap, LegacyPhaseId "
         "FROM conversation ORDER BY `map` ASC, `guid` ASC");
     if (!result)
     {
@@ -53,7 +56,9 @@ void ConversationDataStoreMgr::LoadConversations()
         for (auto& difficultyPair : mapDifficultyPair.second)
             spawnMasks[mapDifficultyPair.first] |= (UI64LIT(1) << difficultyPair.first);
 
-    _conversationDataStore.rehash(result->GetRowCount());
+    PhaseShift phaseShift;
+
+    _conversationDataStore.reserve(result->GetRowCount());
     std::map<uint32, ConversationSpawnData*> lastEntryCreature;
 
     uint32 count = 0;
@@ -91,44 +96,99 @@ void ConversationDataStoreMgr::LoadConversations()
         data.posZ = fields[index++].GetFloat();
         data.orientation = fields[index++].GetFloat();
         data.spawnMask = fields[index++].GetUInt64();
-        data.phaseMask = fields[index++].GetUInt32();
+        data.phaseUseFlags = fields[index++].GetUInt8();
+        data.phaseId = fields[index++].GetUInt32();
+        data.phaseGroup = fields[index++].GetUInt32();
+
+        if (data.phaseUseFlags & ~PHASE_USE_FLAGS_ALL)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) has unknown `phaseUseFlags` set, removed unknown value.", guid, data.id);
+            data.phaseUseFlags &= PHASE_USE_FLAGS_ALL;
+        }
+
+        if (data.phaseUseFlags & PHASE_USE_FLAGS_ALWAYS_VISIBLE && data.phaseUseFlags & PHASE_USE_FLAGS_INVERSE)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) has both `phaseUseFlags` PHASE_USE_FLAGS_ALWAYS_VISIBLE and PHASE_USE_FLAGS_INVERSE,"
+                " removing PHASE_USE_FLAGS_INVERSE.", guid, data.id);
+            data.phaseUseFlags &= ~PHASE_USE_FLAGS_INVERSE;
+        }
+
+        if (data.phaseGroup && data.phaseId)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: %u Entry: %u) with both `phaseid` and `phasegroup` set, `phasegroup` set to 0", guid, data.id);
+            data.phaseGroup = 0;
+        }
+
+        if (data.phaseId)
+        {
+            if (!sPhaseStore.LookupEntry(data.phaseId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) with `phaseid` %u does not exist, set to 0", guid, data.id, data.phaseId);
+                data.phaseId = 0;
+            }
+        }
+
+        if (data.phaseGroup)
+        {
+            if (!sDB2Manager.GetPhasesForGroup(data.phaseGroup))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) with `phaseGroup` %u does not exist, set to 0", guid, data.id, data.phaseGroup);
+                data.phaseGroup = 0;
+            }
+        }
+
+        data.terrainSwapMap = fields[index++].GetInt32();
+        if (data.terrainSwapMap != -1)
+        {
+            MapEntry const* terrainSwapEntry = sMapStore.LookupEntry(data.terrainSwapMap);
+            if (!terrainSwapEntry)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) with `terrainSwapMap` %u does not exist, set to -1", guid, data.id, data.terrainSwapMap);
+                data.terrainSwapMap = -1;
+            }
+            else if (terrainSwapEntry->ParentMapID != data.mapid)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) with `terrainSwapMap` %u which cannot be used on spawn map, set to -1", guid, data.id, data.terrainSwapMap);
+                data.terrainSwapMap = -1;
+            }
+        }
 
         Tokenizer phasesToken(fields[index++].GetString(), ' ', 100);
         for (auto itr : phasesToken)
             if (PhaseEntry const* phase = sPhaseStore.LookupEntry(uint32(strtoull(itr, nullptr, 10))))
-                data.PhaseID.insert(phase->ID);
+                data.legacyPhaseIds.insert(phase->ID);
 
-        // check near npc with same entry.
-        auto lastCreature = lastEntryCreature.find(entry);
-        if (lastCreature != lastEntryCreature.end())
-        {
-            if (data.mapid == lastCreature->second->mapid)
-            {
-                float dx1 = lastCreature->second->posX - data.posX;
-                float dy1 = lastCreature->second->posY - data.posY;
-                float dz1 = lastCreature->second->posZ - data.posZ;
-
-                float distsq1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
-                if (distsq1 < 0.5f)
-                {
-                    // split phaseID
-                    for (auto phaseID : data.PhaseID)
-                        lastCreature->second->PhaseID.insert(phaseID);
-
-                    lastCreature->second->phaseMask |= data.phaseMask;
-                    lastCreature->second->spawnMask |= data.spawnMask;
-                    WorldDatabase.PExecute("UPDATE conversation SET phaseMask = %u, spawnMask = " UI64FMTD " WHERE guid = %u", lastCreature->second->phaseMask, lastCreature->second->spawnMask, lastCreature->second->guid);
-                    WorldDatabase.PExecute("DELETE FROM conversation WHERE guid = %u", guid);
-                    TC_LOG_ERROR("sql.sql", "ConversationDataStoreMgr::LoadConversations() >> Table `conversation` have clone npc %u witch stay too close (dist: %f). original npc guid %lu. npc with guid %lu will be deleted.", entry, distsq1, lastCreature->second->guid, guid);
-                    continue;
-                }
-            }
-            else
-                lastEntryCreature[entry] = &data;
-
-        }
-        else
-            lastEntryCreature[entry] = &data;
+//        // check near npc with same entry.
+//        auto lastCreature = lastEntryCreature.find(entry);
+//        if (lastCreature != lastEntryCreature.end())
+//        {
+//            if (data.mapid == lastCreature->second->mapid)
+//            {
+//                float dx1 = lastCreature->second->posX - data.posX;
+//                float dy1 = lastCreature->second->posY - data.posY;
+//                float dz1 = lastCreature->second->posZ - data.posZ;
+//
+//                float distsq1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
+//                if (distsq1 < 0.5f)
+//                {
+//                    // split phaseID
+//                    for (auto phaseID : data.PhaseID)
+//                        lastCreature->second->PhaseID.insert(phaseID);
+//
+//                    lastCreature->second->phaseMask |= data.phaseMask;
+//                    lastCreature->second->spawnMask |= data.spawnMask;
+//                    WorldDatabase.PExecute("UPDATE conversation SET phaseMask = %u, spawnMask = " UI64FMTD " WHERE guid = %u", lastCreature->second->phaseMask, lastCreature->second->spawnMask, lastCreature->second->guid);
+//                    WorldDatabase.PExecute("DELETE FROM conversation WHERE guid = %u", guid);
+//                    TC_LOG_ERROR("sql.sql", "ConversationDataStoreMgr::LoadConversations() >> Table `conversation` have clone npc %u witch stay too close (dist: %f). original npc guid %lu. npc with guid %lu will be deleted.", entry, distsq1, lastCreature->second->guid, guid);
+//                    continue;
+//                }
+//            }
+//            else
+//                lastEntryCreature[entry] = &data;
+//
+//        }
+//        else
+//            lastEntryCreature[entry] = &data;
 
         if (!sMapStore.LookupEntry(data.mapid))
         {
@@ -143,12 +203,6 @@ void ConversationDataStoreMgr::LoadConversations()
             data.spawnMask = spawnMasks[data.mapid];
         }
 
-        if (data.phaseMask == 0)
-        {
-            TC_LOG_ERROR("sql.sql", "LoadConversations >> Table `conversation` have conversation (GUID: " UI64FMTD " Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
-            data.phaseMask = 1;
-        }
-
         // Add to grid if not managed by the game event or pool system
         sObjectMgr->AddConversationToGrid(guid, &data);
 
@@ -157,7 +211,8 @@ void ConversationDataStoreMgr::LoadConversations()
             uint32 zoneId = 0;
             uint32 areaId = 0;
 
-            sMapMgr->GetZoneAndAreaId(zoneId, areaId, data.mapid, data.posX, data.posY, data.posZ);
+            PhasingHandler::InitDbVisibleMapId(phaseShift, data.terrainSwapMap);
+            sMapMgr->GetZoneAndAreaId(phaseShift, zoneId, areaId, data.mapid, data.posX, data.posY, data.posZ);
 
             data.zoneId = zoneId;
             data.areaId = areaId;

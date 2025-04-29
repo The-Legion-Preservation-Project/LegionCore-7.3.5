@@ -1618,6 +1618,10 @@ void World::SetInitialWorldSettings()
     stmt->setUInt32(0, 3 * DAY);
     CharacterDatabase.Execute(stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_OLD_CORPSE_PHASES);
+    stmt->setUInt32(0, 3 * DAY);
+    CharacterDatabase.Execute(stmt);
+
     TC_LOG_INFO("server.loading", "Loading db2 info...");
     m_availableDbcLocaleMask = sDB2Manager.LoadStores(m_dataPath, m_defaultDbcLocale);
 
@@ -1637,6 +1641,8 @@ void World::SetInitialWorldSettings()
         if (mapEntry->ParentMapID != -1)
             mapData[mapEntry->ParentMapID].push_back(mapEntry->ID);
     }
+
+    sMapMgr->InitializeParentMapData(mapData);
 
     if (VMAP::VMapManager2* vmmgr2 = dynamic_cast<VMAP::VMapManager2*>(VMAP::VMapFactory::createOrGetVMapManager()))
         vmmgr2->InitializeThreadUnsafe(mapData);
@@ -1761,9 +1767,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading forbidden spells...");
     sSpellMgr->LoadForbiddenSpells();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Phase Dbc Info...");
-    sObjectMgr->LoadSpellPhaseInfo();
 
     sAreaTriggerDataStore->LoadAreaTriggerForces();
 
@@ -2080,8 +2083,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading World States...");              // must be loaded before battleground, outdoor PvP and conditions
     LoadWorldStates();
 
-    TC_LOG_INFO("server.loading", "Loading Phase definitions...");
-    sObjectMgr->LoadPhaseDefinitions();
+    TC_LOG_INFO("server.loading", "Loading Phases...");
+    sObjectMgr->LoadPhases();
+    sObjectMgr->LoadLegacyPhaseDefinitions();
 
     TC_LOG_INFO("server.loading", "Loading Scenario data...");
     sObjectMgr->LoadScenarioData();
@@ -4269,9 +4273,6 @@ void World::DeleteCharacterNameData(ObjectGuid const& guid)
 
 void World::UpdatePhaseDefinitions()
 {
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)	
-        if (itr->second && itr->second->GetPlayer() && itr->second->GetPlayer()->IsInWorld())	
-            itr->second->GetPlayer()->GetPhaseMgr().NotifyStoresReloaded();	
 }
 
 bool World::CheckCharacterName(std::string name)

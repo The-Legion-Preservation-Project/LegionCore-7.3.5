@@ -1,4 +1,5 @@
 #include "throne_of_the_four_winds.h"
+#include "PhasingHandler.h"
 
 enum SlipstreamEnums
 {
@@ -111,14 +112,14 @@ public:
                 {
                     // Activate Slipstream
                     if (linkedSlipstreamObject)
-                        linkedSlipstreamObject->SetPhaseMask(PHASEMASK_NORMAL, true);
+                        PhasingHandler::RemovePhase(linkedSlipstreamObject, 170, true);
                 }
 
                 else
                 {
                     // Deactivate Slipstream
                     if (linkedSlipstreamObject)
-                        linkedSlipstreamObject->SetPhaseMask(2, true);
+                        PhasingHandler::AddPhase(linkedSlipstreamObject, 170, true);
                 }
 
                 isActive = !isActive;
